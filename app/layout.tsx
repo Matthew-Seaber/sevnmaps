@@ -30,9 +30,20 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable, publicSansHeading.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        figtree.variable,
+        publicSansHeading.variable,
+      )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <meta name="apple-mobile-web-app-title" content="SevnMaps" />
+      </head>
+      <body className="min-h-full flex justify-center"><div className="w-full max-w-[1800px]">{children}</div></body>
     </html>
   );
 }
