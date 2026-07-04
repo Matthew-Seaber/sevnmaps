@@ -1,5 +1,5 @@
 export default function Home() {
   return (
-      <p className="mt-4 text-2xl font-bold text-center select-none">NAVATRY</p>
+      <p className="mt-4 text-2xl font-bold text-center select-none">SevnMaps</p>
   );
 }

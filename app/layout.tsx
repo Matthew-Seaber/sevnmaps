@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NAVATRY",
-  description: "That one friend who seems to have been everywhere. Navatry is your map to the world's hidden gems!",
+  title: "SevnMaps",
+  description: "That one friend who seems to have been everywhere. SevnMaps is your guide to the world's hidden gems!",
 };
 
 export default function RootLayout({
