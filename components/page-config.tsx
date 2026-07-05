@@ -12,7 +12,7 @@ export default function PageConfig({
 }) {
   const pathname = usePathname();
 
-  const unauthenticatedPaths = ["/", "/changelog"];
+  const unauthenticatedPaths = ["/", "/changelog", "/pricing"];
   const isAuthenticatedPage = !unauthenticatedPaths.includes(pathname);
 
   if (isAuthenticatedPage) {

@@ -42,7 +42,7 @@ function changelogPage() {
           <p className="text-sm sm:text-base">v{log.version}</p>
 
           {log.tag && (
-            <p className="my-2 py-1 px-4 w-fit bg-primary/15 rounded-md text-xs text-primary">
+            <p className="my-2 py-1 px-4 w-fit bg-primary/20 rounded-md text-xs text-primary">
               {log.tag}
             </p>
           )}
