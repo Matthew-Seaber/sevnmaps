@@ -8,15 +8,15 @@ import { Button } from "@/components/ui/button";
 function Navbar() {
   return (
     <nav className="border-b border-border z-2">
-      <div className="mx-auto max-w-[1800px] px-6 flex justify-between items-center py-6 gap-4">
+      <div className="mx-auto max-w-[1800px] px-4 sm:px-6 flex justify-between items-center py-4 sm:py-6 gap-3">
         <TextLogo />
         <NavbarLinks />
 
-        <div className="space-x-2">
+        <div className="flex gap-2 shrink-0">
           <Button
             size="lg"
             variant="outline"
-            className="px-6 py-5"
+            className="px-4 sm:px-6 sm:h-11"
             onClick={() => {
               window.location.href = "/login";
             }}
@@ -25,7 +25,7 @@ function Navbar() {
           </Button>
           <Button
             size="lg"
-            className="px-6 py-5"
+            className="px-4 sm:px-6 sm:h-11"
             onClick={() => {
               window.location.href = "/signup";
             }}

@@ -6,12 +6,12 @@ import Link from "next/link";
 
 function Footer() {
   return (
-    <footer className="border-t border-border z-2 pt-20 pb-15">
-      <div className="flex items-center mx-auto mb-16 gap-x-16">
+    <footer className="border-t border-border z-2 pt-20 pb-12">
+      <div className="flex items-start mx-auto mb-16 max-w-6xl gap-x-4 px-4">
         <div className="flex flex-col shrink w-64 gap-2">
           <TextLogo />
-          <p>Your trusted travel pal</p>
-          <a href="mailto:hello@sevnmaps.com" className="hover:underline">
+          <p className="font-medium">Your trusted travel pal</p>
+          <a href="mailto:hello@sevnmaps.com" className="hover:underline text-muted-foreground hover:text-foreground">
             hello@sevnmaps.com
           </a>
         </div>

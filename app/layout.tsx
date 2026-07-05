@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Figtree, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
+import PageConfig from "@/components/page-config";
+
 const publicSansHeading = Public_Sans({subsets:['latin'],variable:'--font-heading'});
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
@@ -43,7 +45,11 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="SevnMaps" />
       </head>
-      <body className="min-h-full flex justify-center"><div className="w-full max-w-[1800px]">{children}</div></body>
+      <body className="min-h-full flex justify-center"><div className="w-full max-w-[1800px]">
+        <PageConfig>
+          {children}
+        </PageConfig>
+      </div></body>
     </html>
   );
 }
