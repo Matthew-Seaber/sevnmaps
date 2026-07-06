@@ -114,7 +114,7 @@ function PricingPage() {
         </p>
       </div>
 
-      <div className="mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl items-end text-left">
+      <div className="mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-7xl items-end text-left">
         <div className="min-h-136 w-full border-[0.5px] border-border rounded-lg bg-card p-6 shadow-sm">
           <h3 className="text-2xl font-bold pt-2 pb-1">Free</h3>
           <p className="font-semibold text-foreground/70 text-sm">
@@ -133,7 +133,7 @@ function PricingPage() {
           <Button
             variant="outline"
             size="lg"
-            className="w-full border border-primary text-primary/80 hover:text-primary font-semibold rounded-sm"
+            className="w-full border border-primary text-primary hover:text-primary/90 hover:bg-primary/10 font-semibold rounded-sm"
             onClick={() => {
               window.location.href = "/signup";
             }}
@@ -141,7 +141,7 @@ function PricingPage() {
             Get started
           </Button>
 
-          <div className="mt-10 flex flex-col justify-between gap-4">
+          <div className="mt-10 flex flex-col justify-between gap-2">
             <PerkRow
               label="Create up to 3 lists"
               value="3 lists"
@@ -152,6 +152,31 @@ function PricingPage() {
               value="30 places"
               included={true}
             />
+            <PerkRow label="Basic map styles" value={null} included={true} />
+            <PerkRow
+              label="Add notes to saved places"
+              value={null}
+              included={true}
+            />
+            <PerkRow label="Sync across devices" value={null} included={true} />
+            <PerkRow label="Ad-free experience" value={null} included={true} />
+            <PerkRow
+              label="Collaborative lists"
+              value={null}
+              included={false}
+            />
+            <PerkRow
+              label="AI-powered packing planner"
+              value={null}
+              included={false}
+            />
+            <PerkRow
+              label="Discount on exclusive lists"
+              value={null}
+              included={false}
+            />
+            <PerkRow label="Offline mode" value={null} included={false} />
+            <PerkRow label="Priority support" value={null} included={false} />
           </div>
         </div>
 
@@ -183,7 +208,39 @@ function PricingPage() {
             7-day free trial. Cancel anytime.
           </p>
 
-          <div className="mt-4 flex items-center justify-between"></div>
+          <div className="mt-4 flex flex-col justify-between gap-2">
+            <PerkRow
+              label="Create up to 25 lists"
+              value="25 lists"
+              included={true}
+            />
+            <PerkRow
+              label="Save up to 150 places per list"
+              value="150 places"
+              included={true}
+            />
+            <PerkRow label="Advanced map styles" value={null} included={true} />
+            <PerkRow
+              label="Add notes to saved places"
+              value={null}
+              included={true}
+            />
+            <PerkRow label="Sync across devices" value={null} included={true} />
+            <PerkRow label="Ad-free experience" value={null} included={true} />
+            <PerkRow label="Collaborative lists" value={null} included={true} />
+            <PerkRow
+              label="AI-powered packing planner"
+              value="5 trips"
+              included={true}
+            />
+            <PerkRow
+              label="Discount on exclusive lists"
+              value="30% off"
+              included={true}
+            />
+            <PerkRow label="Offline mode" value="3 lists" included={true} />
+            <PerkRow label="Priority support" value={null} included={true} />
+          </div>
         </div>
 
         <div className="min-h-136 w-full border-[0.5px] border-border rounded-lg bg-card p-6 shadow-sm">
@@ -206,7 +263,7 @@ function PricingPage() {
           <Button
             variant="outline"
             size="lg"
-            className="w-full border border-primary text-primary/80 hover:text-primary font-semibold rounded-sm"
+            className="w-full border border-primary text-primary hover:text-primary/90 hover:bg-primary/10 font-semibold rounded-sm"
           >
             Upgrade to Explorer
           </Button>
@@ -214,7 +271,39 @@ function PricingPage() {
             7-day free trial. Cancel anytime.
           </p>
 
-          <div className="mt-4 flex items-center justify-between"></div>
+          <div className="mt-4 flex flex-col justify-between gap-2">
+            <PerkRow
+              label="Create unlimited lists"
+              value="Unlimited"
+              included={true}
+            />
+            <PerkRow
+              label="Save unlimited places per list"
+              value="Unlimited"
+              included={true}
+            />
+            <PerkRow label="Advanced map styles" value={null} included={true} />
+            <PerkRow
+              label="Add notes to saved places"
+              value={null}
+              included={true}
+            />
+            <PerkRow label="Sync across devices" value={null} included={true} />
+            <PerkRow label="Ad-free experience" value={null} included={true} />
+            <PerkRow label="Collaborative lists" value={null} included={true} />
+            <PerkRow
+              label="AI-powered packing planner"
+              value="Unlimited"
+              included={true}
+            />
+            <PerkRow
+              label="Discount on exclusive lists"
+              value="70% off"
+              included={true}
+            />
+            <PerkRow label="Offline mode" value="10 lists" included={true} />
+            <PerkRow label="Priority support" value={null} included={true} />
+          </div>
         </div>
       </div>
 
