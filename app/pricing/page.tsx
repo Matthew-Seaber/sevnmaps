@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Switch } from "@/components/ui/big-switch";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,78 @@ import confetti from "canvas-confetti";
 
 function PricingPage() {
   const [annualBilling, setAnnualBilling] = useState<boolean>(true);
+  const [countryCode, setCountryCode] = useState<string>("US");
+
+  const prices = {
+    pro: {
+      monthly: 5.99,
+      annual: 3.29,
+    },
+    explorer: {
+      monthly: 12.99,
+      annual: 7.19,
+    },
+  };
+
+  useEffect(() => {
+    const fetchCountryCode = async () => {
+      try {
+        const countryCodeResponse = await fetch(
+          "api/billing/get_country_code",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        const countryCode = await countryCodeResponse.text();
+        setCountryCode(countryCode);
+      } catch (error) {
+        console.error("Error fetching country code:", error);
+      }
+    };
+
+    fetchCountryCode();
+  }, []);
+
+  const getCurrencySymbol = (countryCode: string) => {
+    if (countryCode === "GB") {
+      return "£";
+    }
+
+    const euroCountries = [
+      "AT",
+      "BE",
+      "CY",
+      "DE",
+      "EE",
+      "ES",
+      "FI",
+      "FR",
+      "GR",
+      "HR",
+      "IE",
+      "IT",
+      "LT",
+      "LU",
+      "LV",
+      "MT",
+      "NL",
+      "PT",
+      "SI",
+      "SK",
+    ];
+
+    if (euroCountries.includes(countryCode)) {
+      return "€";
+    }
+
+    return "$";
+  };
+
+  const currency = getCurrencySymbol(countryCode);
 
   return (
     <div className="flex flex-col items-center justify-center p-4 gap-4 text-center">
@@ -36,13 +108,57 @@ function PricingPage() {
           Annual billing
         </Label>
         <p className="text-sm text-primary bg-primary/20 rounded-md py-1 px-3">
-          Save 20%
+          Save 45%
         </p>
       </div>
 
-      <div>{/* Main content */}</div>
+      <div className="mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl items-end text-left">
+        <div className="min-h-136 w-full border-[0.5px] border-border rounded-lg bg-card p-6 shadow-sm">
+          <h3 className="text-2xl font-bold pt-2 pb-1">Free</h3>
+          <p className="font-semibold text-foreground/70 text-sm">
+            Start exploring the world.
+          </p>
 
-      <div className="border border-border rounded-lg flex p-6 items-center justify-between text-left drop-shadow-sm gap-8 sm:gap-16 mb-12">
+          <h4 className="text-3xl font-semibold">
+            {currency}
+            <span className="font-bold">0</span>
+          </h4>
+        </div>
+
+        <div className="relative min-h-140 w-full border-2 border-primary rounded-lg bg-card p-6 shadow-md overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 object-cover bg-primary text-primary-foreground text-center font-medium text-sm p-1 tracking-wide">
+            <p>RECOMMENDED</p>
+          </div>
+
+          <h3 className="text-2xl font-bold pt-6 pb-1">Pro</h3>
+          <p className="font-semibold text-foreground/70 text-sm">
+            For passionate adventurers.
+          </p>
+
+          <h4 className="text-3xl font-semibold">
+            {currency}
+            <span className="font-bold font-jakarta">
+              {prices.pro[annualBilling ? "annual" : "monthly"]}
+            </span>
+          </h4>
+        </div>
+
+        <div className="min-h-136 w-full border-[0.5px] border-border rounded-lg bg-card p-6 shadow-sm">
+          <h3 className="text-2xl font-bold pt-2 pb-1">Explorer</h3>
+          <p className="font-semibold text-foreground/70 text-sm">
+            For the ultimate explorer.
+          </p>
+
+          <h4 className="text-3xl font-semibold">
+            {currency}
+            <span className="font-bold font-jakarta">
+              {prices.explorer[annualBilling ? "annual" : "monthly"]}
+            </span>
+          </h4>
+        </div>
+      </div>
+
+      <div className="border border-border rounded-lg flex p-6 items-center justify-between text-left drop-shadow-sm gap-4 sm:gap-32 mt-2 mb-12">
         <div className="flex items-start sm:items-center gap-6">
           <WandSparkles
             className="shrink-0 h-8 w-8 mt-2 sm:mt-0"
@@ -54,7 +170,7 @@ function PricingPage() {
               Hesitant about upgrading?
             </h4>
             <p className="text-foreground/70 font-medium text-sm">
-              All paid plans come with a 7-day free trial; just in case you
+              All paid plans come with a 7-day free trial, just in case you
               change your mind.
             </p>
           </div>
@@ -90,7 +206,7 @@ function PricingPage() {
             });
           }}
         >
-          Play confetti
+          Launch confetti
         </Button>
       </div>
     </div>

@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Figtree, Public_Sans } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Figtree,
+  Public_Sans,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
 import PageConfig from "@/components/page-config";
 
-const publicSansHeading = Public_Sans({subsets:['latin'],variable:'--font-heading'});
+const publicSansHeading = Public_Sans({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,9 +28,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "SevnMaps",
-  description: "That one friend who seems to have been everywhere. SevnMaps is your guide to the world's hidden gems!",
+  description:
+    "That one friend who seems to have been everywhere. SevnMaps is your guide to the world's hidden gems!",
 };
 
 export default function RootLayout({
@@ -40,16 +55,17 @@ export default function RootLayout({
         "font-sans",
         figtree.variable,
         publicSansHeading.variable,
+        plusJakartaSans.variable,
       )}
     >
       <head>
         <meta name="apple-mobile-web-app-title" content="SevnMaps" />
       </head>
-      <body className="min-h-full flex justify-center"><div className="w-full max-w-[1800px]">
-        <PageConfig>
-          {children}
-        </PageConfig>
-      </div></body>
+      <body className="min-h-full flex justify-center">
+        <div className="w-full max-w-[1800px]">
+          <PageConfig>{children}</PageConfig>
+        </div>
+      </body>
     </html>
   );
 }
