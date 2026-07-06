@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import PerkRow from "@/components/pricing/PerkRow";
+
 import confetti from "canvas-confetti";
 
 function PricingPage() {
@@ -95,7 +97,7 @@ function PricingPage() {
         asked.
       </p>
 
-      <div className="flex items-center gap-2 mt-4">
+      <div className="flex items-center gap-2 mt-4 mb-2">
         <Switch
           id="annualBillingSwitch"
           checked={annualBilling}
@@ -119,10 +121,38 @@ function PricingPage() {
             Start exploring the world.
           </p>
 
-          <h4 className="text-3xl font-semibold">
+          <h4 className="text-2xl font-semibold py-4">
             {currency}
-            <span className="font-bold">0</span>
+            <span className="text-3xl font-bold font-jakarta">0</span>
+            <span className="font-bold text-xs text-foreground/70">
+              {" "}
+              / month
+            </span>
           </h4>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full border border-primary text-primary/80 hover:text-primary font-semibold rounded-sm"
+            onClick={() => {
+              window.location.href = "/signup";
+            }}
+          >
+            Get started
+          </Button>
+
+          <div className="mt-10 flex flex-col justify-between gap-4">
+            <PerkRow
+              label="Create up to 3 lists"
+              value="3 lists"
+              included={true}
+            />
+            <PerkRow
+              label="Save up to 30 places per list"
+              value="30 places"
+              included={true}
+            />
+          </div>
         </div>
 
         <div className="relative min-h-140 w-full border-2 border-primary rounded-lg bg-card p-6 shadow-md overflow-hidden">
@@ -135,12 +165,25 @@ function PricingPage() {
             For passionate adventurers.
           </p>
 
-          <h4 className="text-3xl font-semibold">
+          <h4 className="text-2xl font-semibold py-4">
             {currency}
-            <span className="font-bold font-jakarta">
+            <span className="text-3xl font-bold font-jakarta">
               {prices.pro[annualBilling ? "annual" : "monthly"]}
             </span>
+            <span className="font-bold text-xs text-foreground/70">
+              {" "}
+              / month
+            </span>
           </h4>
+
+          <Button size="lg" className="w-full rounded-sm">
+            Upgrade to Pro
+          </Button>
+          <p className="font-semibold text-xs text-foreground/50 my-2 text-center">
+            7-day free trial. Cancel anytime.
+          </p>
+
+          <div className="mt-4 flex items-center justify-between"></div>
         </div>
 
         <div className="min-h-136 w-full border-[0.5px] border-border rounded-lg bg-card p-6 shadow-sm">
@@ -149,12 +192,29 @@ function PricingPage() {
             For the ultimate explorer.
           </p>
 
-          <h4 className="text-3xl font-semibold">
+          <h4 className="text-2xl font-semibold py-4">
             {currency}
-            <span className="font-bold font-jakarta">
+            <span className="text-3xl font-bold font-jakarta">
               {prices.explorer[annualBilling ? "annual" : "monthly"]}
             </span>
+            <span className="font-bold text-xs text-foreground/70">
+              {" "}
+              / month
+            </span>
           </h4>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full border border-primary text-primary/80 hover:text-primary font-semibold rounded-sm"
+          >
+            Upgrade to Explorer
+          </Button>
+          <p className="font-semibold text-xs text-foreground/50 my-2 text-center">
+            7-day free trial. Cancel anytime.
+          </p>
+
+          <div className="mt-4 flex items-center justify-between"></div>
         </div>
       </div>
 
