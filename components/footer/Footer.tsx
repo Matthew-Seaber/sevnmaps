@@ -1,6 +1,6 @@
 "use client";
 
-import TextLogo from "../navbar/TextLogo";
+import TextLogo from "../navbar/TextLogoLink";
 
 import Link from "next/link";
 
@@ -11,7 +11,10 @@ function Footer() {
         <div className="flex flex-col shrink w-64 gap-2">
           <TextLogo />
           <p className="font-medium">Your trusted travel pal</p>
-          <a href="mailto:hello@sevnmaps.com" className="hover:underline text-muted-foreground hover:text-foreground">
+          <a
+            href="mailto:hello@sevnmaps.com"
+            className="hover:underline text-muted-foreground hover:text-foreground"
+          >
             hello@sevnmaps.com
           </a>
         </div>

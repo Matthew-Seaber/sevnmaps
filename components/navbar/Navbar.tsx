@@ -1,6 +1,6 @@
 "use client";
 
-import TextLogo from "./TextLogo";
+import TextLogo from "./TextLogoLink";
 import NavbarLinks from "./NavbarLinks";
 
 import { Button } from "@/components/ui/button";
