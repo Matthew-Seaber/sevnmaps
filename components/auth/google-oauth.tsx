@@ -2,16 +2,25 @@
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
-function GoogleOAuth() {
+function GoogleOAuth({ type }: { type: "login" | "signup" }) {
   return (
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID!}>
+    <GoogleOAuthProvider
+      clientId={process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID!}
+    >
       <GoogleLogin
         onSuccess={(response) => {
           console.log(response);
-          window.location.href = "/app"
+
+          if (type === "login") {
+            // Login logic here
+          } else if (type === "signup") {
+            // Signup logic here
+          }
+
+          window.location.href = "/app";
         }}
         onError={() => {
-          alert("Login with Google failed");
+          alert("Continue with Google failed");
         }}
         size="large"
         text="continue_with"
