@@ -13,7 +13,7 @@ function TermsPage() {
   return (
     <div className="max-w-6xl p-4 mx-auto">
       <h1 className="font-bold text-2xl sm:text-3xl mb-1">
-        Terms and Conditions
+        Terms of Service
       </h1>
       <i className="text-sm">Last updated: 11:30 BST, 7th July 2026</i>
 

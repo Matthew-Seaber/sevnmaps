@@ -40,6 +40,9 @@ function Footer() {
           <Link href="/privacy" className="hover:text-foreground">
             Privacy Policy
           </Link>
+          <Link href="/contact" className="hover:text-foreground">
+            Contact
+          </Link>
         </div>
       </div>
 

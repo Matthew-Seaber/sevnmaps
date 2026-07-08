@@ -1,4 +1,4 @@
-Welcome to **SevnMaps** (“we”, “us”, “our”). By using our app, website, or services, you agree to these Terms and Conditions. If you do not agree, please do not use SevnMaps.
+Welcome to **SevnMaps** (“we”, “us”, “our”). By using our app, website, or services, you agree to these Terms of Service. If you do not agree, please do not use SevnMaps.
 
 ---
 

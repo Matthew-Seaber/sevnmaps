@@ -2,6 +2,7 @@ import GoogleOAuth from "@/components/auth/google-oauth";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
 import ImageLogo from "@/components/navbar/ImageLogo";
@@ -51,6 +52,30 @@ function LoginPage() {
               placeholder="Password"
               className="px-4 py-6"
             />
+
+            <div className="mt-4 flex items-start gap-2">
+              <Checkbox id="agreements" className="mt-1" />
+              <label
+                htmlFor="agreements"
+                className="max-w-64 text-sm leading-relaxed text-muted-foreground cursor-default"
+              >
+                I agree to the{" "}
+                <a
+                  className="font-semibold text-foreground hover:underline cursor-pointer"
+                  href="/terms"
+                >
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a
+                  className="font-semibold text-foreground hover:underline cursor-pointer"
+                  href="/privacy"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </label>
+            </div>
 
             <Button type="submit" size="lg" className="mt-3 h-10 text-md">
               Create account

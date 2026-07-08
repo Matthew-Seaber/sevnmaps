@@ -24,9 +24,10 @@ function changelogPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-2xl sm:text-3xl font-semibold my-8">
+      <h1 className="text-2xl sm:text-3xl font-semibold mt-8 mb-2">
         SevnMaps Changelog
       </h1>
+      <p className="mb-8">Check out the latest updates and improvements to the app!</p>
 
       {logs.map((log) => (
         <div
