@@ -1,3 +1,5 @@
+import GoogleOAuth from "@/components/auth/google-oauth";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,7 +46,10 @@ function LoginPage() {
               Log in
             </Button>
           </div>
-          <div className=""></div>
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <p className="text-muted-foreground text-xs mb-2">-- OR --</p>
+            <GoogleOAuth />
+          </div>
         </div>
       </div>
     </div>
