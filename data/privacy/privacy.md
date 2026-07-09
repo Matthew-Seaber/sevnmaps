@@ -10,7 +10,7 @@ By using SevnMaps, you agree to the practices described in this Privacy Policy.
 
 When you create an account or use SevnMaps, you may provide:
 
-- Name or display name
+- Name, username or display name
 - Email address
 - Profile picture
 - Password (stored securely by our authentication provider)

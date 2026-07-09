@@ -1,0 +1,111 @@
+Table users {
+    user_id integer [primary key, increment, unique, not null]
+    created_at timestamptz [not null, default: 'now()']
+    username varchar [unique] // Needed if users want a public profile, post a review, or share/collaborate on a list
+    profile_picture_url varchar
+    email varchar [unique, not null]
+    password varchar [not null]
+    first_name varchar [not null]
+    role varchar [not null, default: 'user']
+    plan_type varchar [not null, default: 'free']
+    subscription_status varchar [not null, default: 'inactive']
+    past_free_trial boolean [not null, default: false]
+    subscription_period varchar
+    subscription_start timestamptz [not null, default: 'now()']
+    subscription_end timestamptz
+}
+
+Table sessions {
+    user_id integer [not null, ref: > users.user_id]
+    token varchar [primary key, unique, not null]
+    expires timestamptz [not null]
+}
+
+Table notifications {
+    notification_id integer [primary key, increment, unique, not null]
+    user_id integer [not null, ref: > users.user_id]
+    sent_at timestamptz [not null, default: 'now()']
+    title varchar [not null]
+    message varchar
+    read boolean [not null, default: false]
+}
+
+Table tags {
+    tag_id integer [primary key, increment, unique, not null]
+    tag_name varchar [unique, not null]
+}
+
+Table places {
+    place_id integer [primary key, increment, unique, not null]
+    place_name varchar [not null]
+    description varchar
+    latitude float [not null]
+    longitude float [not null]
+    country varchar [not null]
+    state varchar
+    zip_code varchar
+    city varchar
+    main_address varchar
+}
+
+Table place_images {
+    image_id integer [primary key, increment, unique, not null]
+    place_id integer [not null, ref: > places.place_id]
+    image_url varchar [not null]
+    uploaded_by integer [not null, ref: > users.user_id]
+    uploaded_at timestamptz [not null, default: 'now()']
+    primary_image boolean [not null, default: false]
+    under_review boolean [not null, default: true]
+}
+
+Table place_tag_link {
+    place_id integer [not null, ref: > places.place_id]
+    tag_id integer [not null, ref: > tags.tag_id]
+}
+
+Table place_user_link {
+    place_id integer [not null, ref: > places.place_id]
+    user_id integer [not null, ref: > users.user_id]
+    favorite boolean [not null, default: false]
+    visited boolean [not null, default: false]
+    visited_at timestamptz
+    private_note varchar
+}
+
+Table lists {
+    list_id integer [primary key, increment, unique, not null]
+    creator_id integer [not null, ref: > users.user_id]
+    created_at timestamptz [not null, default: 'now()']
+    last_updated timestamptz [not null, default: 'now()']
+    visibility varchar [not null, default: 'private']
+    list_name varchar [not null]
+    list_icon varchar
+    list_color varchar
+}
+
+Table list_members {
+    list_id integer [not null, ref: > lists.list_id]
+    user_id integer [not null, ref: > users.user_id]
+    role varchar [not null, default: 'viewer']
+    joined_at timestamptz [not null, default: 'now()']
+}
+
+Table list_place_link {
+    list_id integer [not null, ref: > lists.list_id]
+    place_id integer [not null, ref: > places.place_id]
+    added_at timestamptz [not null, default: 'now()']
+}
+
+Table reviews {
+    review_id integer [primary key, increment, unique, not null]
+    place_id integer [not null, ref: > places.place_id]
+    user_id integer [not null, ref: > users.user_id]
+    created_at timestamptz [not null, default: 'now()']
+    stars integer [not null]
+    comment varchar
+}
+
+Table review_image_link {
+    review_id integer [not null, ref: > reviews.review_id]
+    image_id integer [not null, ref: > place_images.image_id]
+}

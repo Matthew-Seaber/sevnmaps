@@ -122,8 +122,9 @@ function PricingPage() {
           </p>
 
           <h4 className="text-2xl font-semibold py-4">
-            {currency}
+            {currency !== "€" && <span>{currency}</span>}
             <span className="text-3xl font-bold font-jakarta">0</span>
+            {currency === "€" && <span>{currency}</span>}
             <span className="font-bold text-xs text-foreground/70">
               {" "}
               / month
@@ -143,8 +144,8 @@ function PricingPage() {
 
           <div className="mt-10 flex flex-col justify-between gap-2">
             <PerkRow
-              label="Create up to 3 lists"
-              value="3 lists"
+              label="Create up to 5 lists"
+              value="5 lists"
               included={true}
             />
             <PerkRow
@@ -154,7 +155,7 @@ function PricingPage() {
             />
             <PerkRow label="Basic map styles" value={null} included={true} />
             <PerkRow
-              label="Add notes to saved places"
+              label="Add private notes to places"
               value={null}
               included={true}
             />
@@ -191,10 +192,11 @@ function PricingPage() {
           </p>
 
           <h4 className="text-2xl font-semibold py-4">
-            {currency}
+            {currency !== "€" && <span>{currency}</span>}
             <span className="text-3xl font-bold font-jakarta">
               {prices.pro[annualBilling ? "annual" : "monthly"]}
             </span>
+            {currency === "€" && <span>{currency}</span>}
             <span className="font-bold text-xs text-foreground/70">
               {" "}
               / month
@@ -221,7 +223,7 @@ function PricingPage() {
             />
             <PerkRow label="Advanced map styles" value={null} included={true} />
             <PerkRow
-              label="Add notes to saved places"
+              label="Add private notes to places"
               value={null}
               included={true}
             />
@@ -250,10 +252,11 @@ function PricingPage() {
           </p>
 
           <h4 className="text-2xl font-semibold py-4">
-            {currency}
+            {currency !== "€" && <span>{currency}</span>}
             <span className="text-3xl font-bold font-jakarta">
               {prices.explorer[annualBilling ? "annual" : "monthly"]}
             </span>
+            {currency === "€" && <span>{currency}</span>}
             <span className="font-bold text-xs text-foreground/70">
               {" "}
               / month
@@ -284,7 +287,7 @@ function PricingPage() {
             />
             <PerkRow label="Advanced map styles" value={null} included={true} />
             <PerkRow
-              label="Add notes to saved places"
+              label="Add private notes to places"
               value={null}
               included={true}
             />

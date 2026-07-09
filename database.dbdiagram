@@ -1,0 +1,349 @@
+{
+  "version": "2.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "tablePositions": [
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 824,
+        "y": 584
+      },
+      {
+        "name": "places",
+        "schemaName": "public",
+        "x": 656,
+        "y": 1104
+      },
+      {
+        "name": "place_user_link",
+        "schemaName": "public",
+        "x": 296,
+        "y": 1152
+      },
+      {
+        "name": "lists",
+        "schemaName": "public",
+        "x": 368,
+        "y": 48
+      },
+      {
+        "name": "list_place_link",
+        "schemaName": "public",
+        "x": 584,
+        "y": 408
+      },
+      {
+        "name": "reviews",
+        "schemaName": "public",
+        "x": 144,
+        "y": 680
+      },
+      {
+        "name": "list_members",
+        "schemaName": "public",
+        "x": 432,
+        "y": 904
+      },
+      {
+        "name": "tags",
+        "schemaName": "public",
+        "x": 48,
+        "y": 1024
+      },
+      {
+        "name": "place_tag_link",
+        "schemaName": "public",
+        "x": 456,
+        "y": 656
+      },
+      {
+        "name": "notifications",
+        "schemaName": "public",
+        "x": 1152,
+        "y": 144
+      },
+      {
+        "name": "place_images",
+        "schemaName": "public",
+        "x": 1312,
+        "y": 632
+      },
+      {
+        "name": "review_image_link",
+        "schemaName": "public",
+        "x": 848,
+        "y": 360
+      },
+      {
+        "name": "sessions",
+        "schemaName": "public",
+        "x": 288,
+        "y": 448
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "place_id"
+        ],
+        "firstTableName": "places",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "place_id"
+        ],
+        "secondTableName": "place_user_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "list_id"
+        ],
+        "firstTableName": "lists",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "list_id"
+        ],
+        "secondTableName": "list_place_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "place_id"
+        ],
+        "firstTableName": "places",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "place_id"
+        ],
+        "secondTableName": "list_place_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "place_user_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "place_id"
+        ],
+        "firstTableName": "places",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "place_id"
+        ],
+        "secondTableName": "reviews",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "reviews",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "creator_id"
+        ],
+        "secondTableName": "lists",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "list_id"
+        ],
+        "firstTableName": "lists",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "list_id"
+        ],
+        "secondTableName": "list_members",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "list_members",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "place_id"
+        ],
+        "firstTableName": "places",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "place_id"
+        ],
+        "secondTableName": "place_tag_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "tag_id"
+        ],
+        "firstTableName": "tags",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "tag_id"
+        ],
+        "secondTableName": "place_tag_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "notifications",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "place_id"
+        ],
+        "firstTableName": "places",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "place_id"
+        ],
+        "secondTableName": "place_images",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "uploaded_by"
+        ],
+        "secondTableName": "place_images",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "review_id"
+        ],
+        "firstTableName": "reviews",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "review_id"
+        ],
+        "secondTableName": "review_image_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "image_id"
+        ],
+        "firstTableName": "place_images",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "image_id"
+        ],
+        "secondTableName": "review_image_link",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "sessions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}

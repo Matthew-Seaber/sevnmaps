@@ -15,7 +15,7 @@ function PrivacyPage() {
       <h1 className="font-bold text-2xl sm:text-3xl mb-1">
         Privacy Policy
       </h1>
-      <i className="text-sm">Last updated: 11:30 BST, 7th July 2026</i>
+      <i className="text-sm">Last updated: 10:56 BST, 9th July 2026</i>
 
       <div className="my-6 prose prose-slate dark:prose-invert max-w-none">
         <ReactMarkdown>{content}</ReactMarkdown>
