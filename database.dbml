@@ -9,7 +9,7 @@ Table users {
     role varchar [not null, default: 'user']
     plan_type varchar [not null, default: 'free']
     subscription_status varchar [not null, default: 'inactive']
-    past_free_trial boolean [not null, default: false]
+    used_free_trial boolean [not null, default: false]
     subscription_period varchar
     subscription_start timestamptz [not null, default: 'now()']
     subscription_end timestamptz

@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 
 import ImageLogo from "@/components/navbar/ImageLogo";
 
-function LoginPage() {
+function SignUpPage() {
   return (
     <div className="bg-emerald-950 fixed inset-0 flex items-center justify-center">
       <div className="bg-slate-50 rounded-3xl p-10 m-4 sm:m-8">
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr] gap-8 sm:gap-20">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_0.8fr] gap-8 sm:gap-20">
           <div className="max-w-85">
             <ImageLogo />
             <h1 className="my-3 text-4xl font-semibold">
@@ -84,7 +84,7 @@ function LoginPage() {
 
           <div className="flex flex-col gap-2 items-center justify-center">
             <p className="text-muted-foreground text-xs mb-2">-- OR --</p>
-            <GoogleOAuth type="signup" />
+            <GoogleOAuth />
 
             <a
               className="mt-2 text-xs text-muted-foreground hover:underline cursor-pointer"
@@ -99,4 +99,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default SignUpPage;
