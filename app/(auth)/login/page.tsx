@@ -44,7 +44,7 @@ function LoginPage() {
     }
 
     toast.success("Success! Redirecting you now...");
-    router.push("/app");
+    router.push("/map");
   }
 
   return (

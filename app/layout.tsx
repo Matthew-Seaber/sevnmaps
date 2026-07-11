@@ -9,8 +9,6 @@ import {
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-import PageConfig from "@/components/page-config";
-
 const publicSansHeading = Public_Sans({
   subsets: ["latin"],
   variable: "--font-heading",
@@ -41,9 +39,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="en"
@@ -63,7 +61,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex justify-center selection:bg-primary/20">
         <div className="w-full max-w-[1800px]">
-          <PageConfig>{children}</PageConfig>
+          {children}
         </div>
       </body>
     </html>

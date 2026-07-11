@@ -48,7 +48,7 @@ function SignUpPage() {
       }
 
       toast.success("Account created! Redirecting you now...");
-      router.push("/app");
+      router.replace("/map");
     } else {
       toast.info(
         "You must agree to the Terms of Service and Privacy Policy to create a SevnMaps account.",

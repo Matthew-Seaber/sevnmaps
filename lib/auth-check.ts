@@ -13,3 +13,13 @@ export async function checkAuth() {
 
   return session;
 }
+
+export async function checkAuthRedirect() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (session) {
+    redirect("/map");
+  }
+}

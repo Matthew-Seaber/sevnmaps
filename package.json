@@ -13,6 +13,7 @@
   "dependencies": {
     "@base-ui/react": "^1.6.0",
     "@better-auth/drizzle-adapter": "^1.6.23",
+    "@better-auth/infra": "^0.3.6",
     "@emailjs/browser": "^4.4.1",
     "@neondatabase/serverless": "^1.1.0",
     "@react-oauth/google": "^0.13.5",
