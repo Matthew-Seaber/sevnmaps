@@ -9,7 +9,7 @@ function Footer() {
     <footer className="border-t border-border z-2 pt-20 pb-12">
       <div className="flex items-start mx-auto mb-16 max-w-6xl gap-x-4 px-4">
         <div className="flex flex-col shrink w-64 gap-2">
-          <TextLogo />
+          <TextLogo link="/" />
           <p className="font-medium">Your trusted travel pal</p>
           <a
             href="mailto:hello@sevnmaps.com"

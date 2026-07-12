@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
-export async function checkAuth() {
+export async function checkAuthLoginRedirect() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -14,7 +14,7 @@ export async function checkAuth() {
   return session;
 }
 
-export async function checkAuthRedirect() {
+export async function checkAuthMapRedirect() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });

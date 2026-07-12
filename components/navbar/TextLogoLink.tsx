@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 
-function TextLogo() {
+function TextLogo({ link }: { link: string }) {
   return (
-    <Link href="/">
+    <Link href={link}>
       <div className="flex items-center gap-3">
         <Image
           src="/logo.png"

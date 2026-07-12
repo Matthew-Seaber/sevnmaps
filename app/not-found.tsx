@@ -1,14 +1,19 @@
-"use client";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 
 import { Button } from "@/components/ui/button";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   return (
     <>
-      <Navbar />
+      <Navbar authenticated={!!session} />
       <div className="min-h-[40vh] flex flex-col justify-center text-center space-y-6 m-2">
         <h1 className="text-2xl font-bold">Page Not Found</h1>
 

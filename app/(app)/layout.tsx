@@ -1,11 +1,18 @@
-import { checkAuth } from "@/lib/auth-check";
+import { checkAuthLoginRedirect } from "@/lib/auth-check";
+
+import AuthProtectedNavbar from "@/components/navbar/AuthProtectedNavbar";
 
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await checkAuth();
+  await checkAuthLoginRedirect();
 
-  return <>{children}</>;
+  return (
+    <>
+      <AuthProtectedNavbar />
+      <main>{children}</main>
+    </>
+  );
 }
