@@ -27,6 +27,7 @@ Table notifications {
     sent_at timestamptz [not null, default: 'now()']
     title varchar [not null]
     message varchar
+    link varchar
     read boolean [not null, default: false]
 }
 

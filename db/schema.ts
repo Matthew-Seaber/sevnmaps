@@ -69,3 +69,15 @@ export const subscriptions = pgTable("subscriptions", {
   start: timestamp("start").notNull().defaultNow(),
   end: timestamp("end"),
 });
+
+export const notifications = pgTable("notifications", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  title: text("title").notNull(),
+  message: text("message"),
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  link: text("link"),
+  read: boolean("read").notNull().default(false),
+});
