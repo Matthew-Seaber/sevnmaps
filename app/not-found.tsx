@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function NotFound() {
@@ -24,17 +25,15 @@ export default async function NotFound() {
         </p>
 
         <div className="flex justify-center gap-4">
-          <Button className="p-5" onClick={() => (window.location.href = "/")}>
-            Go Home
-          </Button>
+          <Link href="/">
+            <Button className="p-5">Go Home</Button>
+          </Link>
 
-          <Button
-            className="p-5"
-            variant="outline"
-            onClick={() => (window.location.href = "/contact")}
-          >
-            Contact Support
-          </Button>
+          <Link href="/contact">
+            <Button className="p-5" variant="outline">
+              Contact Support
+            </Button>
+          </Link>
         </div>
       </div>
       <Footer />

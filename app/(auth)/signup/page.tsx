@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import ImageLogo from "@/components/navbar/ImageLogo";
 
 function SignUpPage() {
-  const [firstName, setFirstName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [legalBoxTicked, setLegalBoxTicked] = useState(false);
@@ -27,7 +27,7 @@ function SignUpPage() {
   async function handleSignUp() {
     setLoading(true);
 
-    if (!firstName || !email || !password) {
+    if (!fullName || !email || !password) {
       toast.info(
         "You must fill in all form fields to create a SevnMaps account.",
       );
@@ -38,7 +38,7 @@ function SignUpPage() {
       const response = await authClient.signUp.email({
         email: email,
         password: password,
-        name: firstName,
+        name: fullName,
       });
 
       if (response.error) {
@@ -73,16 +73,16 @@ function SignUpPage() {
           </div>
 
           <div className="flex flex-col gap-1 my-2">
-            <Label htmlFor="firstName" className="ml-2 text-md">
-              First name
+            <Label htmlFor="fullName" className="ml-2 text-md">
+              Full name
             </Label>
             <Input
               type="text"
-              id="firstName"
+              id="fullName"
               placeholder="Name"
               className="px-4 py-6"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
             />
 
             <Label htmlFor="email" className="ml-2 mt-3 text-md">

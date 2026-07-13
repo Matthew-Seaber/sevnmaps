@@ -21,7 +21,7 @@ interface Props {
 }
 
 function SettingsForm({ userInfo }: Props) {
-  const [firstName, setFirstName] = useState(userInfo.name || "");
+  const [fullName, setFullName] = useState(userInfo.name || "");
   const [username, setUsername] = useState(userInfo.username || "");
   const [email, setEmail] = useState(userInfo.email);
   const [loading, setLoading] = useState(false);
@@ -32,15 +32,15 @@ function SettingsForm({ userInfo }: Props) {
     setLoading(true);
 
     try {
-      if (firstName !== userInfo.name) {
-        if (firstName.length === 0) {
-          toast.info("First name field cannot be empty.");
+      if (fullName !== userInfo.name) {
+        if (fullName.length === 0) {
+          toast.info("Name field cannot be empty.");
           setLoading(false);
           return;
         }
 
         await authClient.updateUser({
-          name: firstName,
+          name: fullName,
         });
       }
 
@@ -70,20 +70,20 @@ function SettingsForm({ userInfo }: Props) {
   }
 
   const noChanges =
-    firstName === userInfo.name &&
+    fullName === userInfo.name &&
     username === userInfo.username &&
     email === userInfo.email;
 
   return (
     <>
-      <Label htmlFor="firstName" className="px-2 py-3 text-md">
-        First name
+      <Label htmlFor="fullName" className="px-2 py-3 text-md">
+        Name
       </Label>
       <Input
-        id="firstName"
-        className="px-3 py-5"
-        value={firstName}
-        onChange={(e) => setFirstName(e.target.value)}
+        id="fullName"
+        className="px-3 py-5 sm:max-w-[256px]"
+        value={fullName}
+        onChange={(e) => setFullName(e.target.value)}
       />
 
       <Label htmlFor="username" className="px-2 py-3 text-md">
@@ -91,7 +91,7 @@ function SettingsForm({ userInfo }: Props) {
       </Label>
       <Input
         id="username"
-        className="px-3 py-5"
+        className="px-3 py-5 sm:max-w-[256px]"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
@@ -101,7 +101,7 @@ function SettingsForm({ userInfo }: Props) {
       </Label>
       <Input
         id="email"
-        className="px-3 py-5"
+        className="px-3 py-5 sm:max-w-100"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         disabled

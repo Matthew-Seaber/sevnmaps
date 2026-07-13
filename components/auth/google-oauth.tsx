@@ -8,7 +8,7 @@ function GoogleOAuth() {
   async function handleGoogleSignIn() {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/app",
+      callbackURL: "/map",
     });
   }
 
