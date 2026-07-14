@@ -34,6 +34,7 @@ Table notifications {
 Table places {
     place_id integer [primary key, increment, unique, not null]
     place_name varchar [not null]
+    primary_image integer [ref: > place_images.image_id]
     description varchar
     latitude float [not null]
     longitude float [not null]
@@ -50,7 +51,6 @@ Table place_images {
     image_url varchar [not null]
     uploaded_by integer [not null, ref: > users.user_id]
     uploaded_at timestamptz [not null, default: 'now()']
-    primary_image boolean [not null, default: false]
     under_review boolean [not null, default: true]
 }
 

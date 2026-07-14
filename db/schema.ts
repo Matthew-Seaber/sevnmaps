@@ -115,6 +115,6 @@ export const place_images = pgTable("place_images", {
     .notNull()
     .references(() => user.id),
   uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
-  primaryImage: boolean("primary_image").notNull().default(false),
   underReview: boolean("under_review").notNull().default(true),
+  primaryImage: boolean("primary_image").notNull().default(false),
 });
