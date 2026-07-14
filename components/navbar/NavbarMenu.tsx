@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
@@ -51,15 +51,47 @@ function NavbarMenu({
   name: string;
   notifications: Notification[];
 }) {
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [notificationList, setNotificationList] =
+    useState<Notification[]>(notifications);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const router = useRouter();
 
-  function markNotificationsAsRead() {
+  const unreadNotificationsCount = notificationList.filter(
+    (notification) => !notification.read,
+  ).length;
+
+  async function markNotificationsAsRead() {
     if (unreadNotificationsCount > 0) {
-      setUnreadNotificationsCount(0);
+      try {
+        const response = await fetch("/api/notifications/mark_read", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            notificationIDs: notificationList
+              .filter((notification) => !notification.read)
+              .map((notification) => notification.id),
+          }),
+        });
+
+        if (!response.ok) {
+          console.error(
+            "Error marking notifications as read:",
+            response.statusText,
+          );
+          return;
+        }
+
+        setNotificationList((prev) =>
+          prev.map((notification) => ({ ...notification, read: true })),
+        );
+      } catch (error) {
+        console.error("Error marking notifications as read:", error);
+      }
     }
   }
 
@@ -72,48 +104,53 @@ function NavbarMenu({
             setNotificationPanelOpen(open);
 
             if (open) {
-              markNotificationsAsRead();
+              notificationTimeoutRef.current = setTimeout(() => {
+                markNotificationsAsRead();
+              }, 2000);
+            } else if (notificationTimeoutRef.current) {
+              clearTimeout(notificationTimeoutRef.current);
+              notificationTimeoutRef.current = null;
             }
           }}
         >
-          <PopoverTrigger asChild>
-            <div className="relative">
-              <Bell className="w-5 h-5 hover:cursor-pointer" />
-              {unreadNotificationsCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-destructive/70 w-1.5 h-1.5 rounded-full" />
-              )}
-            </div>
+          <PopoverTrigger className="relative cursor-pointer">
+            <Bell className="w-5 h-5" />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-destructive/70 w-1.5 h-1.5 rounded-full" />
+            )}
           </PopoverTrigger>
-          <PopoverContent className="mt-2">
+          <PopoverContent className="mt-2 mr-1 sm:mr-0">
             <div className="flex flex-col gap-4 p-2">
               <div className="flex flex-row items-center justify-between">
                 <h2 className="font-semibold text-base">Notifications</h2>
                 <p>{unreadNotificationsCount} unread</p>
               </div>
 
-              {unreadNotificationsCount === 0 ? (
+              {notificationList.length === 0 ? (
                 <p className="text-sm text-center">No recent notifications.</p>
               ) : (
-                <div>
-                  {notifications.map((notification) => (
+                <div className="flex flex-col gap-2 ">
+                  {notificationList.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`${notification.link !== "" ? "cursor-pointer hover:bg-gray-100" : ""}`}
+                      className={`${notification.link !== "" ? "cursor-pointer hover:bg-primary/30" : "cursor-default"} bg-primary/20 rounded-lg p-3 flex flex-col`}
                       onClick={() => {
                         if (notification.link !== "") {
                           window.location.href = notification.link;
                         }
                       }}
                     >
-                      <div>
+                      <div className="flex flex-row items-center gap-2">
                         {!notification.read ? (
-                          <span className="bg-destructive w-2 h-2 rounded-full" />
+                          <span className="bg-destructive/70 w-1.5 h-1.5 rounded-full" />
                         ) : null}
-                        <p>{notification.title}</p>
+                        <p className="font-semibold">{notification.title}</p>
                       </div>
 
-                      <p>{notification.message}</p>
-                      <i>{notification.sent}</i>
+                      <p className="mb-2">{notification.message}</p>
+                      <i className="text-xs text-muted-foreground">
+                        {notification.sent}
+                      </i>
                     </div>
                   ))}
                 </div>

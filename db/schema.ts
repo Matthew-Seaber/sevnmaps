@@ -18,7 +18,7 @@ export const session = pgTable("session", {
   expiresAt: timestamp("expires_at").notNull(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
 });
@@ -27,7 +27,7 @@ export const account = pgTable("account", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   accountId: text("account_id").notNull(),
@@ -53,7 +53,7 @@ export const verification = pgTable("verification", {
 export const profiles = pgTable("profiles", {
   userId: text("user_id")
     .primaryKey()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   username: text("username").unique(),
   role: text("role").default("user").notNull(),
 });
@@ -61,7 +61,7 @@ export const profiles = pgTable("profiles", {
 export const subscriptions = pgTable("subscriptions", {
   userId: text("user_id")
     .primaryKey()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   planType: text("plan_type").notNull().default("free"),
   paidPlanStatus: text("status").notNull().default("inactive"),
   usedFreeTrial: boolean("used_free_trial").notNull().default(false),
@@ -74,7 +74,7 @@ export const notifications = pgTable("notifications", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   message: text("message"),
   sentAt: timestamp("sent_at").notNull().defaultNow(),

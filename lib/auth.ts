@@ -26,6 +26,12 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // 1 day
   },
 
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
+  },
+
   databaseHooks: {
     user: {
       create: {
@@ -47,7 +53,5 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [
-    dash()
-  ]
+  plugins: [dash()],
 });

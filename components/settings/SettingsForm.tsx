@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
 
+import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,7 @@ function SettingsForm({ userInfo }: Props) {
   const [username, setUsername] = useState(userInfo.username || "");
   const [email, setEmail] = useState(userInfo.email);
   const [loading, setLoading] = useState(false);
+  const [deletePopupOpen, setDeletePopupOpen] = useState(false);
 
   const router = useRouter();
 
@@ -66,6 +69,28 @@ function SettingsForm({ userInfo }: Props) {
       console.error("Error saving changes:", error);
       toast.error("Failed to save changes. Please try again.");
       setLoading(false);
+    }
+  }
+
+  async function deleteAccount() {
+    const deletePromise = authClient.deleteUser();
+
+    toast.promise(deletePromise, {
+      loading: "Deleting account...",
+      success: "Account deleted successfully.",
+      error: "Failed to delete account. Please try again later.",
+    });
+
+    try {
+      await deletePromise;
+
+      await authClient.signOut();
+
+      setTimeout(() => {
+        router.push("/signup");
+      }, 1500);
+    } catch (error) {
+      console.error("Error deleting account:", error);
     }
   }
 
@@ -132,12 +157,27 @@ function SettingsForm({ userInfo }: Props) {
         >
           Logout
         </Button>
-        <Button variant="destructive" size="lg" className="h-10 px-6">
+        <Button
+          variant="destructive"
+          size="lg"
+          className="h-10 px-6"
+          onClick={() => setDeletePopupOpen(true)}
+        >
           Delete SevnMaps account
         </Button>
       </div>
 
       <Toaster position="top-center" />
+      <ConfirmationPopup
+        open={deletePopupOpen}
+        setOpen={setDeletePopupOpen}
+        title="Delete account"
+        message="Are you sure you want to permanently delete your SevnMaps account?"
+        destructive={true}
+        confirmText="Delete account"
+        cancelText="Cancel"
+        onConfirm={deleteAccount}
+      />
     </>
   );
 }
