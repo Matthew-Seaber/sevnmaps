@@ -54,8 +54,7 @@ async function AdminDashboardPage() {
         <CardHeader>
           <CardTitle>Photo Review</CardTitle>
           <CardDescription>
-            Approve/reject user-uploaded photos for places and
-            reviews
+            Reject/approve user-uploaded photos for places and reviews
           </CardDescription>
         </CardHeader>
         <CardContent>
