@@ -31,11 +31,6 @@ Table notifications {
     read boolean [not null, default: false]
 }
 
-Table tags {
-    tag_id integer [primary key, increment, unique, not null]
-    tag_name varchar [unique, not null]
-}
-
 Table places {
     place_id integer [primary key, increment, unique, not null]
     place_name varchar [not null]
@@ -57,6 +52,11 @@ Table place_images {
     uploaded_at timestamptz [not null, default: 'now()']
     primary_image boolean [not null, default: false]
     under_review boolean [not null, default: true]
+}
+
+Table tags {
+    tag_id integer [primary key, increment, unique, not null]
+    tag_name varchar [unique, not null]
 }
 
 Table place_tag_link {

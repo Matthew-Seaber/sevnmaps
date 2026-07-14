@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  integer,
+  real,
+  timestamp,
+  boolean,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -56,6 +63,8 @@ export const profiles = pgTable("profiles", {
     .references(() => user.id, { onDelete: "cascade" }),
   username: text("username").unique(),
   role: text("role").default("user").notNull(),
+  countriesVisited: integer("countries_visited").default(0).notNull(),
+  location: text("location"),
 });
 
 export const subscriptions = pgTable("subscriptions", {
@@ -80,4 +89,32 @@ export const notifications = pgTable("notifications", {
   sentAt: timestamp("sent_at").notNull().defaultNow(),
   link: text("link"),
   read: boolean("read").notNull().default(false),
+});
+
+export const places = pgTable("places", {
+  id: text("id").primaryKey(),
+  placeName: text("place_name").notNull(),
+  description: text("description"),
+  latitude: real("latitude").notNull(),
+  longitude: real("longitude").notNull(),
+  country: text("country").notNull(),
+  state: text("state"),
+  zipCode: text("zip_code"),
+  city: text("city"),
+  mainAddress: text("main_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const place_images = pgTable("place_images", {
+  id: text("id").primaryKey(),
+  placeId: text("place_id")
+    .notNull()
+    .references(() => places.id),
+  imageURL: text("image_url").notNull(),
+  uploadedBy: text("uploaded_by")
+    .notNull()
+    .references(() => user.id),
+  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+  primaryImage: boolean("primary_image").notNull().default(false),
+  underReview: boolean("under_review").notNull().default(true),
 });
