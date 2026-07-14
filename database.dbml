@@ -77,7 +77,7 @@ Table lists {
     list_id integer [primary key, increment, unique, not null]
     creator_id integer [not null, ref: > users.user_id]
     created_at timestamptz [not null, default: 'now()']
-    last_updated timestamptz [not null, default: 'now()']
+    updated_at timestamptz [not null, default: 'now()']
     visibility varchar [not null, default: 'private']
     list_name varchar [not null]
     list_icon varchar
