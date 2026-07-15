@@ -65,9 +65,9 @@ async function AuthProtectedNavbar() {
     <nav className="z-2">
       <SearchKeybind />
 
-      <div className="mx-auto max-w-[1800px] px-4 sm:px-6 flex justify-between items-center py-4 sm:py-6 gap-3">
+      <div className="px-4 sm:px-6 flex justify-between items-center py-4 sm:py-6 gap-3">
         <div className="relative w-full max-w-90">
-          <InputGroup className="p-1">
+          <InputGroup className="p-1 py-5">
             <InputGroupInput
               id="search-input"
               placeholder="Search locations..."
@@ -75,7 +75,7 @@ async function AuthProtectedNavbar() {
             <InputGroupAddon>
               <Search className="h-4 w-4" />
             </InputGroupAddon>
-            <InputGroupAddon align="inline-end">
+            <InputGroupAddon align="inline-end" className="hidden lg:flex">
               <Kbd>/</Kbd>
             </InputGroupAddon>
           </InputGroup>

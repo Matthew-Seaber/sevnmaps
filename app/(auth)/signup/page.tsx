@@ -124,6 +124,8 @@ function SignUpPage() {
                 <a
                   className="font-semibold text-foreground hover:underline cursor-pointer"
                   href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Terms of Service
                 </a>{" "}
@@ -131,6 +133,8 @@ function SignUpPage() {
                 <a
                   className="font-semibold text-foreground hover:underline cursor-pointer"
                   href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Privacy Policy
                 </a>

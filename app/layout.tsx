@@ -59,11 +59,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="SevnMaps" />
       </head>
-      <body className="min-h-full flex justify-center selection:bg-primary/20">
-        <div className="w-full max-w-[1800px]">
-          {children}
-        </div>
-      </body>
+      <body className="min-h-full selection:bg-primary/20">{children}</body>
     </html>
   );
 }
