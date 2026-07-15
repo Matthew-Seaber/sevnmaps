@@ -5,13 +5,20 @@ import { useState } from "react";
 import TextLogo from "@/components/navbar/TextLogoLink";
 
 import { Button } from "@/components/ui/button";
-import { CircleCheck, FolderClosed, Heart, House } from "lucide-react";
+import {
+  CircleCheck,
+  Clock,
+  FolderClosed,
+  Heart,
+  House,
+  Shuffle,
+} from "lucide-react";
 
 function MapPageSidebar() {
   const [currentTab, setCurrentTab] = useState("home");
 
   return (
-    <div className="hidden md:flex flex-col w-72 border-r-2 border-border p-6 pt-8 shadow-xl">
+    <div className="hidden md:flex flex-col w-72 border-r-2 border-border p-6 shadow-xl">
       <TextLogo link="/map" />
 
       <div className="flex flex-col gap-0.5 mt-6">
@@ -55,6 +62,42 @@ function MapPageSidebar() {
           />
           Lists
         </Button>
+      </div>
+
+      <div className="flex flex-col gap-0.5 mt-6">
+        <div className="flex items-center gap-3 pb-2">
+          <h3 className="text-sm font-medium pl-3">DISCOVER</h3>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <Button
+          variant="ghost"
+          className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
+        >
+          <Clock />
+          Recently Added
+        </Button>
+        <Button
+          variant="ghost"
+          className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
+        >
+          <Shuffle />
+          Random Place
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-0.5 mt-6">
+        <div className="flex items-center gap-3 pb-2">
+          <h3 className="text-sm font-medium pl-3">YOUR LISTS</h3>
+          <div className="h-px flex-1 bg-border" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 font-semibold text-xl text-muted-foreground hover:text-primary hover:bg-primary/10"
+          >
+            +
+          </Button>
+        </div>
+        <div className="flex flex-col gap-1">{/* lists rendered here */}</div>
       </div>
     </div>
   );
