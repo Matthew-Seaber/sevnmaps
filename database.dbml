@@ -80,7 +80,7 @@ Table lists {
     updated_at timestamptz [not null, default: 'now()']
     visibility varchar [not null, default: 'private']
     list_name varchar [not null]
-    list_color varchar [not null]
+    list_color varchar [not null, default: '1273F6']
     list_icon varchar
 }
 

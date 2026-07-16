@@ -25,15 +25,13 @@ function ProfileSectionClient({
   notificationSide,
 }: Props) {
   return (
-    <div className="flex justify-between items-center">
-      <NavbarMenu
-        profileLink={profileLink}
-        name={name}
-        notifications={notifications}
-        notificationSide={notificationSide}
-        chevronVisible={false}
-      />
-    </div>
+    <NavbarMenu
+      profileLink={profileLink}
+      name={name}
+      notifications={notifications}
+      notificationSide={notificationSide}
+      chevronVisible={false}
+    />
   );
 }
 

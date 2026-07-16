@@ -7,6 +7,8 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 
+import { randomUUID } from "crypto";
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -147,7 +149,9 @@ export const place_user_link = pgTable("place_user_link", {
 });
 
 export const lists = pgTable("lists", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => randomUUID()),
   creatorId: text("creator_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -155,7 +159,7 @@ export const lists = pgTable("lists", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   visibility: text("visibility").notNull().default("private"),
   listName: text("list_name").notNull(),
-  listColor: text("list_color").notNull(),
+  listColor: text("list_color").notNull().default("1273F6"),
   listIcon: text("list_icon"),
 });
 
