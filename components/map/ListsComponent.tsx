@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { listIcons } from "@/components/map/ListIcons";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,7 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import { Ban } from "lucide-react";
 
 interface SidebarList {
   id: string;
@@ -28,8 +31,11 @@ interface SidebarList {
 
 function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
   const [lists, setLists] = useState<SidebarList[]>(sidebarLists);
+  const [displayedLists, setDisplayedLists] = useState<SidebarList[]>(
+    sidebarLists.slice(0, 5),
+  );
   const [listName, setListName] = useState<string>("");
-  const [listColor, setListColor] = useState<string>("1273F6");
+  const [listColor, setListColor] = useState<string>("#1273F6");
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -67,6 +73,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
       };
       setDialogOpen(false);
       setLists([newList, ...lists]);
+      setDisplayedLists([newList, ...displayedLists.slice(0, 4)]);
       setListName("");
       setListColor("#1273F6");
       setSelectedIcon(null);
@@ -120,7 +127,28 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                   />
                 </Field>
                 <Field>
-                  <Label htmlFor="listIcon">List icon</Label>
+                  <Label>List icon</Label>
+                  <div className="grid grid-cols-8 rounded-lg border border-border p-2">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-md ${selectedIcon === null ? "bg-primary/50 hover:bg-primary/30" : "hover:bg-primary/20"}`}
+                      onClick={() => setSelectedIcon(null)}
+                    >
+                      <Ban className="w-5 h-5" />
+                    </div>
+
+                    {listIcons.map(({ id, icon: Icon }) => (
+                      <div
+                        key={id}
+                        className={`flex h-10 w-10 items-center justify-center rounded-md ${selectedIcon === id ? "bg-primary/50 hover:bg-primary/30" : "hover:bg-primary/20"}`}
+                        onClick={() => setSelectedIcon(id)}
+                      >
+                        <Icon
+                          className={`w-5 h-5`}
+                          style={{ color: `${listColor}` }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </Field>
               </FieldGroup>
 
@@ -143,7 +171,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
           </p>
         ) : (
           <div className="flex flex-col gap-0.5 px-1">
-            {lists.map((list) => {
+            {displayedLists.map((list) => {
               return (
                 <div
                   key={list.id}
@@ -165,6 +193,12 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                 </div>
               );
             })}
+
+            {lists.length > 5 && (
+              <p className="text-sm text-center text-muted-foreground hover:underline cursor-pointer">
+                See more
+              </p>
+            )}
           </div>
         )}
       </div>
