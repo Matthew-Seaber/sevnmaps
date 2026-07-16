@@ -155,8 +155,8 @@ export const lists = pgTable("lists", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   visibility: text("visibility").notNull().default("private"),
   listName: text("list_name").notNull(),
+  listColor: text("list_color").notNull(),
   listIcon: text("list_icon"),
-  listColor: text("list_color"),
 });
 
 export const list_members = pgTable("list_members", {

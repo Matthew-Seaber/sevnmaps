@@ -47,11 +47,13 @@ function NavbarMenu({
   name,
   notifications,
   notificationSide,
+  chevronVisible,
 }: {
   profileLink: string;
   name: string;
   notifications: Notification[];
   notificationSide: "left" | "right";
+  chevronVisible: boolean;
 }) {
   const [notificationList, setNotificationList] =
     useState<Notification[]>(notifications);
@@ -188,8 +190,12 @@ function NavbarMenu({
                 />
               )}
               <p className="hidden sm:flex font-semibold text-sm">{name}</p>
-              {(menuOpen && <ChevronUp className="w-4 h-4" />) || (
-                <ChevronDown className="w-4 h-4" />
+              {chevronVisible && (
+                <>
+                  {(menuOpen && <ChevronUp className="w-4 h-4" />) || (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </>
               )}
             </div>
           </DropdownMenuTrigger>

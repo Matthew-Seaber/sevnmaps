@@ -80,8 +80,8 @@ Table lists {
     updated_at timestamptz [not null, default: 'now()']
     visibility varchar [not null, default: 'private']
     list_name varchar [not null]
+    list_color varchar [not null]
     list_icon varchar
-    list_color varchar
 }
 
 Table list_members {

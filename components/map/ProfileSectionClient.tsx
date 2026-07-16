@@ -25,12 +25,13 @@ function ProfileSectionClient({
   notificationSide,
 }: Props) {
   return (
-    <div className="px-4 sm:px-6 flex justify-between items-center py-4">
+    <div className="flex justify-between items-center">
       <NavbarMenu
         profileLink={profileLink}
         name={name}
         notifications={notifications}
         notificationSide={notificationSide}
+        chevronVisible={false}
       />
     </div>
   );
