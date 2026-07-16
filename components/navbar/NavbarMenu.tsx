@@ -46,10 +46,12 @@ function NavbarMenu({
   profileLink,
   name,
   notifications,
+  notificationSide,
 }: {
   profileLink: string;
   name: string;
   notifications: Notification[];
+  notificationSide: "left" | "right";
 }) {
   const [notificationList, setNotificationList] =
     useState<Notification[]>(notifications);
@@ -98,70 +100,74 @@ function NavbarMenu({
   return (
     <>
       <div className="flex items-center gap-6 sm:gap-8 text-gray-700">
-        <Popover
-          open={notificationPanelOpen}
-          onOpenChange={(open) => {
-            setNotificationPanelOpen(open);
+        {notificationSide === "left" && (
+          <Popover
+            open={notificationPanelOpen}
+            onOpenChange={(open) => {
+              setNotificationPanelOpen(open);
 
-            if (open) {
-              notificationTimeoutRef.current = setTimeout(() => {
-                markNotificationsAsRead();
-              }, 2000);
-            } else if (notificationTimeoutRef.current) {
-              clearTimeout(notificationTimeoutRef.current);
-              notificationTimeoutRef.current = null;
-            }
-          }}
-        >
-          <PopoverTrigger className="relative cursor-pointer">
-            <Bell className="w-5 h-5" />
-            {unreadNotificationsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-destructive/70 w-1.5 h-1.5 rounded-full" />
-            )}
-          </PopoverTrigger>
-          <PopoverContent className="mt-2 mr-1 sm:mr-0">
-            <div className="flex flex-col gap-4 p-2">
-              <div className="flex flex-row items-center justify-between">
-                <h2 className="font-semibold text-base">Notifications</h2>
-                <p>{unreadNotificationsCount} unread</p>
-              </div>
-
-              {notificationList.length === 0 ? (
-                <p className="text-sm text-center">No recent notifications.</p>
-              ) : (
-                <div className="flex flex-col gap-2 ">
-                  {notificationList.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`${notification.link !== "" ? "cursor-pointer hover:bg-primary/30" : "cursor-default"} bg-primary/20 rounded-lg p-3 flex flex-col`}
-                      onClick={() => {
-                        if (notification.link !== "") {
-                          window.location.href = notification.link;
-                        }
-                      }}
-                    >
-                      <div className="flex flex-row items-center gap-2">
-                        {!notification.read ? (
-                          <span className="bg-destructive/70 w-1.5 h-1.5 rounded-full" />
-                        ) : null}
-                        <p className="font-semibold">{notification.title}</p>
-                      </div>
-
-                      <p className="mb-2">{notification.message}</p>
-                      <i className="text-xs text-muted-foreground">
-                        {notification.sent}
-                      </i>
-                    </div>
-                  ))}
-                </div>
+              if (open) {
+                notificationTimeoutRef.current = setTimeout(() => {
+                  markNotificationsAsRead();
+                }, 2000);
+              } else if (notificationTimeoutRef.current) {
+                clearTimeout(notificationTimeoutRef.current);
+                notificationTimeoutRef.current = null;
+              }
+            }}
+          >
+            <PopoverTrigger className="relative cursor-pointer">
+              <Bell className="w-5 h-5" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-destructive/70 w-1.5 h-1.5 rounded-full" />
               )}
+            </PopoverTrigger>
+            <PopoverContent className="mt-2 mr-1 sm:mr-0">
+              <div className="flex flex-col gap-4 p-2">
+                <div className="flex flex-row items-center justify-between">
+                  <h2 className="font-semibold text-base">Notifications</h2>
+                  <p>{unreadNotificationsCount} unread</p>
+                </div>
 
-              <i className="text-muted-foreground text-xs">
-                Note: notifications are automatically deleted after 2 weeks.
-              </i>
-            </div>
-          </PopoverContent>
-        </Popover>
+                {notificationList.length === 0 ? (
+                  <p className="text-sm text-center">
+                    No recent notifications.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-2 ">
+                    {notificationList.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`${notification.link !== "" ? "cursor-pointer hover:bg-primary/30" : "cursor-default"} bg-primary/20 rounded-lg p-3 flex flex-col`}
+                        onClick={() => {
+                          if (notification.link !== "") {
+                            window.location.href = notification.link;
+                          }
+                        }}
+                      >
+                        <div className="flex flex-row items-center gap-2">
+                          {!notification.read ? (
+                            <span className="bg-destructive/70 w-1.5 h-1.5 rounded-full" />
+                          ) : null}
+                          <p className="font-semibold">{notification.title}</p>
+                        </div>
+
+                        <p className="mb-2">{notification.message}</p>
+                        <i className="text-xs text-muted-foreground">
+                          {notification.sent}
+                        </i>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <i className="text-muted-foreground text-xs">
+                  Note: notifications are automatically deleted after 2 weeks.
+                </i>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
 
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger>
@@ -246,6 +252,75 @@ function NavbarMenu({
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {notificationSide === "right" && (
+          <Popover
+            open={notificationPanelOpen}
+            onOpenChange={(open) => {
+              setNotificationPanelOpen(open);
+
+              if (open) {
+                notificationTimeoutRef.current = setTimeout(() => {
+                  markNotificationsAsRead();
+                }, 2000);
+              } else if (notificationTimeoutRef.current) {
+                clearTimeout(notificationTimeoutRef.current);
+                notificationTimeoutRef.current = null;
+              }
+            }}
+          >
+            <PopoverTrigger className="relative cursor-pointer">
+              <Bell className="w-5 h-5" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-destructive/70 w-1.5 h-1.5 rounded-full" />
+              )}
+            </PopoverTrigger>
+            <PopoverContent className="mt-2 mr-1 sm:mr-0">
+              <div className="flex flex-col gap-4 p-2">
+                <div className="flex flex-row items-center justify-between">
+                  <h2 className="font-semibold text-base">Notifications</h2>
+                  <p>{unreadNotificationsCount} unread</p>
+                </div>
+
+                {notificationList.length === 0 ? (
+                  <p className="text-sm text-center">
+                    No recent notifications.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-2 ">
+                    {notificationList.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`${notification.link !== "" ? "cursor-pointer hover:bg-primary/30" : "cursor-default"} bg-primary/20 rounded-lg p-3 flex flex-col`}
+                        onClick={() => {
+                          if (notification.link !== "") {
+                            window.location.href = notification.link;
+                          }
+                        }}
+                      >
+                        <div className="flex flex-row items-center gap-2">
+                          {!notification.read ? (
+                            <span className="bg-destructive/70 w-1.5 h-1.5 rounded-full" />
+                          ) : null}
+                          <p className="font-semibold">{notification.title}</p>
+                        </div>
+
+                        <p className="mb-2">{notification.message}</p>
+                        <i className="text-xs text-muted-foreground">
+                          {notification.sent}
+                        </i>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <i className="text-muted-foreground text-xs">
+                  Note: notifications are automatically deleted after 2 weeks.
+                </i>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
     </>
   );

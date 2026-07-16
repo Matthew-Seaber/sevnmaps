@@ -61,6 +61,7 @@ async function AuthProtectedNavbar() {
           profileLink={profileLink}
           name={name}
           notifications={notificationData}
+          notificationSide="left"
         />
       </div>
     </nav>

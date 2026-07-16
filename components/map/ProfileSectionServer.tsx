@@ -6,16 +6,7 @@ import { db } from "@/db";
 import { notifications } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
-import NavbarMenu from "./NavbarMenu";
-import SearchKeybind from "@/components/map/SearchKeybind";
-
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import { Kbd } from "@/components/ui/kbd";
-import { Search } from "lucide-react";
+import ProfileSectionClient from "./ProfileSectionClient";
 
 interface Notification {
   id: string;
@@ -26,7 +17,7 @@ interface Notification {
   read: boolean;
 }
 
-async function AuthProtectedNavbar() {
+async function MapPageProfileSection() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -62,33 +53,13 @@ async function AuthProtectedNavbar() {
   const name = session.user.name;
 
   return (
-    <nav className="z-2 border-b-2 border-border">
-      <SearchKeybind />
-
-      <div className="px-4 sm:px-6 flex justify-between items-center py-4 gap-3">
-        <div className="relative w-full max-w-90">
-          <InputGroup className="p-1 py-5">
-            <InputGroupInput
-              id="search-input"
-              placeholder="Search locations..."
-            />
-            <InputGroupAddon>
-              <Search className="h-4 w-4" />
-            </InputGroupAddon>
-            <InputGroupAddon align="inline-end" className="hidden lg:flex">
-              <Kbd>/</Kbd>
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
-
-        <NavbarMenu
-          profileLink={profileLink}
-          name={name}
-          notifications={notificationData}
-        />
-      </div>
-    </nav>
+    <ProfileSectionClient
+      profileLink={profileLink}
+      name={name}
+      notifications={notificationData}
+      notificationSide="right"
+    />
   );
 }
 
-export default AuthProtectedNavbar;
+export default MapPageProfileSection;
