@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+
 function ListsPane() {
   return <h1>Lists pane</h1>;
 }

@@ -143,6 +143,7 @@ export const place_user_link = pgTable("place_user_link", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   favorite: boolean("favorite").notNull().default(false),
+  favoritedAt: timestamp("favorited_at"),
   visited: boolean("visited").notNull().default(false),
   visitedAt: timestamp("visited_at"),
   privateNote: text("private_note"),
