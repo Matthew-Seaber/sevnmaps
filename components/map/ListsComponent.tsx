@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useInfoPane } from "./InfoPaneContext";
+
 import { listIcons } from "@/components/map/ListIcons";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,8 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
   const [listColor, setListColor] = useState<string>("#1273F6");
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
+  const { openPane } = useInfoPane();
 
   async function handleCreateList() {
     if (listName.trim() === "") {
@@ -88,7 +92,12 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
     <>
       <div className="flex flex-col gap-0.5 mt-6">
         <div className="flex items-center gap-3 pb-2">
-          <h3 className="text-sm font-medium pl-3">YOUR LISTS</h3>
+          <h3
+            className="text-sm font-medium pl-3 cursor-default"
+            onClick={() => openPane({ type: "lists" })}
+          >
+            YOUR LISTS
+          </h3>
           <div className="h-px flex-1 bg-border" />
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger>
@@ -176,6 +185,9 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                 <div
                   key={list.id}
                   className="flex flex-row justify-between items-center hover:bg-primary/10 cursor-default rounded-lg px-3 py-1"
+                  onClick={() =>
+                    openPane({ type: "singular_list", listID: list.id })
+                  }
                 >
                   <div className="flex flex-row items-center gap-3">
                     <span

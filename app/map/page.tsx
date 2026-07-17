@@ -1,3 +1,5 @@
+import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
+
 import MapPageSidebar from "@/components/map/Sidebar";
 import MapPageInfoPane from "@/components/map/InfoPane";
 import SearchKeybind from "@/components/map/SearchKeybind";
@@ -27,34 +29,39 @@ interface PlaceListLink {
 
 function MapPage() {
   return (
-    <div className="flex h-screen">
-      <MapPageSidebar />
+    <InfoPaneProvider>
+      <div className="flex h-screen">
+        <MapPageSidebar />
 
-      <div className="flex flex-1 flex-col">
-        <SearchKeybind />
-        <div className="flex flex-1 overflow-hidden">
-          <main className="flex-1">
-            <div className="relative w-full max-w-90">
-              <InputGroup className="p-1 py-5">
-                <InputGroupInput
-                  id="search-input"
-                  placeholder="Search locations..."
-                />
-                <InputGroupAddon>
-                  <Search className="h-4 w-4" />
-                </InputGroupAddon>
-                <InputGroupAddon align="inline-end" className="hidden lg:flex">
-                  <Kbd>/</Kbd>
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
-            <h1>map</h1>
-          </main>
+        <div className="flex flex-1 flex-col">
+          <SearchKeybind />
+          <div className="flex flex-1 overflow-hidden">
+            <main className="flex-1">
+              <div className="relative w-full max-w-90">
+                <InputGroup className="p-1 py-5">
+                  <InputGroupInput
+                    id="search-input"
+                    placeholder="Search locations..."
+                  />
+                  <InputGroupAddon>
+                    <Search className="h-4 w-4" />
+                  </InputGroupAddon>
+                  <InputGroupAddon
+                    align="inline-end"
+                    className="hidden lg:flex"
+                  >
+                    <Kbd>/</Kbd>
+                  </InputGroupAddon>
+                </InputGroup>
+              </div>
+              <h1>map</h1>
+            </main>
 
-          <MapPageInfoPane />
+            <MapPageInfoPane />
+          </div>
         </div>
       </div>
-    </div>
+    </InfoPaneProvider>
   );
 }
 
