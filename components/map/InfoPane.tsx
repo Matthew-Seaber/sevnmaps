@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import InfoPaneContent from "./InfoPaneContent";
+
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 function MapPageInfoPane() {
-  const [paneVisible, setPaneVisible] = useState(false);
-
-  if (!paneVisible) return null;
 
   return (
-    <div className="hidden md:flex flex-col w-100 border-l-2 border-border p-6 shadow-xl"></div>
+    <div className="hidden md:flex flex-col w-100 border-l-2 border-border p-6 shadow-xl">
+      <div>
+        <Button>
+          <X />
+        </Button>
+      </div>
+      <div>
+        <InfoPaneContent infoPaneState={#} />
+      </div>
+    </div>
   );
 }
 

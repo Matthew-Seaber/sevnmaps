@@ -36,7 +36,7 @@ function SidebarButtons() {
           <Heart
             className={`transition-all duration-300 ${currentTab === "favorites" ? "text-primary" : ""}`}
           />
-          Favorites
+          Favourites
         </Button>
         <Button
           variant="ghost"

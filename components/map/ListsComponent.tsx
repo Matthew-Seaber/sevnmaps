@@ -195,7 +195,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
             })}
 
             {lists.length > 5 && (
-              <p className="text-sm text-center text-muted-foreground hover:underline cursor-pointer">
+              <p className="mt-2 text-sm text-center text-muted-foreground hover:underline cursor-pointer">
                 See more
               </p>
             )}
