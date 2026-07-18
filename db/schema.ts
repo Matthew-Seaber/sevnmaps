@@ -5,6 +5,7 @@ import {
   real,
   timestamp,
   boolean,
+  unique,
 } from "drizzle-orm/pg-core";
 
 import { randomUUID } from "crypto";
@@ -135,19 +136,23 @@ export const place_tag_link = pgTable("place_tag_link", {
     .references(() => tags.id, { onDelete: "cascade" }),
 });
 
-export const place_user_link = pgTable("place_user_link", {
-  placeId: text("place_id")
-    .notNull()
-    .references(() => places.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  favorite: boolean("favorite").notNull().default(false),
-  favoritedAt: timestamp("favorited_at"),
-  visited: boolean("visited").notNull().default(false),
-  visitedAt: timestamp("visited_at"),
-  privateNote: text("private_note"),
-});
+export const place_user_link = pgTable(
+  "place_user_link",
+  {
+    placeId: text("place_id")
+      .notNull()
+      .references(() => places.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    favorite: boolean("favorite").notNull().default(false),
+    favoritedAt: timestamp("favorited_at"),
+    visited: boolean("visited").notNull().default(false),
+    visitedAt: timestamp("visited_at"),
+    privateNote: text("private_note"),
+  },
+  (table) => [unique().on(table.placeId, table.userId)],
+);
 
 export const lists = pgTable("lists", {
   id: text("id")

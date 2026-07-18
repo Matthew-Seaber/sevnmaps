@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { useInfoPane } from "./InfoPaneContext";
 
 import { Button } from "@/components/ui/button";
@@ -15,13 +13,12 @@ import {
 } from "lucide-react";
 
 function SidebarButtons() {
-  const [currentTab, setCurrentTab] = useState("home");
+  const { infoPaneState, openPane, closePane } = useInfoPane();
 
-  const { openPane, closePane } = useInfoPane();
+  const currentTab =
+    infoPaneState.type === "closed" ? "home" : infoPaneState.type;
 
   function changeTab(tab: string) {
-    setCurrentTab(tab);
-
     switch (tab) {
       case "home":
         closePane();
