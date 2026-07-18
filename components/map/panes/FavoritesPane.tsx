@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
@@ -23,6 +24,7 @@ interface FavoritePlace {
 function FavoritesPane() {
   const [favoritePlaces, setFavoritePlaces] = useState<FavoritePlace[]>([]);
   const [numberOfFavorites, setNumberOfFavorites] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchFavoritePlaces = useCallback(async () => {
@@ -51,6 +53,14 @@ function FavoritesPane() {
 
     fetchData();
   }, [fetchFavoritePlaces]);
+
+  const filteredFavoritePlaces = favoritePlaces.filter((place) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      place.name.toLowerCase().includes(query) ||
+      place.address.toLowerCase().includes(query)
+    );
+  });
 
   async function handleFavoriteToggle(placeID: string) {
     setFavoritePlaces((prevPlaces) =>
@@ -124,6 +134,8 @@ function FavoritesPane() {
               <InputGroupInput
                 id="search-input"
                 placeholder="Search favourites..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <InputGroupAddon>
                 <Search className="h-4 w-4" />
@@ -138,46 +150,66 @@ function FavoritesPane() {
             </p>
           ) : (
             <div className="grid grid-cols gap-4">
-              {favoritePlaces.map((place) => (
-                <div
-                  key={place.id}
-                  className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
-                >
-                  <Image
-                    src={place.imageURL}
-                    alt={place.name}
-                    width={100}
-                    height={100}
-                    className="object-cover rounded-md"
-                  />
-
-                  <div className="p-4">
-                    <h3 className="font-bold mb-2">{place.name}</h3>
-                    <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                      <p className="font-semibold break-all">{place.address}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                      <Calendar className="h-3.5 w-3.5 shrink-0" />
-                      <p
-                        title={`Favorited on ${new Date(place.favoritedAt).toLocaleString()}`}
-                      >
-                        {new Date(place.favoritedAt).toLocaleString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-end p-8 ml-auto">
-                    <Heart
-                      className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.favorited ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`}
-                      onClick={() => handleFavoriteToggle(place.id)}
-                    />
-                  </div>
+              {filteredFavoritePlaces.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-2 mt-2">
+                  <p className="text-sm">
+                    No favourite places found that match your search query.
+                  </p>
+                  <Button
+                    size="lg"
+                    className="p-4"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    Clear search
+                  </Button>
                 </div>
-              ))}
+              ) : (
+                filteredFavoritePlaces.map((place) => (
+                  <div
+                    key={place.id}
+                    className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
+                  >
+                    <Image
+                      src={place.imageURL}
+                      alt={place.name}
+                      width={100}
+                      height={100}
+                      className="object-cover rounded-md"
+                    />
+
+                    <div className="p-4">
+                      <h3 className="font-bold mb-2">{place.name}</h3>
+                      <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                        <p className="font-semibold break-all">
+                          {place.address}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        <p
+                          title={`Favorited on ${new Date(place.favoritedAt).toLocaleString()}`}
+                        >
+                          {new Date(place.favoritedAt).toLocaleString(
+                            undefined,
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end p-8 ml-auto">
+                      <Heart
+                        className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.favorited ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`}
+                        onClick={() => handleFavoriteToggle(place.id)}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </>
