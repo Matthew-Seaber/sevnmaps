@@ -2,6 +2,7 @@ import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
 
 import MapPageSidebar from "@/components/map/Sidebar";
 import MapPageInfoPane from "@/components/map/InfoPane";
+import InfoPaneCloseKeybind from "@/components/map/InfoPaneCloseKeybind";
 import SearchKeybind from "@/components/map/SearchKeybind";
 
 import {
@@ -35,6 +36,8 @@ function MapPage() {
 
         <div className="flex flex-1 flex-col">
           <SearchKeybind />
+          <InfoPaneCloseKeybind />
+
           <div className="flex flex-1 overflow-hidden">
             <main className="flex-1">
               <div className="relative w-full max-w-90">
