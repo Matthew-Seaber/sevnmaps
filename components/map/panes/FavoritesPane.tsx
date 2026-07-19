@@ -112,7 +112,7 @@ function FavoritesPane() {
 
   return (
     <div className="flex flex-col gap-6 mt-4">
-      <h1 className="text-2xl font-semibold mb-2">Favourites</h1>
+      <h1 className="text-2xl font-semibold mb-2">Favourite Places</h1>
 
       {!loading ? (
         <>
@@ -169,13 +169,15 @@ function FavoritesPane() {
                     key={place.id}
                     className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
                   >
-                    <Image
-                      src={place.imageURL}
-                      alt={place.name}
-                      width={100}
-                      height={100}
-                      className="object-cover rounded-md"
-                    />
+                    <div className="relative w-35 h-30 shrink-0">
+                      <Image
+                        src={place.imageURL}
+                        alt={place.name}
+                        fill
+                        sizes="150px"
+                        className="w-full h-full object-cover rounded-l-md"
+                      />
+                    </div>
 
                     <div className="p-4">
                       <h3 className="font-bold mb-2">{place.name}</h3>
@@ -185,11 +187,12 @@ function FavoritesPane() {
                           {place.address}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                      <div
+                        className="flex items-center gap-1.5 text-muted-foreground text-sm"
+                        title={`Favorited on ${new Date(place.favoritedAt).toLocaleString()}`}
+                      >
                         <Calendar className="h-3.5 w-3.5 shrink-0" />
-                        <p
-                          title={`Favorited on ${new Date(place.favoritedAt).toLocaleString()}`}
-                        >
+                        <p>
                           {new Date(place.favoritedAt).toLocaleString(
                             undefined,
                             {
@@ -201,7 +204,7 @@ function FavoritesPane() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end p-8 ml-auto">
+                    <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
                       <Heart
                         className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.favorited ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`}
                         onClick={() => handleFavoriteToggle(place.id)}
