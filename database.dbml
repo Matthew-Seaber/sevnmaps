@@ -38,7 +38,7 @@ Table places {
     description varchar
     latitude float [not null]
     longitude float [not null]
-    country varchar [not null]
+    country_id integer [not null, ref: > countries.country_id]
     state varchar
     zip_code varchar
     city varchar
@@ -109,4 +109,17 @@ Table reviews {
 Table review_image_link {
     review_id integer [not null, ref: > reviews.review_id]
     image_id integer [not null, ref: > place_images.image_id]
+}
+
+Table countries {
+    country_id integer [primary key, increment, unique, not null]
+    country_name varchar [unique, not null]
+    country_code varchar [unique, not null]
+    continent varchar [not null]
+}
+
+Table visited_countries {
+    user_id integer [not null, ref: > users.user_id]
+    country_id integer [not null, ref: > countries.country_id]
+    visited_at timestamptz
 }

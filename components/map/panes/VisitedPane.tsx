@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import CountriesVisitedMap from "./CountriesVisitedMap";
 import VisitedPlaces from "./VisitedPlaces";
 import VisitedCountries from "./VisitedCountries";
 
@@ -177,7 +178,9 @@ function VisitedPane() {
                 </div>
               </div>
 
-              <div></div>
+              <CountriesVisitedMap visitedCountries={visitedCountries} />
+
+              <Separator />
 
               <div>
                 <div className="flex flex-row items-center justify-between">

@@ -94,13 +94,32 @@ export const notifications = pgTable("notifications", {
   read: boolean("read").notNull().default(false),
 });
 
+export const countries = pgTable("countries", {
+  id: text("id").primaryKey(),
+  countryName: text("country_name").notNull().unique(),
+  countryCode: text("country_code").notNull().unique(),
+  continent: text("continent").notNull(),
+});
+
+export const visited_countries = pgTable("visited_countries", {
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  countryId: text("country_id")
+    .notNull()
+    .references(() => countries.id, { onDelete: "cascade" }),
+  visitedAt: timestamp("visited_at"),
+});
+
 export const places = pgTable("places", {
   id: text("id").primaryKey(),
   placeName: text("place_name").notNull(),
   description: text("description"),
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
-  country: text("country").notNull(),
+  countryId: text("country_id")
+    .notNull()
+    .references(() => countries.id),
   state: text("state"),
   zipCode: text("zip_code"),
   city: text("city"),
