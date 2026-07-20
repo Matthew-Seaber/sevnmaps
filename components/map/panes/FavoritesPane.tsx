@@ -18,7 +18,7 @@ interface FavoritePlace {
   imageURL: string;
   address: string;
   favorited: boolean;
-  favoritedAt: Date;
+  favoritedAt: Date | null;
 }
 
 function FavoritesPane() {
@@ -189,18 +189,22 @@ function FavoritesPane() {
                       </div>
                       <div
                         className="flex items-center gap-1.5 text-muted-foreground text-sm"
-                        title={`Favorited on ${new Date(place.favoritedAt).toLocaleString()}`}
+                        {...(place.favoritedAt && {
+                          title: `Favorited on ${new Date(place.favoritedAt).toLocaleString()}`,
+                        })}
                       >
                         <Calendar className="h-3.5 w-3.5 shrink-0" />
                         <p>
-                          {new Date(place.favoritedAt).toLocaleString(
-                            undefined,
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
+                          {place.favoritedAt === null
+                            ? "Unknown date"
+                            : new Date(place.favoritedAt).toLocaleString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                },
+                              )}
                         </p>
                       </div>
                     </div>

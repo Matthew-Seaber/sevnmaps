@@ -1,9 +1,10 @@
 interface VisitedCountry {
   countryCode: string;
   name: string;
+  continent: string;
   flag: string;
   placesVisited: number;
-  lastVisitedAt: Date;
+  visitedAt: Date | null;
 }
 
 function VisitedCountries({

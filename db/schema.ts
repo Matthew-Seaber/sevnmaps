@@ -4,6 +4,7 @@ import {
   integer,
   real,
   timestamp,
+  primaryKey,
   boolean,
   unique,
 } from "drizzle-orm/pg-core";
@@ -99,17 +100,22 @@ export const countries = pgTable("countries", {
   countryName: text("country_name").notNull().unique(),
   countryCode: text("country_code").notNull().unique(),
   continent: text("continent").notNull(),
+  flag: text("flag").notNull(),
 });
 
-export const visited_countries = pgTable("visited_countries", {
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  countryId: text("country_id")
-    .notNull()
-    .references(() => countries.id, { onDelete: "cascade" }),
-  visitedAt: timestamp("visited_at"),
-});
+export const visited_countries = pgTable(
+  "visited_countries",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    countryId: text("country_id")
+      .notNull()
+      .references(() => countries.id, { onDelete: "cascade" }),
+    visitedAt: timestamp("visited_at"),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.countryId] })],
+);
 
 export const places = pgTable("places", {
   id: text("id").primaryKey(),
@@ -117,9 +123,7 @@ export const places = pgTable("places", {
   description: text("description"),
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
-  countryId: text("country_id")
-    .notNull()
-    .references(() => countries.id),
+  countryId: text("country_id").references(() => countries.id),
   state: text("state"),
   zipCode: text("zip_code"),
   city: text("city"),

@@ -19,15 +19,16 @@ interface VisitedPlace {
   imageURL: string;
   address: string;
   visited: boolean;
-  visitedAt: Date;
+  visitedAt: Date | null;
 }
 
 interface VisitedCountry {
   countryCode: string;
   name: string;
+  continent: string;
   flag: string;
   placesVisited: number;
-  lastVisitedAt: Date;
+  visitedAt: Date | null;
 }
 
 function VisitedPane() {
@@ -50,7 +51,6 @@ function VisitedPane() {
       }
 
       const data = await response.json();
-      console.log(data.visitedPlaces);
       setVisitedPlaces(data.visitedPlaces);
       setLoading(false);
     } catch (error) {
@@ -58,15 +58,38 @@ function VisitedPane() {
     }
   }, []);
 
+  const fetchVisitedCountries = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/countries/fetch_visited_countries");
+
+      if (!response.ok) {
+        console.error(
+          "Failed to fetch visited countries:",
+          response.statusText,
+        );
+        return;
+      }
+
+      const data = await response.json();
+      setVisitedCountries(data.visitedCountries);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching visited countries:", error);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       await fetchVisitedPlaces();
+      await fetchVisitedCountries();
     };
 
     fetchData();
-  }, [fetchVisitedPlaces]);
+  }, [fetchVisitedPlaces, fetchVisitedCountries]);
 
-  const percentageCountriesVisited = 10.2;
+  const percentageCountriesVisited = visitedCountries.length;
 
   async function handleVisitedToggle(placeID: string) {
     setVisitedPlaces((prevPlaces) =>
@@ -227,7 +250,9 @@ function VisitedPane() {
                           </div>
                           <div
                             className="flex items-center gap-1.5 text-muted-foreground text-sm"
-                            title={`Visited on ${new Date(place.visitedAt).toLocaleString()}`}
+                            {...(place.visitedAt && {
+                              title: `Visited at ${new Date(place.visitedAt).toLocaleString()}`,
+                            })}
                           >
                             <Calendar className="h-3.5 w-3.5 shrink-0" />
                             <p>

@@ -1,13 +1,14 @@
 import { geoMercator, geoPath } from "d3-geo";
 
-import { useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 interface VisitedCountry {
   countryCode: string;
   name: string;
+  continent: string;
   flag: string;
   placesVisited: number;
-  lastVisitedAt: Date;
+  visitedAt: Date | null;
 }
 
 type Country = {
@@ -38,12 +39,22 @@ function CountriesVisitedMap({
       });
   }, []);
 
-  const projection = geoMercator().scale(100).translate([400, 300]);
-  const path = geoPath().projection(projection);
+  const projection = useMemo(
+    () => geoMercator().scale(100).translate([400, 300]),
+    [],
+  );
+  const path = useMemo(() => geoPath().projection(projection), [projection]);
+
+  const renderedCountries = useMemo(() => {
+    return countries.map((country) => ({
+      ...country,
+      svgPath: path(country) || "",
+    }));
+  }, [countries, path]);
 
   return (
     <svg viewBox="0 0 800 440" width="100%" height="auto">
-      {countries.map((country) => {
+      {renderedCountries.map((country) => {
         const code = country.properties.ISO_A3;
         const isVisited = visitedCountries.some(
           (cntry) => cntry.countryCode === code,
