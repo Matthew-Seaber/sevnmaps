@@ -4,6 +4,7 @@ import VisitedPlaces from "./VisitedPlaces";
 import VisitedCountries from "./VisitedCountries";
 
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar, CircleCheck, MapPin } from "lucide-react";
@@ -33,11 +34,11 @@ function VisitedPane() {
   const [visitedCountries, setVisitedCountries] = useState<VisitedCountry[]>(
     [],
   );
-  const [numberOfVisitedPlaces, setNumberOfVisitedPlaces] = useState<number>(0);
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchVisitedPlaces = useCallback(async () => {
+    setLoading(true);
+
     try {
       const response = await fetch("/api/places/visited/get_visited");
 
@@ -49,7 +50,6 @@ function VisitedPane() {
       const data = await response.json();
       console.log(data.visitedPlaces);
       setVisitedPlaces(data.visitedPlaces);
-      setNumberOfVisitedPlaces(data.visitedPlaces.length);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching visited places:", error);
@@ -71,12 +71,6 @@ function VisitedPane() {
       ),
     );
 
-    setNumberOfVisitedPlaces((prevCount) =>
-      visitedPlaces.some((place) => place.id === placeID && place.visited)
-        ? prevCount - 1
-        : prevCount + 1,
-    );
-
     const response = await fetch("/api/places/visited/toggle_visited", {
       method: "POST",
       headers: {
@@ -96,12 +90,6 @@ function VisitedPane() {
         prevPlaces.map((place) =>
           place.id === placeID ? { ...place, visited: !place.visited } : place,
         ),
-      );
-
-      setNumberOfVisitedPlaces((prevCount) =>
-        visitedPlaces.some((place) => place.id === placeID && place.visited)
-          ? prevCount + 1
-          : prevCount - 1,
       );
 
       return;
@@ -136,14 +124,37 @@ function VisitedPane() {
         </Badge>
       </div>
 
-      {loading && (
+      {loading ? (
         <div className="flex flex-row items-center gap-2">
           <Spinner />
           <p className="text-sm">Loading...</p>
         </div>
       ) : (
-      {section === "places" && <VisitedPlaces />}
-      {section === "countries" && <VisitedCountries />}
+        <>
+          {section === "all" && (
+            <div className="flex flex-col gap-4">
+              <div></div>
+              <div>
+                <div className="flex flex-row items-center justify-between">
+                  <p className="font-bold text-sm">Recently visited</p>
+                  <Button variant="link" className="cursor-pointer font-semibold">
+                    See all
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {section === "places" && (
+            <VisitedPlaces
+              visitedPlaces={visitedPlaces}
+              refreshVisitedPlaces={fetchVisitedPlaces}
+              handleVisitedToggle={handleVisitedToggle}
+            />
+          )}
+          {section === "countries" && (
+            <VisitedCountries visitedCountries={visitedCountries} />
+          )}
+        </>
       )}
 
       <Toaster position="top-center" />
