@@ -24,7 +24,7 @@ function MapPageInfoPane() {
         </Drawer>
       </div>
 
-      <div className="relative hidden md:flex flex-col w-124 border-l-2 border-border p-6 shadow-xl">
+      <div className="relative hidden md:flex flex-col w-136 border-l-2 border-border p-6 shadow-xl">
         <Button
           variant="outline"
           className="absolute top-8 right-8 z-2 rounded-full w-12 h-12 shadow-md"
