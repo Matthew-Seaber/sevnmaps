@@ -17,7 +17,7 @@ interface VisitedPlace {
   imageURL: string;
   address: string;
   visited: boolean;
-  visitedAt: Date;
+  visitedAt: Date | null;
 }
 
 function VisitedPlaces({
@@ -113,7 +113,9 @@ function VisitedPlaces({
                   </div>
                   <div
                     className="flex items-center gap-1.5 text-muted-foreground text-sm"
-                    title={`Visited on ${new Date(place.visitedAt).toLocaleString()}`}
+                    {...(place.visitedAt && {
+                      title: `Visited at ${new Date(place.visitedAt).toLocaleString()}`,
+                    })}
                   >
                     <Calendar className="h-3.5 w-3.5 shrink-0" />
                     <p>

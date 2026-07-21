@@ -23,9 +23,12 @@ interface FavoritePlace {
 
 function FavoritesPane() {
   const [favoritePlaces, setFavoritePlaces] = useState<FavoritePlace[]>([]);
-  const [numberOfFavorites, setNumberOfFavorites] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+
+  const numberOfFavorites = favoritePlaces.filter(
+    (place) => place.favorited,
+  ).length;
 
   const fetchFavoritePlaces = useCallback(async () => {
     try {
@@ -39,7 +42,6 @@ function FavoritesPane() {
       const data = await response.json();
       console.log(data.favoritePlaces);
       setFavoritePlaces(data.favoritePlaces);
-      setNumberOfFavorites(data.favoritePlaces.length);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching favorite places:", error);
@@ -71,12 +73,6 @@ function FavoritesPane() {
       ),
     );
 
-    setNumberOfFavorites((prevCount) =>
-      favoritePlaces.some((place) => place.id === placeID && place.favorited)
-        ? prevCount - 1
-        : prevCount + 1,
-    );
-
     const response = await fetch("/api/places/favorites/toggle_favorite", {
       method: "POST",
       headers: {
@@ -84,7 +80,7 @@ function FavoritesPane() {
       },
       body: JSON.stringify({
         placeId: placeID,
-        favorite: !favoritePlaces.find((place) => place.id === placeID),
+        favorite: !favoritePlaces.find((place) => place.id === placeID)?.favorited,
       }),
     });
 
@@ -98,12 +94,6 @@ function FavoritesPane() {
             ? { ...place, favorited: !place.favorited }
             : place,
         ),
-      );
-
-      setNumberOfFavorites((prevCount) =>
-        favoritePlaces.some((place) => place.id === placeID && place.favorited)
-          ? prevCount + 1
-          : prevCount - 1,
       );
 
       return;

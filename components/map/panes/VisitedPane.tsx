@@ -105,7 +105,7 @@ function VisitedPane() {
       },
       body: JSON.stringify({
         placeId: placeID,
-        visited: !visitedPlaces.find((place) => place.id === placeID),
+        visited: !visitedPlaces.find((place) => place.id === placeID)?.visited,
       }),
     });
 
@@ -225,7 +225,7 @@ function VisitedPane() {
                       them here!
                     </p>
                   ) : (
-                    visitedPlaces.map((place) => (
+                    visitedPlaces.slice(0, 5).map((place) => (
                       <div
                         key={place.id}
                         className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
