@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { visited_countries } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
 
-export async function POST(request: Request) {
+export async function DELETE(request: Request) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -17,9 +18,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const { countryId, visitedAt } = await request.json();
+  const { countryId } = await request.json();
 
-  if (!countryId || countryId === "") {
+  if (!countryId) {
     return NextResponse.json(
       { error: "Required parameter missing (countryId)" },
       { status: 400 },
@@ -27,28 +28,23 @@ export async function POST(request: Request) {
   }
 
   const result = await db
-    .insert(visited_countries)
-    .values({
-      userId: session.user.id,
-      countryId,
-      visitedAt: visitedAt ? new Date(visitedAt) : null,
-    })
-    .onConflictDoUpdate({
-      target: [visited_countries.userId, visited_countries.countryId],
-      set: {
-        visitedAt: visitedAt ? new Date(visitedAt) : null,
-      },
-    });
+    .delete(visited_countries)
+    .where(
+      and(
+        eq(visited_countries.userId, session.user.id),
+        eq(visited_countries.countryId, countryId),
+      ),
+    );
 
   if (!result) {
     return NextResponse.json(
-      { error: "Failed to update visited status" },
+      { error: "Failed to remove visited status" },
       { status: 500 },
     );
   }
 
   return NextResponse.json(
-    { message: "Visited status updated successfully" },
+    { message: "Visited status removed successfully" },
     { status: 200 },
   );
 }

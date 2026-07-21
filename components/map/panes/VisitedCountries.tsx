@@ -93,6 +93,9 @@ function VisitedCountries({
       return;
     }
 
+    toast.success(
+      "Visited status for " + selectedCountry?.name + " successfully removed.",
+    );
     router.refresh();
   }
 
@@ -259,7 +262,7 @@ function VisitedCountries({
         destructive={true}
         confirmText="Confirm"
         cancelText="Cancel"
-        onConfirm={handleRemoveVisited(selectedCountry?.id)}
+        onConfirm={() => handleRemoveVisited(selectedCountry?.id)}
       />
     </div>
   );
