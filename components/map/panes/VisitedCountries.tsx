@@ -1,3 +1,5 @@
+import CountriesVisitedMap from "./CountriesVisitedMap";
+
 interface VisitedCountry {
   countryCode: string;
   name: string;
@@ -12,9 +14,11 @@ function VisitedCountries({
 }: {
   visitedCountries: VisitedCountry[];
 }) {
-    return (
-      <p>temp</p>
-    )
+  return (
+    <div>
+      <CountriesVisitedMap visitedCountries={visitedCountries} allowZoom={true} />
+    </div>
+  );
 }
 
 export default VisitedCountries;

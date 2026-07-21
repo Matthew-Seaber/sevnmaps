@@ -201,7 +201,7 @@ function VisitedPane() {
                 </div>
               </div>
 
-              <CountriesVisitedMap visitedCountries={visitedCountries} />
+              <CountriesVisitedMap visitedCountries={visitedCountries} allowZoom={false} />
 
               <Separator />
 
@@ -225,7 +225,7 @@ function VisitedPane() {
                       them here!
                     </p>
                   ) : (
-                    visitedPlaces.slice(0, 5).map((place) => (
+                    visitedPlaces.slice(0, 3).map((place) => (
                       <div
                         key={place.id}
                         className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
