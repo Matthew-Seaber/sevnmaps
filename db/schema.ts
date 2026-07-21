@@ -67,7 +67,6 @@ export const profiles = pgTable("profiles", {
     .references(() => user.id, { onDelete: "cascade" }),
   username: text("username").unique(),
   role: text("role").default("user").notNull(),
-  countriesVisited: integer("countries_visited").default(0).notNull(),
   location: text("location"),
 });
 
@@ -100,6 +99,7 @@ export const countries = pgTable("countries", {
   countryName: text("country_name").notNull().unique(),
   countryCode: text("country_code").notNull().unique(),
   continent: text("continent").notNull(),
+  description: text("description"),
   flag: text("flag").notNull(),
 });
 

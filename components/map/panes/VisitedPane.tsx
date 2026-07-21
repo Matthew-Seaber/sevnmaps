@@ -23,9 +23,11 @@ interface VisitedPlace {
 }
 
 interface VisitedCountry {
+  id: string;
   countryCode: string;
   name: string;
   continent: string;
+  description: string;
   flag: string;
   placesVisited: number;
   visitedAt: Date | null;

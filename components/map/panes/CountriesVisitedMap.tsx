@@ -21,6 +21,7 @@ interface VisitedCountry {
   countryCode: string;
   name: string;
   continent: string;
+  description: string;
   flag: string;
   placesVisited: number;
   visitedAt: Date | null;

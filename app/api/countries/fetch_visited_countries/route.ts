@@ -25,9 +25,11 @@ export async function GET() {
 
   const visitedCountries = await db
     .select({
+      id: countries.id,
       countryCode: countries.countryCode,
       name: countries.countryName,
       continent: countries.continent,
+      description: countries.description,
       flag: countries.flag,
       placesVisited: count(places.id),
       visitedAt: visited_countries.visitedAt,
@@ -45,9 +47,11 @@ export async function GET() {
     )
     .where(eq(visited_countries.userId, session.user.id))
     .groupBy(
+      countries.id,
       countries.countryCode,
       countries.countryName,
       countries.continent,
+      countries.description,
       countries.flag,
       visited_countries.visitedAt,
     );
