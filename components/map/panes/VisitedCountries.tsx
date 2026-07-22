@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import CountriesVisitedMap from "./CountriesVisitedMap";
 import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
@@ -24,7 +23,14 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarX2, ChevronRight, MapPinOff, Pencil } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  CalendarX2,
+  ChevronRight,
+  MapPin,
+  MapPinOff,
+  Pencil,
+} from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
@@ -39,19 +45,40 @@ interface VisitedCountry {
   visitedAt: Date | null;
 }
 
+interface VisitedPlace {
+  id: string;
+  name: string;
+  imageURL: string;
+  address: string;
+  countryId: string;
+  visited: boolean;
+  visitedAt: Date | null;
+}
+
 function VisitedCountries({
   visitedCountries,
+  visitedPlaces,
+  refreshVisitedCountries,
+  locallyUpdateVisitedCountries,
 }: {
   visitedCountries: VisitedCountry[];
+  visitedPlaces: VisitedPlace[];
+  refreshVisitedCountries: () => void;
+  locallyUpdateVisitedCountries: (
+    countryId: string,
+    visitedAt: Date | null,
+  ) => void;
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<VisitedCountry | null>(
+  const [selectedCountryID, setSelectedCountryID] = useState<string | null>(
     null,
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [visitedStatusPopupOpen, setVisitedStatusPopupOpen] = useState(false);
 
-  const router = useRouter();
+  const selectedCountry =
+    visitedCountries.find((country) => country.id === selectedCountryID) ??
+    null;
 
   async function handleDateChange(
     countryId: string | undefined,
@@ -68,12 +95,13 @@ function VisitedCountries({
     });
 
     if (!response.ok) {
-      console.error("Failed to update visited date");
       toast.error("Failed to update visited status. Please try again later.");
       return;
     }
 
-    router.refresh();
+    toast.success("Visited date updated!");
+
+    locallyUpdateVisitedCountries(countryId, date ?? null);
   }
 
   async function handleRemoveVisited(countryId: string | undefined) {
@@ -88,7 +116,6 @@ function VisitedCountries({
     });
 
     if (!response.ok) {
-      console.error("Failed to update visited status");
       toast.error("Failed to update visited status. Please try again later.");
       return;
     }
@@ -96,7 +123,9 @@ function VisitedCountries({
     toast.success(
       "Visited status for " + selectedCountry?.name + " successfully removed.",
     );
-    router.refresh();
+
+    refreshVisitedCountries();
+    setDialogOpen(false);
   }
 
   return (
@@ -121,7 +150,7 @@ function VisitedCountries({
           <div
             key={country.countryCode}
             onClick={() => {
-              setSelectedCountry(country);
+              setSelectedCountryID(country.id);
               setDialogOpen(true);
             }}
             className="flex flex-row gap-4 items-center border border-border rounded-md p-4 cursor-pointer hover:bg-accent transition-colors"
@@ -151,7 +180,15 @@ function VisitedCountries({
         ))}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setSelectedCountryID(null);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -178,7 +215,7 @@ function VisitedCountries({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-6 px-4">
+          <div className="flex flex-col gap-4 px-4">
             <div>
               <li className="mb-4">Continent: {selectedCountry?.continent}</li>
               <li>Places visited: {selectedCountry?.placesVisited}</li>
@@ -205,7 +242,7 @@ function VisitedCountries({
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-auto overflow-hidden p-0 z-2"
+                      className="w-auto overflow-hidden p-0 z-20"
                       align="end"
                     >
                       <Calendar
@@ -244,7 +281,58 @@ function VisitedCountries({
               </div>
             </div>
 
-            <h4 className="font-semibold">Recently visited</h4>
+            <h4 className="mt-3 font-semibold">Recently visited</h4>
+
+            <div className="flex flex-col gap-4">
+              {visitedPlaces
+                .filter((place) => place.countryId === selectedCountry?.id)
+                .map((place) => (
+                  <div
+                    key={place.id}
+                    className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
+                  >
+                    <div className="relative w-25 h-auto shrink-0">
+                      <Image
+                        src={place.imageURL}
+                        alt={place.name}
+                        fill
+                        sizes="150px"
+                        className="w-full h-full object-cover rounded-l-md"
+                      />
+                    </div>
+
+                    <div className="p-4">
+                      <h3 className="font-bold mb-2">{place.name}</h3>
+                      <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                        <p className="font-semibold break-all">
+                          {place.address}
+                        </p>
+                      </div>
+                      <div
+                        className="flex items-center gap-1.5 text-muted-foreground text-sm"
+                        {...(place.visitedAt && {
+                          title: `Visited at ${new Date(place.visitedAt).toLocaleString()}`,
+                        })}
+                      >
+                        <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+                        <p>
+                          {place.visitedAt === null
+                            ? "Unknown"
+                            : new Date(place.visitedAt).toLocaleString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                },
+                              )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
 
           <DialogFooter>

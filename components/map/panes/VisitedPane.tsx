@@ -18,6 +18,7 @@ interface VisitedPlace {
   name: string;
   imageURL: string;
   address: string;
+  countryId: string;
   visited: boolean;
   visitedAt: Date | null;
 }
@@ -123,6 +124,19 @@ function VisitedPane() {
 
       return;
     }
+
+    toast.success("Visited status updated!");
+  }
+
+  function locallyUpdateVisitedCountries(
+    countryId: string,
+    visitedAt: Date | null,
+  ) {
+    setVisitedCountries((prevCountries) =>
+      prevCountries.map((country) =>
+        country.id === countryId ? { ...country, visitedAt } : country,
+      ),
+    );
   }
 
   return (
@@ -203,7 +217,10 @@ function VisitedPane() {
                 </div>
               </div>
 
-              <CountriesVisitedMap visitedCountries={visitedCountries} allowZoom={false} />
+              <CountriesVisitedMap
+                visitedCountries={visitedCountries}
+                allowZoom={false}
+              />
 
               <Separator />
 
@@ -219,7 +236,7 @@ function VisitedPane() {
                   </Button>
                 </div>
 
-                <div className="mt-3">
+                <div className="flex flex-col gap-4 mt-3">
                   {visitedPlaces.length === 0 ? (
                     <p className="mt-2 text-center text-sm text-muted-foreground">
                       You haven&apos;t marked any places as visited yet. Start
@@ -294,7 +311,12 @@ function VisitedPane() {
           )}
 
           {section === "countries" && (
-            <VisitedCountries visitedCountries={visitedCountries} />
+            <VisitedCountries
+              visitedCountries={visitedCountries}
+              visitedPlaces={visitedPlaces}
+              refreshVisitedCountries={fetchVisitedCountries}
+              locallyUpdateVisitedCountries={locallyUpdateVisitedCountries}
+            />
           )}
         </>
       )}

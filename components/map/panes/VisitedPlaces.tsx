@@ -16,6 +16,7 @@ interface VisitedPlace {
   name: string;
   imageURL: string;
   address: string;
+  countryId: string;
   visited: boolean;
   visitedAt: Date | null;
 }

@@ -24,6 +24,7 @@ export async function GET() {
       name: places.placeName,
       imageURL: place_images.imageURL,
       address: sql<string>`${places.city} || ', ' || ${countries.countryName}`,
+      countryId: countries.id,
       visited: place_user_link.visited,
       visitedAt: place_user_link.visitedAt,
     })
@@ -37,7 +38,10 @@ export async function GET() {
         eq(place_user_link.visited, true),
       ),
     )
-    .orderBy(desc(place_user_link.visitedAt));
+    .orderBy(
+      sql`${place_user_link.visitedAt} is null`,
+      desc(place_user_link.visitedAt),
+    );
 
   return NextResponse.json({ visitedPlaces });
 }
