@@ -18,7 +18,9 @@ export async function POST(request: Request) {
   }
 
   const { placeId, visited, visitedAt } = await request.json();
+
   const userId = session.user.id;
+  const visitedDate = visitedAt ? new Date(visitedAt) : null;
 
   const result = await db
     .insert(place_user_link)
@@ -26,13 +28,13 @@ export async function POST(request: Request) {
       placeId,
       userId,
       visited: visited,
-      visitedAt: visitedAt || null,
+      visitedAt: visitedDate || null,
     })
     .onConflictDoUpdate({
       target: [place_user_link.placeId, place_user_link.userId],
       set: {
         visited: visited,
-        visitedAt: visitedAt || null,
+        visitedAt: visitedDate || null,
       },
     });
 
