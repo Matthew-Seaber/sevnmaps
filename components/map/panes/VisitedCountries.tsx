@@ -235,6 +235,7 @@ function VisitedCountries({
                       <Button
                         variant="secondary"
                         size="icon"
+                        title="Edit visited date"
                         onClick={() => setDatePopoverOpen(true)}
                         className="p-4"
                       >
@@ -261,6 +262,7 @@ function VisitedCountries({
                   <Button
                     variant="secondary"
                     size="icon"
+                    title="Remove visited date"
                     onClick={() =>
                       handleDateChange(selectedCountry?.id, undefined)
                     }
@@ -272,6 +274,7 @@ function VisitedCountries({
                   <Button
                     variant="destructive"
                     size="icon"
+                    title="Mark as not visited"
                     onClick={() => setVisitedStatusPopupOpen(true)}
                     className="p-4"
                   >

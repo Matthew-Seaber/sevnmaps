@@ -29,7 +29,7 @@ export async function GET() {
     })
     .from(place_user_link)
     .innerJoin(places, eq(place_user_link.placeId, places.id))
-    .leftJoin(place_images, eq(place_images.placeId, places.id))
+    .leftJoin(place_images, and(eq(place_images.placeId, places.id), eq(place_images.primaryImage, true)))
     .innerJoin(countries, eq(countries.id, places.countryId))
     .where(
       and(

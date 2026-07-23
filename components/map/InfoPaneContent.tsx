@@ -16,7 +16,12 @@ function InfoPaneContent({ infoPaneState }: InfoPaneContentProps) {
       return <ListsPane />;
 
     case "singular_list":
-      return <SingularListPane listID={infoPaneState.listID} />;
+      return (
+        <SingularListPane
+          listID={infoPaneState.listID}
+          listName={infoPaneState.listName}
+        />
+      );
 
     case "place":
       return <PlacePane placeID={infoPaneState.placeID} />;

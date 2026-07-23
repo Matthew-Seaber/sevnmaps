@@ -8,7 +8,27 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { Calendar, CircleCheck, MapPin } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogContent,
+} from "@/components/ui/dialog";
+import {
+  Calendar as CalendarIcon,
+  CalendarX2,
+  CircleCheck,
+  EllipsisVertical,
+  MapPin,
+  Pencil,
+} from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -40,6 +60,8 @@ function VisitedPane() {
   const [visitedCountries, setVisitedCountries] = useState<VisitedCountry[]>(
     [],
   );
+  const [selectedPlace, setSelectedPlace] = useState<VisitedPlace | null>(null);
+  const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchVisitedPlaces = useCallback(async () => {
@@ -281,60 +303,128 @@ function VisitedPane() {
                       them here!
                     </p>
                   ) : (
-                    visitedPlaces.slice(0, 3).map((place) => (
-                      <div
-                        key={place.id}
-                        className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
-                      >
-                        <div className="relative w-35 h-30 shrink-0">
-                          <Image
-                            src={place.imageURL}
-                            alt={place.name}
-                            fill
-                            sizes="150px"
-                            className="w-full h-full object-cover rounded-l-md"
-                          />
-                        </div>
+                    <>
+                      {visitedPlaces.slice(0, 3).map((place) => (
+                        <div
+                          key={place.id}
+                          className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
+                        >
+                          <div className="relative w-35 h-30 shrink-0">
+                            <Image
+                              src={place.imageURL}
+                              alt={place.name}
+                              fill
+                              sizes="150px"
+                              className="w-full h-full object-cover rounded-l-md"
+                            />
+                          </div>
 
-                        <div className="p-4">
-                          <h3 className="font-bold mb-2">{place.name}</h3>
-                          <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
-                            <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                            <p className="font-semibold break-all">
-                              {place.address}
-                            </p>
+                          <div className="p-4">
+                            <h3 className="font-bold mb-2">{place.name}</h3>
+                            <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
+                              <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                              <p className="font-semibold break-all">
+                                {place.address}
+                              </p>
+                            </div>
+                            <div
+                              className="flex items-center gap-1.5 text-muted-foreground text-sm"
+                              {...(place.visitedAt && {
+                                title: `Visited at ${new Date(place.visitedAt).toLocaleString()}`,
+                              })}
+                            >
+                              <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+                              <p>
+                                {place.visitedAt === null
+                                  ? "Unknown"
+                                  : new Date(place.visitedAt).toLocaleString(
+                                      undefined,
+                                      {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      },
+                                    )}
+                              </p>
+                            </div>
                           </div>
-                          <div
-                            className="flex items-center gap-1.5 text-muted-foreground text-sm"
-                            {...(place.visitedAt && {
-                              title: `Visited at ${new Date(place.visitedAt).toLocaleString()}`,
-                            })}
-                          >
-                            <Calendar className="h-3.5 w-3.5 shrink-0" />
-                            <p>
-                              {place.visitedAt === null
-                                ? "Unknown"
-                                : new Date(place.visitedAt).toLocaleString(
-                                    undefined,
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    },
-                                  )}
-                            </p>
+                          <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
+                            <div className="flex flex-row items-center gap-2">
+                              <CircleCheck
+                                className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "fill-none stroke-current"}`}
+                                onClick={() =>
+                                  handleVisitedToggle(
+                                    place.id,
+                                    true,
+                                    null,
+                                    null,
+                                  )
+                                }
+                              />
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger>
+                                  <EllipsisVertical className="h-5 w-5 cursor-pointer hover:scale-110 transition-all text-muted-foreground" />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-48">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedPlace(place);
+                                      setDateDialogOpen(true);
+                                    }}
+                                  >
+                                    <Pencil /> Edit visited date
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      handleVisitedToggle(
+                                        place.id,
+                                        false,
+                                        true,
+                                        null,
+                                      );
+                                    }}
+                                  >
+                                    <CalendarX2 /> Remove visited date
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
-                          <CircleCheck
-                            className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "fill-none stroke-current"}`}
-                            onClick={() =>
-                              handleVisitedToggle(place.id, true, null, null)
-                            }
+                      ))}
+
+                      <Dialog
+                        open={dateDialogOpen}
+                        onOpenChange={setDateDialogOpen}
+                      >
+                        <DialogContent className="sm:max-w-fit text-center px-6 pt-8">
+                          <DialogHeader>
+                            <DialogTitle className="wrap-normal">
+                              Edit visited date for {selectedPlace?.name}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <Calendar
+                            mode="single"
+                            selected={selectedPlace?.visitedAt || undefined}
+                            defaultMonth={selectedPlace?.visitedAt || undefined}
+                            captionLayout="dropdown"
+                            className="mx-auto"
+                            onSelect={(date) => {
+                              handleVisitedToggle(
+                                selectedPlace?.id || "",
+                                false,
+                                true,
+                                date || null,
+                              );
+                              setSelectedPlace(null);
+                              setDateDialogOpen(false);
+                            }}
                           />
-                        </div>
-                      </div>
-                    ))
+                        </DialogContent>
+                      </Dialog>
+                    </>
                   )}
                 </div>
               </div>

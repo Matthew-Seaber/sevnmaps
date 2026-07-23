@@ -157,7 +157,7 @@ export const place_tag_link = pgTable("place_tag_link", {
   tagId: text("tag_id")
     .notNull()
     .references(() => tags.id, { onDelete: "cascade" }),
-});
+}, (table) => [primaryKey({ columns: [table.placeId, table.tagId] })]);
 
 export const place_user_link = pgTable(
   "place_user_link",
@@ -192,16 +192,20 @@ export const lists = pgTable("lists", {
   listIcon: text("list_icon"),
 });
 
-export const list_members = pgTable("list_members", {
-  listId: text("list_id")
-    .notNull()
-    .references(() => lists.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  role: text("role").notNull().default("viewer"),
-  joinedAt: timestamp("joined_at").defaultNow().notNull(),
-});
+export const list_members = pgTable(
+  "list_members",
+  {
+    listId: text("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("viewer"),
+    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.listId, table.userId] })],
+);
 
 export const list_place_link = pgTable("list_place_link", {
   listId: text("list_id")
@@ -211,7 +215,8 @@ export const list_place_link = pgTable("list_place_link", {
     .notNull()
     .references(() => places.id, { onDelete: "cascade" }),
   addedAt: timestamp("added_at").defaultNow().notNull(),
-});
+  addedBy: text("added_by").references(() => user.id, { onDelete: "set null" }),
+}, (table) => [primaryKey({ columns: [table.listId, table.placeId] })]);
 
 export const reviews = pgTable("reviews", {
   id: text("id").primaryKey(),
@@ -233,4 +238,4 @@ export const review_image_link = pgTable("review_image_link", {
   imageId: text("image_id")
     .notNull()
     .references(() => place_images.id, { onDelete: "cascade" }),
-});
+}, (table) => [primaryKey({ columns: [table.reviewId, table.imageId] })]);

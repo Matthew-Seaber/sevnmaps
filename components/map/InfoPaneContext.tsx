@@ -5,7 +5,7 @@ import { createContext, useContext, useState } from "react";
 export type InfoPaneState =
   | { type: "closed" }
   | { type: "lists" }
-  | { type: "singular_list"; listID: string }
+  | { type: "singular_list"; listID: string, listName: string }
   | { type: "place"; placeID: string }
   | { type: "favorites" }
   | { type: "visited" };
