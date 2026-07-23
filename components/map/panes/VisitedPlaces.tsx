@@ -9,7 +9,24 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Calendar, CircleCheck, MapPin, RefreshCw, Search } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Calendar as CalendarIcon,
+  CalendarX2,
+  CircleCheck,
+  EllipsisVertical,
+  MapPin,
+  Pencil,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 
 interface VisitedPlace {
   id: string;
@@ -28,9 +45,16 @@ function VisitedPlaces({
 }: {
   visitedPlaces: VisitedPlace[];
   refreshVisitedPlaces: () => void;
-  handleVisitedToggle: (placeID: string) => Promise<void>;
+  handleVisitedToggle: (
+    placeID: string,
+    toggle: boolean,
+    visited: boolean | null,
+    visitedAt: Date | null,
+  ) => Promise<void>;
 }) {
+  const [selectedPlace, setSelectedPlace] = useState<VisitedPlace | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
 
   const numberOfVisitedPlaces = visitedPlaces.filter(
     (place) => place.visited,
@@ -118,7 +142,7 @@ function VisitedPlaces({
                       title: `Visited at ${new Date(place.visitedAt).toLocaleString()}`,
                     })}
                   >
-                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                    <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
                     <p>
                       {place.visitedAt === null
                         ? "Unknown"
@@ -131,14 +155,66 @@ function VisitedPlaces({
                   </div>
                 </div>
                 <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
-                  <CircleCheck
-                    className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "fill-none stroke-current"}`}
-                    onClick={() => handleVisitedToggle(place.id)}
-                  />
+                  <div className="flex flex-row items-center gap-2">
+                    <CircleCheck
+                      className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "fill-none stroke-current"}`}
+                      onClick={() =>
+                        handleVisitedToggle(place.id, true, null, null)
+                      }
+                    />
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <EllipsisVertical className="h-5 w-5 cursor-pointer hover:scale-110 transition-all text-muted-foreground" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-48">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedPlace(place);
+                            setDatePopoverOpen(true);
+                          }}
+                        >
+                          <Pencil /> Edit visited date
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            handleVisitedToggle(place.id, false, false, null);
+                          }}
+                        >
+                          <CalendarX2 /> Remove visited date
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
             ))
           )}
+
+          <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+            <PopoverContent
+              className="w-auto overflow-hidden p-0 z-20"
+              align="end"
+            >
+              <Calendar
+                mode="single"
+                selected={selectedPlace?.visitedAt || undefined}
+                defaultMonth={selectedPlace?.visitedAt || undefined}
+                captionLayout="dropdown"
+                onSelect={(date) => {
+                  handleVisitedToggle(
+                    selectedPlace?.id || "",
+                    false,
+                    true,
+                    date || null,
+                  );
+                  setSelectedPlace(null);
+                  setDatePopoverOpen(false);
+                }}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       )}
     </>

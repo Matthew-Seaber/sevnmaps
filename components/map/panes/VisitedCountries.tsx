@@ -216,7 +216,7 @@ function VisitedCountries({
           </DialogHeader>
 
           <div className="flex flex-col gap-4 px-4">
-            <div>
+            <div className="ml-3">
               <li className="mb-4">Continent: {selectedCountry?.continent}</li>
               <li>Places visited: {selectedCountry?.placesVisited}</li>
               <div className="flex gap-2 items-center justify-between">

@@ -94,12 +94,34 @@ function VisitedPane() {
 
   const percentageCountriesVisited = visitedCountries.length;
 
-  async function handleVisitedToggle(placeID: string) {
-    setVisitedPlaces((prevPlaces) =>
-      prevPlaces.map((place) =>
-        place.id === placeID ? { ...place, visited: !place.visited } : place,
-      ),
-    );
+  async function handleVisitedToggle(
+    placeID: string,
+    toggle: boolean,
+    visited: boolean | null,
+    visitedAt: Date | null,
+  ) {
+    if (!placeID) return;
+
+    let newVisited: boolean;
+
+    if (toggle) {
+      const currentPlace = visitedPlaces.find((place) => place.id === placeID);
+      if (!currentPlace) return;
+
+      newVisited = !currentPlace.visited;
+
+      setVisitedPlaces((prevPlaces) =>
+        prevPlaces.map((place) =>
+          place.id === placeID
+            ? { ...place, visited: newVisited, visitedAt }
+            : place,
+        ),
+      );
+    } else {
+      if (visited === null) return;
+
+      newVisited = visited;
+    }
 
     const response = await fetch("/api/places/visited/toggle_visited", {
       method: "POST",
@@ -108,7 +130,8 @@ function VisitedPane() {
       },
       body: JSON.stringify({
         placeId: placeID,
-        visited: !visitedPlaces.find((place) => place.id === placeID)?.visited,
+        visited: newVisited,
+        visitedAt,
       }),
     });
 
@@ -116,13 +139,27 @@ function VisitedPane() {
       console.error("Failed to toggle visited:", response.statusText);
       toast.error("Failed to toggle visited. Please try again.");
 
-      setVisitedPlaces((prevPlaces) =>
-        prevPlaces.map((place) =>
-          place.id === placeID ? { ...place, visited: !place.visited } : place,
-        ),
-      );
+      if (toggle) {
+        setVisitedPlaces((prevPlaces) =>
+          prevPlaces.map((place) =>
+            place.id === placeID
+              ? { ...place, visited: !newVisited, visitedAt }
+              : place,
+          ),
+        );
+      }
 
       return;
+    }
+
+    if (!toggle) {
+      if (visited === null) return;
+
+      setVisitedPlaces((prevPlaces) =>
+        prevPlaces.map((place) =>
+          place.id === placeID ? { ...place, newVisited, visitedAt } : place,
+        ),
+      );
     }
 
     toast.success("Visited status updated!");
@@ -291,7 +328,9 @@ function VisitedPane() {
                         <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
                           <CircleCheck
                             className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "fill-none stroke-current"}`}
-                            onClick={() => handleVisitedToggle(place.id)}
+                            onClick={() =>
+                              handleVisitedToggle(place.id, true, null, null)
+                            }
                           />
                         </div>
                       </div>
