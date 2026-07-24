@@ -163,6 +163,7 @@ function VisitedPlaces({
                       </p>
                     </div>
                   </div>
+                  
                   <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
                     <div className="flex flex-row items-center gap-2">
                       <CircleCheck

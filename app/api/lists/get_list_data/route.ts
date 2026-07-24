@@ -12,7 +12,7 @@ import {
   countries,
   user,
 } from "@/db/schema";
-import { sql, and, eq, or } from "drizzle-orm";
+import { sql, and, eq } from "drizzle-orm";
 
 export async function GET(request: Request) {
   const session = await auth.api.getSession({
@@ -50,12 +50,7 @@ export async function GET(request: Request) {
     })
     .from(lists)
     .leftJoin(list_members, eq(lists.id, list_members.listId))
-    .where(
-      and(
-        eq(lists.id, listID),
-        or(eq(lists.creatorId, userID), eq(list_members.userId, userID)),
-      ),
-    )
+    .where(and(eq(lists.id, listID), eq(list_members.userId, userID)))
     .limit(1);
 
   if (listInfo.length === 0) {

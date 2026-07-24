@@ -186,7 +186,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                   key={list.id}
                   className="flex flex-row justify-between items-center hover:bg-primary/10 cursor-default rounded-lg px-3 py-1"
                   onClick={() =>
-                    openPane({ type: "singular_list", listID: list.id, listName: list.listName })
+                    openPane({ type: "singular_list", listID: list.id })
                   }
                 >
                   <div className="flex flex-row items-center gap-3">

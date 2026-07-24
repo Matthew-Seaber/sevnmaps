@@ -19,7 +19,6 @@ function InfoPaneContent({ infoPaneState }: InfoPaneContentProps) {
       return (
         <SingularListPane
           listID={infoPaneState.listID}
-          listName={infoPaneState.listName}
         />
       );
 

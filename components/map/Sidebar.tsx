@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { lists, list_place_link } from "@/db/schema";
+import { lists, list_place_link, list_members } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 
 import TextLogo from "@/components/navbar/TextLogoLink";
@@ -39,7 +39,8 @@ async function MapPageSidebar() {
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
-      .where(eq(lists.creatorId, session.user.id))
+      .leftJoin(list_members, eq(lists.id, list_members.listId))
+      .where(eq(list_members.userId, session.user.id))
       .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
       .orderBy(desc(lists.createdAt));
 

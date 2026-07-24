@@ -181,9 +181,6 @@ export const lists = pgTable("lists", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => randomUUID()),
-  creatorId: text("creator_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   visibility: text("visibility").notNull().default("private"),

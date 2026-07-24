@@ -27,7 +27,7 @@ function MapPageInfoPane() {
       <div className="relative hidden md:flex flex-col w-136 border-l-2 border-border p-6 shadow-xl">
         <Button
           variant="outline"
-          className="absolute top-8 right-8 z-2 rounded-full w-12 h-12 shadow-md"
+          className="absolute top-8 right-8 z-2 rounded-full w-12 h-12 shadow-md opacity-90"
           onClick={closePane}
         >
           <X className="w-5! h-5!" />
