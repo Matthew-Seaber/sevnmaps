@@ -183,8 +183,9 @@ export const lists = pgTable("lists", {
     .$defaultFn(() => randomUUID()),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  visibility: text("visibility").notNull().default("private"),
+  visibility: text("visibility").notNull().default("Private"),
   listName: text("list_name").notNull(),
+  listDescription: text("list_description").default(""),
   listColor: text("list_color").notNull().default("1273F6"),
   listIcon: text("list_icon"),
 });
@@ -198,7 +199,7 @@ export const list_members = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    role: text("role").notNull().default("viewer"),
+    role: text("role").notNull().default("Viewer"),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.listId, table.userId] })],

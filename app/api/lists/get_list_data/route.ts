@@ -42,6 +42,7 @@ export async function GET(request: Request) {
     .select({
       id: lists.id,
       name: lists.listName,
+      description: lists.listDescription,
       createdAt: lists.createdAt,
       updatedAt: lists.updatedAt,
       visibility: lists.visibility,

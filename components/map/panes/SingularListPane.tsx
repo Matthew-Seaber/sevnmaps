@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useInfoPane } from ".././InfoPaneContext";
 
+import { listIcons } from "@/components/map/ListIcons";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -16,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -24,8 +27,19 @@ import {
   CalendarArrowDown,
   CalendarArrowUp,
   ChevronLeft,
+  Ellipsis,
+  Lock,
+  Globe,
   ListSortDescending,
   Search,
+  Network,
+  CircleDollarSign,
+  MapPin,
+  Users,
+  Trash2,
+  Settings,
+  Link2,
+  LogOut,
 } from "lucide-react";
 
 interface ListMember {
@@ -47,6 +61,7 @@ interface ListItem {
 
 interface ListData {
   name: string;
+  description: string | null;
   createdAt: Date;
   updatedAt: Date;
   visibility: string;
@@ -141,6 +156,10 @@ function SingularListPane({ listID }: { listID: string }) {
     }
   });
 
+  const ListIconComponent = listIcons.find(
+    (icon) => icon.id === listData?.listIcon,
+  )?.icon;
+
   return (
     <div className="flex flex-col gap-6 mt-5">
       <div className="flex flex-row items-center gap-4 mb-2">
@@ -160,13 +179,97 @@ function SingularListPane({ listID }: { listID: string }) {
           <Spinner />
           <p className="text-sm">Loading...</p>
         </div>
-      ) : listData?.items.length === 0 ? (
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          This list seems to be a little empty. Start exploring the map and tap
-          the &quot;add to list&quot; button to see them appear here!
-        </p>
       ) : (
         <>
+          <div className="flex flex-col gap-4 p-4 border border-border rounded-md shadow-xs">
+            <div className="flex flex-row justify-between items-center w-full">
+              <div className="flex flex-row items-center gap-4">
+                {ListIconComponent ? (
+                  <ListIconComponent
+                    className="h-20 w-20 text-accent rounded-md p-4"
+                    strokeWidth={1.5}
+                    style={{ backgroundColor: `#${listData?.listColor}` }}
+                  />
+                ) : (
+                  <span
+                    className={`inline-block w-20 h-20 rounded-md`}
+                    style={{ backgroundColor: `#${listData?.listColor}` }}
+                  />
+                )}
+                <div className="flex flex-col gap-1">
+                  <h2 className="font-bold text-lg">{listData?.name}</h2>
+                  <p
+                    className={`${listData?.description ? "font-semibold" : "italic"} text-sm text-muted-foreground`}
+                  >
+                    {listData?.description || "No description"}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button variant="outline" className="h-10 w-10">
+                      <Ellipsis className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-40">
+                    {userRole === "Creator" && (
+                      <DropdownMenuItem>
+                        <Settings /> Manage list
+                      </DropdownMenuItem>
+                    )}
+                    {listData?.visibility === "Public" &&
+                      userRole === "Creator" && (
+                        <DropdownMenuItem>
+                          <Link2 /> Copy link
+                        </DropdownMenuItem>
+                      )}
+                    {userRole === "Creator" && <DropdownMenuSeparator />}
+                    {userRole === "Creator" ? (
+                      <DropdownMenuItem variant="destructive">
+                        <Trash2 /> Delete list
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem variant="destructive">
+                        <LogOut /> Leave list
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            <div className="flex flex-row gap-2 cursor-default">
+              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground">
+                <MapPin strokeWidth={2.25} className="h-4 w-4" />
+                <p>
+                  {listData?.items.length}{" "}
+                  {listData?.items.length === 1 ? "place" : "places"}
+                </p>
+              </div>
+              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground">
+                <Users strokeWidth={2.25} className="h-4 w-4" />
+                <p>
+                  {listData?.members.length}{" "}
+                  {listData?.members.length === 1 ? "member" : "members"}
+                </p>
+              </div>
+              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground">
+                {listData?.visibility === "Public" ? (
+                  <Globe strokeWidth={2.25} className="h-4 w-4" />
+                ) : listData?.visibility === "Private" ? (
+                  <Lock strokeWidth={2.25} className="h-4 w-4" />
+                ) : listData?.visibility === "Shared" ? (
+                  <Network strokeWidth={2.25} className="h-4 w-4" />
+                ) : listData?.visibility === "Paid access" ? (
+                  <CircleDollarSign strokeWidth={2.25} className="h-4 w-4" />
+                ) : null}
+                <p>{listData?.visibility}</p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-row items-center justify-between">
             <p className="font-bold text-sm">
               {listData?.items.length}{" "}
@@ -189,7 +292,7 @@ function SingularListPane({ listID }: { listID: string }) {
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Button variant="outline">
-                    <ListSortDescending />
+                    <ListSortDescending className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-40">
@@ -215,10 +318,16 @@ function SingularListPane({ listID }: { listID: string }) {
             </div>
           </div>
 
-          <div className="grid grid-col gap-4">
-            {!filteredListItems ||
-            !sortedListItems ||
-            filteredListItems.length === 0 ? (
+          <div className="grid grid-cols-1 gap-4">
+            {listData?.items.length === 0 ? (
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                This list seems to be a little empty. Start exploring the map
+                and tap the &quot;add to list&quot; button to see them appear
+                here!
+              </p>
+            ) : !filteredListItems ||
+              !sortedListItems ||
+              filteredListItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 mt-2">
                 <p className="text-sm">
                   No places found that match your search query.
@@ -235,7 +344,7 @@ function SingularListPane({ listID }: { listID: string }) {
               sortedListItems.map((item, index) => (
                 <div
                   key={item.id}
-                  title={`Added by: ${listData?.members?.find((m) => m.id === item.addedBy)?.name || "Unknown"} on ${new Date(item.addedAt).toLocaleString()}`}
+                  title={`Added by ${listData?.members?.find((m) => m.id === item.addedBy)?.name || "Unknown"} on ${new Date(item.addedAt).toLocaleString()}`}
                   className="flex flex-row items-center gap-3 p-2 cursor-default"
                 >
                   <p className="flex h-8 w-8 items-center justify-center bg-muted text-muted-foreground rounded-md font-semibold text-sm">
