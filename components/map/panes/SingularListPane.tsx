@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useInfoPane } from ".././InfoPaneContext";
 
@@ -21,6 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import {
   ArrowDownAZ,
   Bookmark,
@@ -71,6 +74,21 @@ interface ListData {
   members: ListMember[];
 }
 
+type ListSidebarEventDetail = {
+  action: "deleted";
+  listID: string;
+};
+
+const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
+
+function notifySidebarListDeleted(listID: string) {
+  window.dispatchEvent(
+    new CustomEvent<ListSidebarEventDetail>(LIST_SIDEBAR_EVENT, {
+      detail: { action: "deleted", listID },
+    }),
+  );
+}
+
 function SingularListPane({ listID }: { listID: string }) {
   const [listData, setListData] = useState<ListData | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -81,6 +99,7 @@ function SingularListPane({ listID }: { listID: string }) {
   const [loading, setLoading] = useState(true);
 
   const { openPane } = useInfoPane();
+  const router = useRouter();
 
   const fetchListData = useCallback(async () => {
     setLoading(true);
@@ -130,6 +149,59 @@ function SingularListPane({ listID }: { listID: string }) {
 
     fetchData();
   }, [fetchListData]);
+
+  async function handleLeaveList() {
+    try {
+      const response = await fetch(`/api/lists/leave_list`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listID }),
+      });
+
+      if (!response.ok) {
+        console.error("Error leaving list:", response.statusText);
+        toast.error("Failed to leave list. Please try again later.");
+        return;
+      }
+
+      openPane({ type: "lists" });
+      toast.success("You have successfully left the list.");
+    } catch (error) {
+      console.error("Error leaving list:", error);
+      toast.error("Failed to leave list. Please try again later.");
+    }
+  }
+
+  async function handleDeleteList() {
+    try {
+      const response = await fetch(`/api/lists/delete_list`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listID }),
+      });
+
+      if (!response.ok) {
+        console.error("Error deleting list:", response.statusText);
+        toast.error("Failed to delete list. Please try again later.");
+        return;
+      }
+
+      openPane({ type: "lists" });
+      toast.success("List deleted.");
+      router.refresh();
+
+      window.setTimeout(() => {
+        notifySidebarListDeleted(listID);
+      }, 0);
+    } catch (error) {
+      console.error("Error deleting list:", error);
+      toast.error("Failed to delete list. Please try again later.");
+    }
+  }
 
   const filteredListItems = listData?.items.filter((item) => {
     const query = searchQuery.toLowerCase();
@@ -227,11 +299,17 @@ function SingularListPane({ listID }: { listID: string }) {
                       )}
                     {userRole === "Creator" && <DropdownMenuSeparator />}
                     {userRole === "Creator" ? (
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={handleDeleteList}
+                      >
                         <Trash2 /> Delete list
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={handleLeaveList}
+                      >
                         <LogOut /> Leave list
                       </DropdownMenuItem>
                     )}
@@ -377,6 +455,8 @@ function SingularListPane({ listID }: { listID: string }) {
           </div>
         </>
       )}
+
+      <Toaster position="top-center" />
     </div>
   );
 }

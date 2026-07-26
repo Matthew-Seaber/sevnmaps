@@ -83,7 +83,9 @@ export const subscriptions = pgTable("subscriptions", {
 });
 
 export const notifications = pgTable("notifications", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => randomUUID()),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

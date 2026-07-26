@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useInfoPane } from "./InfoPaneContext";
 
@@ -31,6 +31,13 @@ interface SidebarList {
   placeCount: number;
 }
 
+type ListSidebarEventDetail = {
+  action: "deleted";
+  listID: string;
+};
+
+const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-update";
+
 function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
   const [lists, setLists] = useState<SidebarList[]>(sidebarLists);
   const [displayedLists, setDisplayedLists] = useState<SidebarList[]>(
@@ -42,6 +49,32 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const { openPane } = useInfoPane();
+
+  useEffect(() => {
+    function handleSidebarUpdate(event: Event) {
+      const customEvent = event as CustomEvent<ListSidebarEventDetail>;
+
+      if (customEvent.detail.action !== "deleted") {
+        return;
+      }
+
+      setLists((currentLists) => {
+        const newLists = currentLists.filter(
+          (list) => list.id !== customEvent.detail.listID,
+        );
+
+        setDisplayedLists(newLists.slice(0, 5));
+
+        return newLists;
+      });
+    }
+
+    window.addEventListener(LIST_SIDEBAR_EVENT, handleSidebarUpdate);
+
+    return () => {
+      window.removeEventListener(LIST_SIDEBAR_EVENT, handleSidebarUpdate);
+    };
+  }, []);
 
   async function handleCreateList() {
     if (listName.trim() === "") {
@@ -152,7 +185,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                         onClick={() => setSelectedIcon(id)}
                       >
                         <Icon
-                          className={`w-5 h-5`}
+                          className="w-5 h-5"
                           style={{ color: `${listColor}` }}
                         />
                       </div>
@@ -180,31 +213,29 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
           </p>
         ) : (
           <div className="flex flex-col gap-0.5 px-1">
-            {displayedLists.map((list) => {
-              return (
-                <div
-                  key={list.id}
-                  className="flex flex-row justify-between items-center hover:bg-primary/10 cursor-default rounded-lg px-3 py-1"
-                  onClick={() =>
-                    openPane({ type: "singular_list", listID: list.id })
-                  }
-                >
-                  <div className="flex flex-row items-center gap-3">
-                    <span
-                      className={`inline-block w-2 h-2 rounded-full`}
-                      style={{ backgroundColor: `#${list.listColor}` }}
-                    />
-                    <p className="font-semibold text-sm">{list.listName}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                      {list.placeCount}
-                    </p>
-                  </div>
+            {displayedLists.map((list) => (
+              <div
+                key={list.id}
+                className="flex flex-row justify-between items-center hover:bg-primary/10 cursor-default rounded-lg px-3 py-1"
+                onClick={() =>
+                  openPane({ type: "singular_list", listID: list.id })
+                }
+              >
+                <div className="flex flex-row items-center gap-3">
+                  <span
+                    className="inline-block w-2 h-2 rounded-full"
+                    style={{ backgroundColor: `#${list.listColor}` }}
+                  />
+                  <p className="font-semibold text-sm">{list.listName}</p>
                 </div>
-              );
-            })}
+
+                <div>
+                  <p className="text-sm text-muted-foreground tabular-nums">
+                    {list.placeCount}
+                  </p>
+                </div>
+              </div>
+            ))}
 
             {lists.length > 5 && (
               <p className="mt-2 text-sm text-center text-muted-foreground hover:underline cursor-pointer">

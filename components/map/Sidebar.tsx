@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { lists, list_place_link, list_members } from "@/db/schema";
-import { eq, desc, count } from "drizzle-orm";
+import { and, eq, desc, count } from "drizzle-orm";
 
 import TextLogo from "@/components/navbar/TextLogoLink";
 import MapPageProfileSection from "@/components/map/ProfileSectionServer";
@@ -40,7 +40,12 @@ async function MapPageSidebar() {
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
       .leftJoin(list_members, eq(lists.id, list_members.listId))
-      .where(eq(list_members.userId, session.user.id))
+      .where(
+        and(
+          eq(list_members.userId, session.user.id),
+          eq(list_members.role, "Creator"),
+        ),
+      )
       .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
       .orderBy(desc(lists.createdAt));
 
@@ -51,6 +56,8 @@ async function MapPageSidebar() {
     console.error("Failed to fetch lists:", error);
   }
 
+  const sidebarListsKey = sidebarLists.map((list) => list.id).join("|");
+
   return (
     <div className="hidden md:flex flex-col justify-between w-72 border-r-2 border-border p-6 shadow-xl">
       <div>
@@ -58,7 +65,7 @@ async function MapPageSidebar() {
 
         <SidebarButtons />
 
-        <ListsComponent sidebarLists={sidebarLists} />
+        <ListsComponent key={sidebarListsKey} sidebarLists={sidebarLists} />
       </div>
 
       <div className="w-full flex justify-center">
