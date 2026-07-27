@@ -43,6 +43,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup } from "@/components/ui/field";
+import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
@@ -66,6 +67,10 @@ import {
   LogOut,
   Ban,
   ChevronDown,
+  CircleUserRound,
+  Pencil,
+  Eye,
+  UserRoundCog,
 } from "lucide-react";
 
 interface ListMember {
@@ -134,6 +139,8 @@ function SingularListPane({ listID }: { listID: string }) {
   const [privacyDropdownOpen, setPrivacyDropdownOpen] =
     useState<boolean>(false);
   const [privacyCollapsibleOpen, setPrivacyCollapsibleOpen] =
+    useState<boolean>(false);
+  const [memberRoleDropdownOpen, setMemberRoleDropdownOpen] =
     useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortType, setSortType] = useState<
@@ -369,6 +376,103 @@ function SingularListPane({ listID }: { listID: string }) {
       setLoading(false);
     }
   }
+
+  const handleChangeMemberRole = async (memberID: string, value: string) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/lists/update_member_role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listID,
+          memberID,
+          newRole: value,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error changing member role:", response.statusText);
+        toast.error("Failed to change member's role. Please try again later.");
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Member's role updated.");
+
+      setListData((prevData) => {
+        if (!prevData) return prevData;
+
+        const updatedMembers = prevData.members.map((member) => {
+          if (member.id === memberID) {
+            return {
+              ...member,
+              role: value,
+            };
+          }
+          return member;
+        });
+
+        return {
+          ...prevData,
+          members: updatedMembers,
+        };
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error changing member role:", error);
+      toast.error("Failed to change member's role. Please try again later.");
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberID: string) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/lists/remove_member", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listID,
+          memberID,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error removing member:", response.statusText);
+        toast.error("Failed to remove member. Please try again later.");
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Member removed from list.");
+
+      setListData((prevData) => {
+        if (!prevData) return prevData;
+
+        const updatedMembers = prevData.members.filter(
+          (member) => member.id !== memberID,
+        );
+
+        return {
+          ...prevData,
+          members: updatedMembers,
+        };
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error removing member:", error);
+      toast.error("Failed to remove member. Please try again later.");
+      setLoading(false);
+    }
+  };
 
   const filteredListItems = listData?.items.filter((item) => {
     const query = searchQuery.toLowerCase();
@@ -800,6 +904,8 @@ function SingularListPane({ listID }: { listID: string }) {
                       </DropdownMenu>
                     </Field>
 
+                    <Separator />
+
                     <Field orientation="horizontal">
                       <Label>Members</Label>
 
@@ -811,6 +917,120 @@ function SingularListPane({ listID }: { listID: string }) {
                         Invite
                       </Button>
                     </Field>
+
+                    <div className="flex flex-col gap-2">
+                      {listData?.members.map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex flex-row justify-between cursor-default"
+                        >
+                          <div className="flex flex-row items-center gap-4">
+                            <div className="relative w-8 h-8 shrink-0">
+                              {member.profileImageURL ? (
+                                <Image
+                                  src={member.profileImageURL}
+                                  alt={member.name}
+                                  fill
+                                  sizes="40px"
+                                  className="w-full h-full rounded-full border-2 border-primary"
+                                />
+                              ) : (
+                                <CircleUserRound
+                                  strokeWidth={1.5}
+                                  className="w-8 h-8 bg-primary text-primary-foreground rounded-full"
+                                />
+                              )}
+                            </div>
+                            <div>
+                              <h5 className="font-semibold">
+                                {member.role === "Creator"
+                                  ? `${member.name} (You)`
+                                  : member.name}
+                              </h5>
+                              <p className="text-sm text-muted-foreground">
+                                {member.role !== "Creator"
+                                  ? `Joined: ${member.joinedAt}`
+                                  : "Creator"}
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            {member.role !== "Creator" ? (
+                              <DropdownMenu
+                                open={memberRoleDropdownOpen}
+                                onOpenChange={setMemberRoleDropdownOpen}
+                              >
+                                <DropdownMenuTrigger className="ml-auto">
+                                  <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                      setMemberRoleDropdownOpen(true)
+                                    }
+                                  >
+                                    {member?.role ===
+                                    "Creator" ? null : member?.role ===
+                                      "Admin" ? (
+                                      <UserRoundCog className="h-4 w-4 mr-1" />
+                                    ) : member?.role === "Editor" ? (
+                                      <Pencil className="h-4 w-4 mr-1" />
+                                    ) : member?.role === "Viewer" ? (
+                                      <Eye className="h-4 w-4 mr-1" />
+                                    ) : null}
+                                    {member?.role}
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-40">
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuRadioGroup
+                                      value={member.role}
+                                      onValueChange={(value) => {
+                                        handleChangeMemberRole(
+                                          member.id,
+                                          value,
+                                        );
+                                      }}
+                                    >
+                                      <DropdownMenuRadioItem value="Admin">
+                                        <UserRoundCog strokeWidth={1.5} />
+                                        Admin
+                                      </DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="Editor">
+                                        <Pencil strokeWidth={1.5} />
+                                        Editor
+                                      </DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="Viewer">
+                                        <Eye strokeWidth={1.5} />
+                                        Viewer
+                                      </DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+
+                                    <DropdownMenuSeparator />
+
+                                    <DropdownMenuItem
+                                      variant="destructive"
+                                      onClick={() =>
+                                        handleRemoveMember(member.id)
+                                      }
+                                    >
+                                      <Trash2 strokeWidth={1.5} />
+                                      Remove
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            ) : (
+                              <Button
+                                variant="secondary"
+                                disabled
+                                className="ml-auto"
+                              >
+                                Creator
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </FieldGroup>
                 </CollapsibleContent>
               </Collapsible>
