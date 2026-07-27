@@ -19,7 +19,10 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -128,6 +131,10 @@ function SingularListPane({ listID }: { listID: string }) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
+  const [privacyDropdownOpen, setPrivacyDropdownOpen] =
+    useState<boolean>(false);
+  const [privacyCollapsibleOpen, setPrivacyCollapsibleOpen] =
+    useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortType, setSortType] = useState<
     "dateAddedOldest" | "dateAddedNewest" | "name"
@@ -138,6 +145,7 @@ function SingularListPane({ listID }: { listID: string }) {
   );
   const [newListColor, setNewListColor] = useState<string>("#1273F6");
   const [newListIcon, setNewListIcon] = useState<string | null>(null);
+  const [newListPrivacy, setNewListPrivacy] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   const { openPane } = useInfoPane();
@@ -190,6 +198,8 @@ function SingularListPane({ listID }: { listID: string }) {
       setNewListDescription(data.listData.description);
       setNewListColor("#" + data.listData.listColor);
       setNewListIcon(data.listData.listIcon);
+
+      setNewListPrivacy(data.listData.visibility);
 
       setLoading(false);
     } catch (error) {
@@ -291,6 +301,19 @@ function SingularListPane({ listID }: { listID: string }) {
       }
 
       toast.success("List settings saved.");
+
+      setListData((prevData) => {
+        if (!prevData) return prevData;
+
+        return {
+          ...prevData,
+          name: newListName,
+          description: newListDescription,
+          listColor: newListColor.slice(1),
+          listIcon: newListIcon,
+        };
+      });
+
       setLoading(false);
       setDialogOpen(false);
 
@@ -300,6 +323,49 @@ function SingularListPane({ listID }: { listID: string }) {
     } catch (error) {
       console.error("Error saving list settings:", error);
       toast.error("Failed to save list settings. Please try again later.");
+      setLoading(false);
+    }
+  }
+
+  async function handleChangePrivacy(privacy: string) {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/lists/update_list_privacy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listID,
+          newPrivacy: privacy,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error changing list privacy:", response.statusText);
+        toast.error("Failed to change list privacy. Please try again later.");
+        setLoading(false);
+        return;
+      }
+
+      toast.success("List privacy updated.");
+
+      setListData((prevData) => {
+        if (!prevData) return prevData;
+
+        return {
+          ...prevData,
+          visibility: privacy,
+        };
+      });
+
+      setNewListPrivacy(privacy);
+      setLoading(false);
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Error changing list privacy:", error);
+      toast.error("Failed to change list privacy. Please try again later.");
       setLoading(false);
     }
   }
@@ -436,7 +502,10 @@ function SingularListPane({ listID }: { listID: string }) {
               </div>
               <div
                 className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground cursor-pointer"
-                onClick={() => setDialogOpen(true)}
+                onClick={() => {
+                  setDialogOpen(true);
+                  setPrivacyCollapsibleOpen(true);
+                }}
               >
                 {listData?.visibility === "Public" ? (
                   <Globe strokeWidth={2.25} className="h-4 w-4" />
@@ -653,6 +722,99 @@ function SingularListPane({ listID }: { listID: string }) {
                 </FieldGroup>
               </CollapsibleContent>
             </Collapsible>
+
+            <div>
+              <div
+                className={`flex flex-row items-center w-full px-6 rounded-t-md ${privacyCollapsibleOpen ? "pt-3 bg-muted" : ""}`}
+                onClick={() => setPrivacyCollapsibleOpen((prev) => !prev)}
+              >
+                <h4 className="font-semibold text-base cursor-default select-none">
+                  List sharing
+                </h4>
+                <ChevronDown
+                  className={`h-4 w-4 ml-auto transition-transform ${privacyCollapsibleOpen ? "rotate-180" : ""}`}
+                />
+              </div>
+
+              <Collapsible
+                open={privacyCollapsibleOpen}
+                onOpenChange={setPrivacyCollapsibleOpen}
+                className="data-open:bg-muted rounded-b-md"
+              >
+                <CollapsibleContent className="p-4">
+                  <FieldGroup>
+                    <Field orientation="horizontal">
+                      <Label htmlFor="privacyOptions">Privacy</Label>
+
+                      <DropdownMenu
+                        open={privacyDropdownOpen}
+                        onOpenChange={setPrivacyDropdownOpen}
+                      >
+                        <DropdownMenuTrigger
+                          id="privacyOptions"
+                          className="ml-auto"
+                        >
+                          <Button
+                            variant="outline"
+                            onClick={() => setPrivacyDropdownOpen(true)}
+                          >
+                            {listData?.visibility === "Public" ? (
+                              <Globe className="h-4 w-4 mr-1" />
+                            ) : listData?.visibility === "Private" ? (
+                              <Lock className="h-4 w-4 mr-1" />
+                            ) : listData?.visibility === "Shared" ? (
+                              <Network className="h-4 w-4 mr-1" />
+                            ) : listData?.visibility === "Paid access" ? (
+                              <CircleDollarSign className="h-4 w-4 mr-1" />
+                            ) : null}
+                            {newListPrivacy}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-40">
+                          <DropdownMenuGroup>
+                            <DropdownMenuRadioGroup
+                              value={newListPrivacy}
+                              onValueChange={(value) => {
+                                handleChangePrivacy(value);
+                              }}
+                            >
+                              <DropdownMenuRadioItem value="Private">
+                                <Lock strokeWidth={1.5} />
+                                Private
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Public">
+                                <Globe strokeWidth={1.5} />
+                                Public
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Shared">
+                                <Network strokeWidth={1.5} />
+                                Shared
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Paid access">
+                                <CircleDollarSign strokeWidth={1.5} />
+                                Paid access
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </Field>
+
+                    <Field orientation="horizontal">
+                      <Label>Members</Label>
+
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="text-primary ml-auto"
+                      >
+                        Invite
+                      </Button>
+                    </Field>
+                  </FieldGroup>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
 
             <Button
               variant="destructive"

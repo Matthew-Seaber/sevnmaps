@@ -100,6 +100,7 @@ export async function GET(request: Request) {
 
   const listData = {
     name: list.name,
+    description: list.description,
     createdAt: list.createdAt,
     updatedAt: list.updatedAt,
     visibility: list.visibility,
