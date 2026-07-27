@@ -18,6 +18,14 @@ export async function POST(request: Request) {
   }
 
   const { placeId, favorite } = await request.json();
+
+  if (!placeId) {
+    return NextResponse.json(
+      { error: "Place ID is required" },
+      { status: 400 },
+    );
+  }
+
   const userId = session.user.id;
 
   const result = await db

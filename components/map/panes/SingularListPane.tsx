@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useInfoPane } from ".././InfoPaneContext";
 
+import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
 import { listIcons } from "@/components/map/ListIcons";
 
 import Image from "next/image";
@@ -22,6 +23,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+} from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Field, FieldGroup } from "@/components/ui/field";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
@@ -43,6 +61,8 @@ import {
   Settings,
   Link2,
   LogOut,
+  Ban,
+  ChevronDown,
 } from "lucide-react";
 
 interface ListMember {
@@ -75,8 +95,10 @@ interface ListData {
 }
 
 type ListSidebarEventDetail = {
-  action: "deleted";
+  action: "deleted" | "updated";
   listID: string;
+  newListName?: string;
+  newListColor?: string;
 };
 
 const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
@@ -89,13 +111,33 @@ function notifySidebarListDeleted(listID: string) {
   );
 }
 
+function notifySidebarListUpdated(
+  listID: string,
+  newListName?: string,
+  newListColor?: string,
+) {
+  window.dispatchEvent(
+    new CustomEvent<ListSidebarEventDetail>(LIST_SIDEBAR_EVENT, {
+      detail: { action: "updated", listID, newListName, newListColor },
+    }),
+  );
+}
+
 function SingularListPane({ listID }: { listID: string }) {
   const [listData, setListData] = useState<ListData | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortType, setSortType] = useState<
     "dateAddedOldest" | "dateAddedNewest" | "name"
   >("dateAddedNewest");
+  const [newListName, setNewListName] = useState<string>("");
+  const [newListDescription, setNewListDescription] = useState<string | null>(
+    null,
+  );
+  const [newListColor, setNewListColor] = useState<string>("#1273F6");
+  const [newListIcon, setNewListIcon] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const { openPane } = useInfoPane();
@@ -120,11 +162,19 @@ function SingularListPane({ listID }: { listID: string }) {
 
       if (!response.ok) {
         console.error("Failed to fetch list data:", response.statusText);
+        toast.error("Failed to fetch list data. Please try again later.");
         return;
       }
 
       const data = await response.json();
+
+      if (!data || !data.listData) {
+        toast.error("Error fetching list data. Please try again later.");
+        return;
+      }
+
       setListData(data.listData);
+
       const userID = data.userID;
 
       const userMember = data.listData.members.find(
@@ -136,9 +186,15 @@ function SingularListPane({ listID }: { listID: string }) {
         return;
       }
 
+      setNewListName(data.listData.name);
+      setNewListDescription(data.listData.description);
+      setNewListColor("#" + data.listData.listColor);
+      setNewListIcon(data.listData.listIcon);
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching list data:", error);
+      toast.error("Failed to fetch list data. Please try again later.");
     }
   }, [listID]);
 
@@ -200,6 +256,51 @@ function SingularListPane({ listID }: { listID: string }) {
     } catch (error) {
       console.error("Error deleting list:", error);
       toast.error("Failed to delete list. Please try again later.");
+    }
+  }
+
+  async function handleSaveListSettings() {
+    setLoading(true);
+
+    if (newListName.trim() === "") {
+      toast.info("List name cannot be empty.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/lists/update_list_info", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listID,
+          newName: newListName,
+          newDescription: newListDescription,
+          newColor: newListColor.slice(1),
+          newIcon: newListIcon,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error saving list settings:", response.statusText);
+        toast.error("Failed to save list settings. Please try again later.");
+        setLoading(false);
+        return;
+      }
+
+      toast.success("List settings saved.");
+      setLoading(false);
+      setDialogOpen(false);
+
+      window.setTimeout(() => {
+        notifySidebarListUpdated(listID, newListName, newListColor.slice(1));
+      }, 0);
+    } catch (error) {
+      console.error("Error saving list settings:", error);
+      toast.error("Failed to save list settings. Please try again later.");
+      setLoading(false);
     }
   }
 
@@ -287,7 +388,7 @@ function SingularListPane({ listID }: { listID: string }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-40">
                     {userRole === "Creator" && (
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setDialogOpen(true)}>
                         <Settings /> Manage list
                       </DropdownMenuItem>
                     )}
@@ -301,7 +402,7 @@ function SingularListPane({ listID }: { listID: string }) {
                     {userRole === "Creator" ? (
                       <DropdownMenuItem
                         variant="destructive"
-                        onClick={handleDeleteList}
+                        onClick={() => setDeletePopupOpen(true)}
                       >
                         <Trash2 /> Delete list
                       </DropdownMenuItem>
@@ -333,7 +434,10 @@ function SingularListPane({ listID }: { listID: string }) {
                   {listData?.members.length === 1 ? "member" : "members"}
                 </p>
               </div>
-              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground">
+              <div
+                className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground cursor-pointer"
+                onClick={() => setDialogOpen(true)}
+              >
                 {listData?.visibility === "Public" ? (
                   <Globe strokeWidth={2.25} className="h-4 w-4" />
                 ) : listData?.visibility === "Private" ? (
@@ -456,7 +560,127 @@ function SingularListPane({ listID }: { listID: string }) {
         </>
       )}
 
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage list</DialogTitle>
+            <DialogDescription></DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4">
+            <Collapsible className="data-open:bg-muted rounded-md">
+              <CollapsibleTrigger className="group flex flex-row items-center w-full px-6 data-panel-open:pt-3">
+                <h4 className="font-semibold text-base">List settings</h4>
+                <ChevronDown className="h-4 w-4 ml-auto transition-transform group-data-panel-open:rotate-180" />
+              </CollapsibleTrigger>
+
+              <CollapsibleContent className="p-4">
+                <FieldGroup>
+                  <Field>
+                    <Label htmlFor="listName">List name</Label>
+                    <Input
+                      id="listName"
+                      type="text"
+                      placeholder={listData?.name}
+                      value={newListName}
+                      onChange={(e) => setNewListName(e.target.value)}
+                    />
+                  </Field>
+                  <Field>
+                    <Label htmlFor="listDescription">Description</Label>
+                    <Input
+                      id="listDescription"
+                      type="text"
+                      placeholder={listData?.description || "Empty"}
+                      className={newListDescription === null ? "" : "italic"}
+                      value={newListDescription ?? ""}
+                      onChange={(e) =>
+                        setNewListDescription(
+                          e.target.value.trim() === "" ? null : e.target.value,
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field>
+                    <Label htmlFor="listColor">List colour</Label>
+                    <Input
+                      id="listColor"
+                      type="color"
+                      defaultValue={newListColor}
+                      className="w-8! h-8! p-0"
+                      value={newListColor}
+                      onChange={(e) => setNewListColor(e.target.value)}
+                    />
+                  </Field>
+                  <Field>
+                    <Label>List icon</Label>
+                    <div className="grid grid-cols-8 rounded-lg border border-border p-2">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-md ${newListIcon === null ? "bg-primary/50 hover:bg-primary/30" : "hover:bg-primary/20"}`}
+                        onClick={() => setNewListIcon(null)}
+                      >
+                        <Ban className="w-5 h-5" />
+                      </div>
+
+                      {listIcons.map(({ id, icon: Icon }) => (
+                        <div
+                          key={id}
+                          className={`flex h-10 w-10 items-center justify-center rounded-md ${newListIcon === id ? "bg-primary/50 hover:bg-primary/30" : "hover:bg-primary/20"}`}
+                          onClick={() => setNewListIcon(id)}
+                        >
+                          <Icon
+                            className="w-5 h-5"
+                            style={{ color: `${newListColor}` }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </Field>
+
+                  <Button
+                    type="submit"
+                    disabled={
+                      loading ||
+                      (newListName === listData?.name &&
+                        newListDescription === listData?.description &&
+                        newListColor === `#${listData?.listColor}` &&
+                        newListIcon === listData?.listIcon)
+                    }
+                    onClick={handleSaveListSettings}
+                  >
+                    Save
+                  </Button>
+                </FieldGroup>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Button
+              variant="destructive"
+              size="lg"
+              className="flex items-center gap-2 py-5!"
+              onClick={() => setDeletePopupOpen(true)}
+            >
+              <Trash2 /> Delete list
+            </Button>
+          </div>
+
+          <DialogFooter>
+            <DialogClose>Close</DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Toaster position="top-center" />
+      <ConfirmationPopup
+        open={deletePopupOpen}
+        setOpen={setDeletePopupOpen}
+        title="Delete list"
+        message="Are you sure you want to delete this list?"
+        destructive={true}
+        confirmText="Delete list"
+        cancelText="Cancel"
+        onConfirm={handleDeleteList}
+      />
     </div>
   );
 }

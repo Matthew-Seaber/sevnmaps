@@ -32,11 +32,13 @@ interface SidebarList {
 }
 
 type ListSidebarEventDetail = {
-  action: "deleted";
+  action: "deleted" | "updated";
   listID: string;
+  newListName?: string;
+  newListColor?: string;
 };
 
-const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-update";
+const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
 
 function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
   const [lists, setLists] = useState<SidebarList[]>(sidebarLists);
@@ -54,19 +56,56 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
     function handleSidebarUpdate(event: Event) {
       const customEvent = event as CustomEvent<ListSidebarEventDetail>;
 
-      if (customEvent.detail.action !== "deleted") {
+      if (
+        customEvent.detail.action !== "deleted" &&
+        customEvent.detail.action !== "updated"
+      ) {
         return;
       }
 
-      setLists((currentLists) => {
-        const newLists = currentLists.filter(
-          (list) => list.id !== customEvent.detail.listID,
-        );
+      if (customEvent.detail.action === "updated") {
+        const updatedName = customEvent.detail.newListName;
+        const updatedColor = customEvent.detail.newListColor;
 
-        setDisplayedLists(newLists.slice(0, 5));
+        setLists((currentLists) => {
+          const updatedLists = currentLists.map((list) => {
+            if (list.id === customEvent.detail.listID) {
+              return {
+                ...list,
+                listName: updatedName || list.listName,
+                listColor: updatedColor || list.listColor,
+              };
+            }
 
-        return newLists;
-      });
+            return list;
+          });
+          return updatedLists;
+        });
+        
+        setDisplayedLists((currentDisplayedLists) => {
+          const updatedDisplayedLists = currentDisplayedLists.map((list) => {
+            if (list.id === customEvent.detail.listID) {
+              return {
+                ...list,
+                listName: updatedName || list.listName,
+                listColor: updatedColor || list.listColor,
+              };
+            }
+            return list;
+          });
+          return updatedDisplayedLists;
+        });
+      } else if (customEvent.detail.action === "deleted") {
+        setLists((currentLists) => {
+          const newLists = currentLists.filter(
+            (list) => list.id !== customEvent.detail.listID,
+          );
+
+          setDisplayedLists(newLists.slice(0, 5));
+
+          return newLists;
+        });
+      }
     }
 
     window.addEventListener(LIST_SIDEBAR_EVENT, handleSidebarUpdate);
@@ -216,7 +255,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
             {displayedLists.map((list) => (
               <div
                 key={list.id}
-                className="flex flex-row justify-between items-center hover:bg-primary/10 cursor-default rounded-lg px-3 py-1"
+                className="group flex flex-row justify-between items-center hover:text-primary hover:bg-primary/10 cursor-default rounded-lg px-3 py-1"
                 onClick={() =>
                   openPane({ type: "singular_list", listID: list.id })
                 }
@@ -230,7 +269,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                 </div>
 
                 <div>
-                  <p className="text-sm text-muted-foreground tabular-nums">
+                  <p className="text-sm text-muted-foreground tabular-nums group-hover:text-primary">
                     {list.placeCount}
                   </p>
                 </div>

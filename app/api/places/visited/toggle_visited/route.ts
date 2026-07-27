@@ -19,6 +19,13 @@ export async function POST(request: Request) {
 
   const { placeId, visited, visitedAt } = await request.json();
 
+  if (!placeId) {
+    return NextResponse.json(
+      { error: "Place ID is required" },
+      { status: 400 },
+    );
+  }
+
   const userId = session.user.id;
   const visitedDate = visitedAt ? new Date(visitedAt) : null;
 
