@@ -44,7 +44,28 @@ function Footer() {
             Contact
           </Link>
         </div>
+
+        <div className="hidden md:flex flex-col gap-2">
+          <h4 className="font-bold ml-2">Climate Commitment</h4>
+
+          <div className="p-2 w-full max-w-sm">
+            <iframe
+              width="380"
+              height="48"
+              style={{ border: 0 }}
+              src="https://climate.stripe.com/badge/ZD6K2r?theme=light&size=small&locale=en-GB"
+            ></iframe>
+          </div>
+        </div>
       </div>
+
+      <iframe
+        className="md:hidden px-2 mx-auto mb-4"
+        width="380"
+        height="56"
+        style={{ border: 0 }}
+        src="https://climate.stripe.com/badge/ZD6K2r?theme=light&size=small&locale=en-GB"
+      ></iframe>
 
       <div className="text-foreground/60 text-center space-y-1">
         <p>© SevnMaps 2026</p>
