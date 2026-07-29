@@ -447,7 +447,7 @@ function SingularListPane({ listID }: { listID: string }) {
     }
 
     try {
-      const response = await fetch("/api/lists/invite_member", {
+      const response = await fetch("/api/lists/invite_user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -460,8 +460,8 @@ function SingularListPane({ listID }: { listID: string }) {
       });
 
       if (!response.ok) {
-        console.error("Error inviting member:", response.statusText);
-        toast.error("Failed to invite member. Please try again later.");
+        console.error("Error inviting user:", response.statusText);
+        toast.error("Failed to invite user. Please try again later.");
         return;
       }
 
@@ -473,8 +473,8 @@ function SingularListPane({ listID }: { listID: string }) {
       setNewMemberRole("");
       setInviteUIVisible(false);
     } catch (error) {
-      console.error("Error inviting member:", error);
-      toast.error("Failed to invite member. Please try again later.");
+      console.error("Error inviting user:", error);
+      toast.error("Failed to invite user. Please try again later.");
     }
   };
 
