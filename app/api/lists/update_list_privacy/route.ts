@@ -52,13 +52,19 @@ export async function POST(request: Request) {
         );
 
       if (!userRole) {
-        throw new Error("User is not authorised to edit this list's privacy type");
+        throw new Error(
+          "User is not authorised to edit this list's privacy type",
+        );
       }
 
       await tx
         .update(lists)
         .set({ visibility: newPrivacy })
         .where(eq(lists.id, listID));
+
+      if (newPrivacy === "Private") {
+        await tx.delete(list_members).where(eq(list_members.listId, listID));
+      }
     });
   } catch (error) {
     console.error("Error updating list privacy:", error);

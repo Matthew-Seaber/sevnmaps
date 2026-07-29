@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useInfoPane } from ".././InfoPaneContext";
+import { getImageURL } from "@/lib/images";
 
 import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
 import { listIcons } from "@/components/map/ListIcons";
@@ -44,6 +45,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
@@ -136,12 +142,15 @@ function SingularListPane({ listID }: { listID: string }) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
+  const [markPrivatePopupOpen, setMarkPrivatePopupOpen] =
+    useState<boolean>(false);
   const [privacyDropdownOpen, setPrivacyDropdownOpen] =
     useState<boolean>(false);
   const [privacyCollapsibleOpen, setPrivacyCollapsibleOpen] =
     useState<boolean>(false);
   const [memberRoleDropdownOpen, setMemberRoleDropdownOpen] =
     useState<boolean>(false);
+  const [inviteUIVisible, setInviteUIVisible] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortType, setSortType] = useState<
     "dateAddedOldest" | "dateAddedNewest" | "name"
@@ -153,6 +162,8 @@ function SingularListPane({ listID }: { listID: string }) {
   const [newListColor, setNewListColor] = useState<string>("#1273F6");
   const [newListIcon, setNewListIcon] = useState<string | null>(null);
   const [newListPrivacy, setNewListPrivacy] = useState<string>("");
+  const [newMemberEmail, setNewMemberEmail] = useState<string>("");
+  const [newMemberRole, setNewMemberRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   const { openPane } = useInfoPane();
@@ -429,6 +440,44 @@ function SingularListPane({ listID }: { listID: string }) {
     }
   };
 
+  const handleInviteMember = async () => {
+    if (!newMemberEmail.trim() || !newMemberRole) {
+      toast.info("Please provide both an email and a role for the new member.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/lists/invite_member", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listID,
+          email: newMemberEmail,
+          role: newMemberRole,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error inviting member:", response.statusText);
+        toast.error("Failed to invite member. Please try again later.");
+        return;
+      }
+
+      toast.success(
+        "User invited to list (given they have a SevnMaps account).",
+      );
+
+      setNewMemberEmail("");
+      setNewMemberRole("");
+      setInviteUIVisible(false);
+    } catch (error) {
+      console.error("Error inviting member:", error);
+      toast.error("Failed to invite member. Please try again later.");
+    }
+  };
+
   const handleRemoveMember = async (memberID: string) => {
     setLoading(true);
 
@@ -557,17 +606,19 @@ function SingularListPane({ listID }: { listID: string }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-40">
-                    {userRole === "Creator" && (
-                      <DropdownMenuItem onClick={() => setDialogOpen(true)}>
-                        <Settings /> Manage list
-                      </DropdownMenuItem>
-                    )}
-                    {listData?.visibility === "Public" &&
-                      userRole === "Creator" && (
-                        <DropdownMenuItem>
-                          <Link2 /> Copy link
+                    {userRole === "Creator" ||
+                      (userRole === "Admin" && (
+                        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+                          <Settings /> Manage list
                         </DropdownMenuItem>
-                      )}
+                      ))}
+                    {listData?.visibility === "Public" ||
+                      (listData?.visibility === "Shared" &&
+                        userRole === "Creator" && (
+                          <DropdownMenuItem>
+                            <Link2 /> Copy link
+                          </DropdownMenuItem>
+                        ))}
                     {userRole === "Creator" && <DropdownMenuSeparator />}
                     {userRole === "Creator" ? (
                       <DropdownMenuItem
@@ -708,11 +759,11 @@ function SingularListPane({ listID }: { listID: string }) {
 
                   <div className="relative w-20 h-20 shrink-0">
                     <Image
-                      src={item.imageURL}
+                      src={getImageURL(item.imageURL, true)}
                       alt={item.name}
                       fill
-                      sizes="150px"
-                      className="w-full h-full rounded-md"
+                      sizes="80px"
+                      className="object-cover rounded-md"
                     />
                   </div>
 
@@ -827,214 +878,300 @@ function SingularListPane({ listID }: { listID: string }) {
               </CollapsibleContent>
             </Collapsible>
 
-            <div>
-              <div
-                className={`flex flex-row items-center w-full px-6 rounded-t-md ${privacyCollapsibleOpen ? "pt-3 bg-muted" : ""}`}
-                onClick={() => setPrivacyCollapsibleOpen((prev) => !prev)}
-              >
-                <h4 className="font-semibold text-base cursor-default select-none">
-                  List sharing
-                </h4>
-                <ChevronDown
-                  className={`h-4 w-4 ml-auto transition-transform ${privacyCollapsibleOpen ? "rotate-180" : ""}`}
-                />
-              </div>
+            {userRole === "Creator" || userRole === "Admin" ? (
+              <div>
+                <div
+                  className={`flex flex-row items-center w-full px-6 rounded-t-md ${privacyCollapsibleOpen ? "pt-3 bg-muted" : ""}`}
+                  onClick={() => setPrivacyCollapsibleOpen((prev) => !prev)}
+                >
+                  <h4 className="font-semibold text-base cursor-default select-none">
+                    List sharing
+                  </h4>
+                  <ChevronDown
+                    className={`h-4 w-4 ml-auto transition-transform ${privacyCollapsibleOpen ? "rotate-180" : ""}`}
+                  />
+                </div>
 
-              <Collapsible
-                open={privacyCollapsibleOpen}
-                onOpenChange={setPrivacyCollapsibleOpen}
-                className="data-open:bg-muted rounded-b-md"
-              >
-                <CollapsibleContent className="p-4">
-                  <FieldGroup>
-                    <Field orientation="horizontal">
-                      <Label htmlFor="privacyOptions">Privacy</Label>
+                <Collapsible
+                  open={privacyCollapsibleOpen}
+                  onOpenChange={setPrivacyCollapsibleOpen}
+                  className="data-open:bg-muted rounded-b-md"
+                >
+                  <CollapsibleContent className="p-4">
+                    <FieldGroup>
+                      <Field orientation="horizontal">
+                        <Label htmlFor="privacyOptions">Privacy</Label>
 
-                      <DropdownMenu
-                        open={privacyDropdownOpen}
-                        onOpenChange={setPrivacyDropdownOpen}
-                      >
-                        <DropdownMenuTrigger
-                          id="privacyOptions"
-                          className="ml-auto"
+                        <DropdownMenu
+                          open={privacyDropdownOpen}
+                          onOpenChange={setPrivacyDropdownOpen}
                         >
-                          <Button
-                            variant="outline"
-                            onClick={() => setPrivacyDropdownOpen(true)}
+                          <DropdownMenuTrigger
+                            id="privacyOptions"
+                            className="ml-auto"
                           >
-                            {listData?.visibility === "Public" ? (
-                              <Globe className="h-4 w-4 mr-1" />
-                            ) : listData?.visibility === "Private" ? (
-                              <Lock className="h-4 w-4 mr-1" />
-                            ) : listData?.visibility === "Shared" ? (
-                              <Network className="h-4 w-4 mr-1" />
-                            ) : listData?.visibility === "Paid access" ? (
-                              <CircleDollarSign className="h-4 w-4 mr-1" />
-                            ) : null}
-                            {newListPrivacy}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-40">
-                          <DropdownMenuGroup>
-                            <DropdownMenuRadioGroup
-                              value={newListPrivacy}
-                              onValueChange={(value) => {
-                                handleChangePrivacy(value);
-                              }}
+                            <Button
+                              variant="outline"
+                              onClick={() => setPrivacyDropdownOpen(true)}
                             >
-                              <DropdownMenuRadioItem value="Private">
-                                <Lock strokeWidth={1.5} />
-                                Private
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Public">
-                                <Globe strokeWidth={1.5} />
-                                Public
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Shared">
-                                <Network strokeWidth={1.5} />
-                                Shared
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="Paid access">
-                                <CircleDollarSign strokeWidth={1.5} />
-                                Paid access
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </Field>
-
-                    <Separator />
-
-                    <Field orientation="horizontal">
-                      <Label>Members</Label>
-
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="text-primary ml-auto"
-                      >
-                        Invite
-                      </Button>
-                    </Field>
-
-                    <div className="flex flex-col gap-2">
-                      {listData?.members.map((member) => (
-                        <div
-                          key={member.id}
-                          className="flex flex-row justify-between cursor-default"
-                        >
-                          <div className="flex flex-row items-center gap-4">
-                            <div className="relative w-8 h-8 shrink-0">
-                              {member.profileImageURL ? (
-                                <Image
-                                  src={member.profileImageURL}
-                                  alt={member.name}
-                                  fill
-                                  sizes="40px"
-                                  className="w-full h-full rounded-full border-2 border-primary"
-                                />
-                              ) : (
-                                <CircleUserRound
-                                  strokeWidth={1.5}
-                                  className="w-8 h-8 bg-primary text-primary-foreground rounded-full"
-                                />
-                              )}
-                            </div>
-                            <div>
-                              <h5 className="font-semibold">
-                                {member.role === "Creator"
-                                  ? `${member.name} (You)`
-                                  : member.name}
-                              </h5>
-                              <p className="text-sm text-muted-foreground">
-                                {member.role !== "Creator"
-                                  ? `Joined: ${member.joinedAt}`
-                                  : "Creator"}
-                              </p>
-                            </div>
-                          </div>
-                          <div>
-                            {member.role !== "Creator" ? (
-                              <DropdownMenu
-                                open={memberRoleDropdownOpen}
-                                onOpenChange={setMemberRoleDropdownOpen}
+                              {listData?.visibility === "Public" ? (
+                                <Globe className="h-4 w-4 mr-1" />
+                              ) : listData?.visibility === "Private" ? (
+                                <Lock className="h-4 w-4 mr-1" />
+                              ) : listData?.visibility === "Shared" ? (
+                                <Network className="h-4 w-4 mr-1" />
+                              ) : listData?.visibility === "Paid access" ? (
+                                <CircleDollarSign className="h-4 w-4 mr-1" />
+                              ) : null}
+                              {newListPrivacy}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-40">
+                            <DropdownMenuGroup>
+                              <DropdownMenuRadioGroup
+                                value={newListPrivacy}
+                                onValueChange={(value) => {
+                                  if (
+                                    value === "Private" &&
+                                    listData?.visibility !== "Private"
+                                  ) {
+                                    setMarkPrivatePopupOpen(true);
+                                  } else {
+                                    handleChangePrivacy(value);
+                                  }
+                                }}
                               >
-                                <DropdownMenuTrigger className="ml-auto">
-                                  <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                      setMemberRoleDropdownOpen(true)
-                                    }
+                                <DropdownMenuRadioItem value="Private">
+                                  <Lock strokeWidth={1.5} />
+                                  Private
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="Public">
+                                  <Globe strokeWidth={1.5} />
+                                  Public
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="Shared">
+                                  <Network strokeWidth={1.5} />
+                                  Shared
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="Paid access">
+                                  <CircleDollarSign strokeWidth={1.5} />
+                                  Paid access
+                                </DropdownMenuRadioItem>
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </Field>
+
+                      <Separator />
+
+                      <Field orientation="horizontal">
+                        <Label>Members</Label>
+
+                        <Tooltip>
+                          <TooltipTrigger className="ml-auto">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              disabled={listData?.visibility === "Private"}
+                              onClick={() =>
+                                setInviteUIVisible((prev) => !prev)
+                              }
+                              className="text-primary"
+                            >
+                              Invite
+                            </Button>
+                          </TooltipTrigger>
+                          {listData?.visibility === "Private" && (
+                            <TooltipContent>
+                              <p>
+                                You cannot invite members to a private list.
+                              </p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </Field>
+
+                      <div className="flex flex-col gap-2">
+                        <FieldGroup
+                          className={`rounded-md overflow-hidden transition-all duration-300 ease-out ${inviteUIVisible ? "max-h-96 mb-4 border border-border p-3" : "max-h-0"}`}
+                        >
+                          <Field>
+                            <Label>Email address</Label>
+                            <Input
+                              type="email"
+                              placeholder="Email"
+                              value={newMemberEmail}
+                              onChange={(e) =>
+                                setNewMemberEmail(e.target.value)
+                              }
+                            />
+                          </Field>
+
+                          <Field>
+                            <Label>Role</Label>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger>
+                                <Button variant="outline">
+                                  {newMemberRole === "Admin" && (
+                                    <UserRoundCog />
+                                  )}
+                                  {newMemberRole === "Editor" && <Pencil />}
+                                  {newMemberRole === "Viewer" && <Eye />}
+                                  {newMemberRole || "Select role"}
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="w-40">
+                                <DropdownMenuGroup>
+                                  <DropdownMenuRadioGroup
+                                    value={newMemberRole}
+                                    onValueChange={setNewMemberRole}
                                   >
-                                    {member?.role ===
-                                    "Creator" ? null : member?.role ===
-                                      "Admin" ? (
-                                      <UserRoundCog className="h-4 w-4 mr-1" />
-                                    ) : member?.role === "Editor" ? (
-                                      <Pencil className="h-4 w-4 mr-1" />
-                                    ) : member?.role === "Viewer" ? (
-                                      <Eye className="h-4 w-4 mr-1" />
-                                    ) : null}
-                                    {member?.role}
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-40">
-                                  <DropdownMenuGroup>
-                                    <DropdownMenuRadioGroup
-                                      value={member.role}
-                                      onValueChange={(value) => {
-                                        handleChangeMemberRole(
-                                          member.id,
-                                          value,
-                                        );
-                                      }}
-                                    >
-                                      <DropdownMenuRadioItem value="Admin">
-                                        <UserRoundCog strokeWidth={1.5} />
-                                        Admin
-                                      </DropdownMenuRadioItem>
-                                      <DropdownMenuRadioItem value="Editor">
-                                        <Pencil strokeWidth={1.5} />
-                                        Editor
-                                      </DropdownMenuRadioItem>
-                                      <DropdownMenuRadioItem value="Viewer">
-                                        <Eye strokeWidth={1.5} />
-                                        Viewer
-                                      </DropdownMenuRadioItem>
-                                    </DropdownMenuRadioGroup>
+                                    <DropdownMenuRadioItem value="Admin">
+                                      <UserRoundCog strokeWidth={1.5} />
+                                      Admin
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="Editor">
+                                      <Pencil strokeWidth={1.5} />
+                                      Editor
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="Viewer">
+                                      <Eye strokeWidth={1.5} />
+                                      Viewer
+                                    </DropdownMenuRadioItem>
+                                  </DropdownMenuRadioGroup>
+                                </DropdownMenuGroup>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </Field>
 
-                                    <DropdownMenuSeparator />
+                          <Button type="submit" onClick={handleInviteMember}>
+                            Invite member
+                          </Button>
+                          <p className="text-center text-xs text-muted-foreground italic">
+                            Note: the invited user must already have a SevnMaps
+                            account with the given email address.
+                          </p>
+                        </FieldGroup>
 
-                                    <DropdownMenuItem
-                                      variant="destructive"
+                        {listData?.members.map((member) => (
+                          <div
+                            key={member.id}
+                            className="flex flex-row justify-between cursor-default"
+                          >
+                            <div className="flex flex-row items-center gap-4">
+                              <div className="relative w-8 h-8 shrink-0">
+                                {member.profileImageURL ? (
+                                  <Image
+                                    src={member.profileImageURL}
+                                    alt={member.name}
+                                    fill
+                                    sizes="40px"
+                                    className="w-full h-full rounded-full border-2 border-primary"
+                                  />
+                                ) : (
+                                  <CircleUserRound
+                                    strokeWidth={1.5}
+                                    className="w-8 h-8 bg-primary text-primary-foreground rounded-full"
+                                  />
+                                )}
+                              </div>
+                              <div>
+                                <h5 className="font-semibold">
+                                  {member.role === "Creator"
+                                    ? `${member.name} (You)`
+                                    : member.name}
+                                </h5>
+                                <p className="text-sm text-muted-foreground">
+                                  {member.role !== "Creator"
+                                    ? `Joined: ${member.joinedAt}`
+                                    : "Creator"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div>
+                              {member.role !== "Creator" ? (
+                                <DropdownMenu
+                                  open={memberRoleDropdownOpen}
+                                  onOpenChange={setMemberRoleDropdownOpen}
+                                >
+                                  <DropdownMenuTrigger className="ml-auto">
+                                    <Button
+                                      variant="outline"
                                       onClick={() =>
-                                        handleRemoveMember(member.id)
+                                        setMemberRoleDropdownOpen(true)
                                       }
                                     >
-                                      <Trash2 strokeWidth={1.5} />
-                                      Remove
-                                    </DropdownMenuItem>
-                                  </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            ) : (
-                              <Button
-                                variant="secondary"
-                                disabled
-                                className="ml-auto"
-                              >
-                                Creator
-                              </Button>
-                            )}
+                                      {member?.role ===
+                                      "Creator" ? null : member?.role ===
+                                        "Admin" ? (
+                                        <UserRoundCog className="h-4 w-4 mr-1" />
+                                      ) : member?.role === "Editor" ? (
+                                        <Pencil className="h-4 w-4 mr-1" />
+                                      ) : member?.role === "Viewer" ? (
+                                        <Eye className="h-4 w-4 mr-1" />
+                                      ) : null}
+                                      {member?.role}
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent className="w-40">
+                                    <DropdownMenuGroup>
+                                      <DropdownMenuRadioGroup
+                                        value={member.role}
+                                        onValueChange={(value) => {
+                                          handleChangeMemberRole(
+                                            member.id,
+                                            value,
+                                          );
+                                        }}
+                                      >
+                                        <DropdownMenuRadioItem value="Admin">
+                                          <UserRoundCog strokeWidth={1.5} />
+                                          Admin
+                                        </DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Editor">
+                                          <Pencil strokeWidth={1.5} />
+                                          Editor
+                                        </DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="Viewer">
+                                          <Eye strokeWidth={1.5} />
+                                          Viewer
+                                        </DropdownMenuRadioItem>
+                                      </DropdownMenuRadioGroup>
+
+                                      <DropdownMenuSeparator />
+
+                                      <DropdownMenuItem
+                                        variant="destructive"
+                                        onClick={() =>
+                                          handleRemoveMember(member.id)
+                                        }
+                                      >
+                                        <Trash2 strokeWidth={1.5} />
+                                        Remove
+                                      </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              ) : (
+                                <Button
+                                  variant="secondary"
+                                  disabled
+                                  className="ml-auto"
+                                >
+                                  Creator
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </FieldGroup>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
+                        ))}
+                      </div>
+                    </FieldGroup>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            ) : null}
 
             <Button
               variant="destructive"
@@ -1062,6 +1199,16 @@ function SingularListPane({ listID }: { listID: string }) {
         confirmText="Delete list"
         cancelText="Cancel"
         onConfirm={handleDeleteList}
+      />
+      <ConfirmationPopup
+        open={markPrivatePopupOpen}
+        setOpen={setMarkPrivatePopupOpen}
+        title="Mark list as private"
+        message="Are you sure you want to make this list private? This will remove all other members and their roles from the list."
+        destructive={true}
+        confirmText="Set private"
+        cancelText="Cancel"
+        onConfirm={() => handleChangePrivacy("Private")}
       />
     </div>
   );

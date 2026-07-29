@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { getImageURL } from "@/lib/images";
+
 import CountriesVisitedMap from "./CountriesVisitedMap";
 import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
 
@@ -157,7 +159,7 @@ function VisitedCountries({
           >
             <div className="relative shrink-0 w-10 h-10 border-2 border-border rounded-full">
               <Image
-                src={country.flag}
+                src={getImageURL(country.flag, true)}
                 alt={`Flag for ${country.name}`}
                 width={64}
                 height={48}
@@ -196,10 +198,10 @@ function VisitedCountries({
                 <div className="flex flex-row gap-4 items-center">
                   <div className="relative shrink-0 w-5 h-5 rounded-full">
                     <Image
-                      src={selectedCountry?.flag}
+                      src={getImageURL(selectedCountry?.flag, true)}
                       alt={`Flag for ${selectedCountry?.name}`}
-                      width={24}
-                      height={24}
+                      fill
+                      sizes="80px"
                       className="w-full h-full rounded-full"
                     />
                   </div>
@@ -217,7 +219,7 @@ function VisitedCountries({
 
           <div className="flex flex-col gap-4 px-4">
             <div className="ml-3">
-              <li className="mb-4">Continent: {selectedCountry?.continent}</li>
+              <li>Continent: {selectedCountry?.continent}</li>
               <li>Places visited: {selectedCountry?.placesVisited}</li>
               <div className="flex gap-2 items-center justify-between">
                 <li>
@@ -284,7 +286,7 @@ function VisitedCountries({
               </div>
             </div>
 
-            <h4 className="mt-3 font-semibold">Recently visited</h4>
+            <h4 className="mt-1 font-semibold">Recently visited</h4>
 
             <div className="flex flex-col gap-4">
               {visitedPlaces
@@ -296,7 +298,7 @@ function VisitedCountries({
                   >
                     <div className="relative w-25 h-auto shrink-0">
                       <Image
-                        src={place.imageURL}
+                        src={getImageURL(place.imageURL, true)}
                         alt={place.name}
                         fill
                         sizes="150px"

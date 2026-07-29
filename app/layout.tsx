@@ -8,6 +8,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const publicSansHeading = Public_Sans({
   subsets: ["latin"],
@@ -59,7 +60,9 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="SevnMaps" />
       </head>
-      <body className="min-h-full selection:bg-primary/20">{children}</body>
+      <body className="min-h-full selection:bg-primary/20">
+        <TooltipProvider>{children}</TooltipProvider>
+      </body>
     </html>
   );
 }

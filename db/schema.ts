@@ -152,14 +152,18 @@ export const tags = pgTable("tags", {
   tagName: text("tag_name").notNull().unique(),
 });
 
-export const place_tag_link = pgTable("place_tag_link", {
-  placeId: text("place_id")
-    .notNull()
-    .references(() => places.id, { onDelete: "cascade" }),
-  tagId: text("tag_id")
-    .notNull()
-    .references(() => tags.id, { onDelete: "cascade" }),
-}, (table) => [primaryKey({ columns: [table.placeId, table.tagId] })]);
+export const place_tag_link = pgTable(
+  "place_tag_link",
+  {
+    placeId: text("place_id")
+      .notNull()
+      .references(() => places.id, { onDelete: "cascade" }),
+    tagId: text("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.placeId, table.tagId] })],
+);
 
 export const place_user_link = pgTable(
   "place_user_link",
@@ -207,16 +211,40 @@ export const list_members = pgTable(
   (table) => [primaryKey({ columns: [table.listId, table.userId] })],
 );
 
-export const list_place_link = pgTable("list_place_link", {
-  listId: text("list_id")
-    .notNull()
-    .references(() => lists.id, { onDelete: "cascade" }),
-  placeId: text("place_id")
-    .notNull()
-    .references(() => places.id, { onDelete: "cascade" }),
-  addedAt: timestamp("added_at").defaultNow().notNull(),
-  addedBy: text("added_by").references(() => user.id, { onDelete: "set null" }),
-}, (table) => [primaryKey({ columns: [table.listId, table.placeId] })]);
+export const list_invites = pgTable(
+  "list_invites",
+  {
+    listId: text("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    invitedBy: text("invited_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    invitedAt: timestamp("invited_at").defaultNow().notNull(),
+    role: text("role").notNull().default("Viewer"),
+  },
+  (table) => [primaryKey({ columns: [table.listId, table.userId] })],
+);
+
+export const list_place_link = pgTable(
+  "list_place_link",
+  {
+    listId: text("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    placeId: text("place_id")
+      .notNull()
+      .references(() => places.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at").defaultNow().notNull(),
+    addedBy: text("added_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+  },
+  (table) => [primaryKey({ columns: [table.listId, table.placeId] })],
+);
 
 export const reviews = pgTable("reviews", {
   id: text("id").primaryKey(),
@@ -231,11 +259,15 @@ export const reviews = pgTable("reviews", {
   comment: text("comment"),
 });
 
-export const review_image_link = pgTable("review_image_link", {
-  reviewId: text("review_id")
-    .notNull()
-    .references(() => reviews.id, { onDelete: "cascade" }),
-  imageId: text("image_id")
-    .notNull()
-    .references(() => place_images.id, { onDelete: "cascade" }),
-}, (table) => [primaryKey({ columns: [table.reviewId, table.imageId] })]);
+export const review_image_link = pgTable(
+  "review_image_link",
+  {
+    reviewId: text("review_id")
+      .notNull()
+      .references(() => reviews.id, { onDelete: "cascade" }),
+    imageId: text("image_id")
+      .notNull()
+      .references(() => place_images.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.reviewId, table.imageId] })],
+);

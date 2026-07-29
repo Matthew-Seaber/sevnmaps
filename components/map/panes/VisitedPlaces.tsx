@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { getImageURL } from "@/lib/images";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -128,7 +130,7 @@ function VisitedPlaces({
                 >
                   <div className="relative w-35 h-30 shrink-0">
                     <Image
-                      src={place.imageURL}
+                      src={getImageURL(place.imageURL, true)}
                       alt={place.name}
                       fill
                       sizes="150px"

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { getImageURL } from "@/lib/images";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -75,7 +77,7 @@ function PhotoReviewSection({ photos }: { photos: Photo[] }) {
           {photosForReview.map((photo) => (
             <div key={photo.id} className="flex flex-col border rounded-lg">
               <Image
-                src={photo.imageURL}
+                src={getImageURL(photo.imageURL, false)}
                 width={400}
                 height={250}
                 alt={`Photo of ${photo.placeName} taken by ${photo.uploadedBy}`}
@@ -85,7 +87,7 @@ function PhotoReviewSection({ photos }: { photos: Photo[] }) {
               <div className="flex flex-row items-center gap-3 mt-3 mb-1 px-4">
                 {photo.placePrimaryImageURL && (
                   <Image
-                    src={photo.placePrimaryImageURL}
+                    src={getImageURL(photo.placePrimaryImageURL, false)}
                     alt={`Current primary image for ${photo.placeName}`}
                     width={80}
                     height={50}
