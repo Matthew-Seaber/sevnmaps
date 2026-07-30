@@ -84,9 +84,9 @@ export async function POST(request: Request) {
 
       await tx.insert(notifications).values({
         userId: recipientUser.id,
-        title: "You have been invited to a list!",
+        title: "You've been invited to a list!",
         message: `You have been invited to the list '${listDetails.name}' as a${role === "Viewer" ? "" : "n"} ${role.toLowerCase()} by ${session.user.name}. Click to accept or decline the invitation.`,
-        link: "https://sevnmaps.com/invite/" + listID + "+" + recipientUser.id,
+        link: "https://sevnmaps.com/invite/" + listID,
       });
     });
   } catch (error) {
