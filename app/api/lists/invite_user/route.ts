@@ -10,7 +10,7 @@ import {
   lists,
   notifications,
 } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, inArray, eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
   const { listID, email, role } = await request.json();
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
           and(
             eq(list_members.listId, listID),
             eq(list_members.userId, userId),
-            eq(list_members.role, "Creator"),
+            inArray(list_members.role, ["Owner", "Admin"]),
           ),
         );
 

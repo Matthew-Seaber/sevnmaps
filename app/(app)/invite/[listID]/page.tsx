@@ -4,9 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import Image from "next/image";
-import { Check, MailPlus, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import {
+  CalendarDays,
+  Check,
+  MailPlus,
+  ShieldCheck,
+  UserRound,
+  X,
+} from "lucide-react";
 
 function InvitePage() {
   const [listName, setListName] = useState("");
@@ -41,7 +48,16 @@ function InvitePage() {
         setListName(data.listName);
         setListDescription(data.listDescription);
         setInvitedBy(data.invitedBy);
-        setInvitedAt(data.invitedAt);
+        setInvitedAt(
+          new Date(data.invitedAt).toLocaleString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          }),
+        );
         setRole(data.role);
 
         setLoading(false);
@@ -53,72 +69,107 @@ function InvitePage() {
     fetchInviteDetails();
   }, [listID]);
 
+  function handleAcceptInvitation() {}
+
+  function handleDeclineInvitation() {}
+
   return (
-    <div className="max-w-5xl text-center flex flex-col gap-4 mx-auto p-4 md:p-8">
-      <div className="flex flex-col gap-4">
-        <div className="w-24 h-24 bg-primary/15 p-4 flex rounded-full">
-          <MailPlus className="text-primary justify mx-auto my-auto" />
+    <div className="max-w-4xl text-center flex flex-col gap-8 mx-auto p-4 md:p-8">
+      <div className="flex flex-col gap-4 items-center justify-center">
+        <div className="w-12 h-12 md:w-24 md:h-24 mb-2 bg-primary/15 flex items-center justify-center rounded-full">
+          <MailPlus
+            strokeWidth={1.5}
+            className="w-6 h-6 md:w-13 md:h-13 text-primary"
+          />
         </div>
 
-        <h1 className="font-bold text-2xl md:text-5xl text-center">
+        <h1 className="font-bold text-3xl md:text-5xl text-center px-4">
           You&apos;ve been <span className="text-primary">invited</span> to a
           list!
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="md:text-lg text-muted-foreground">
           Join a shared list to collaborate and explore with others.
         </p>
       </div>
 
       {!loading && (
-        <div className="flex flex-row items-center p-4 border border-border shadow-sm">
-          <Image
-            src="/assets/square-placeholder.png"
-            alt=""
-            width={64}
-            height={64}
-            className="rounded-md"
-          />
+        <div className="flex flex-row gap-4 items-center p-4 md:p-6 rounded-md border border-border shadow-sm">
+          <div className="hidden sm:flex relative w-36 h-36 shrink-0">
+            <Image
+              src="/assets/square-placeholder.png"
+              alt=""
+              fill
+              sizes="180px"
+              className="object-cover rounded-md"
+            />
+          </div>
 
-          <div className="flex flex-col">
-            <div>
-              <h2>{listName}</h2>
-              <p>{listDescription}</p>
+          <div className="flex flex-col gap-4 px-2 items-start">
+            <div className="flex flex-col gap-1 items-start">
+              <h2 className="font-bold text-xl md:text-2xl">{listName}</h2>
+              <p className="font-semibold text-muted-foreground">
+                {listDescription}
+              </p>
             </div>
 
             <Separator />
 
-            <div className="flex flex-row">
-              <div>
-                <p>Invited by</p>
-                <p>{invitedBy}</p>
+            <div className="flex flex-row gap-2">
+              <div className="flex flex-col gap-3 items-start p-2">
+                <div className="flex flex-row gap-2 items-center">
+                  <UserRound className="hidden md:flex w-5 h-5 text-muted-foreground" />
+                  <p className="text-left text-sm text-muted-foreground">
+                    Invited by
+                  </p>
+                </div>
+                <p className="text-left font-semibold">{invitedBy}</p>
               </div>
+
               <Separator orientation="vertical" />
-              <div>
-                <p>Invited at</p>
-                <p>{invitedAt}</p>
+
+              <div className="flex flex-col gap-3 items-start p-2">
+                <div className="flex flex-row gap-2 items-center">
+                  <CalendarDays className="hidden md:flex w-5 h-5 text-muted-foreground" />
+                  <p className="text-left text-sm text-muted-foreground">
+                    Invited on
+                  </p>
+                </div>
+                <p className="text-left font-semibold">{invitedAt}</p>
               </div>
+
               <Separator orientation="vertical" />
-              <div>
-                <p>Your role</p>
-                <p>{role}</p>
+
+              <div className="flex flex-col gap-3 items-start p-2">
+                <div className="flex flex-row gap-2 items-center">
+                  <ShieldCheck className="hidden md:flex w-5 h-5 text-muted-foreground" />
+                  <p className="text-left text-sm text-muted-foreground">
+                    Your role
+                  </p>
+                </div>
+                <p className="text-left font-semibold">{role}</p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex flex-row gap-4 items-center justify-between">
+      <div className="flex flex-row gap-2 md:gap-4 items-center justify-between">
         <Button
           variant="destructive"
           disabled={loading}
-          className="flex flex-row gap-2 items-center"
+          onClick={handleDeclineInvitation}
+          className="flex-1 flex-row gap-2 items-center px-4 py-6 md:py-8 md:text-lg"
         >
-          <X />
+          <X className="w-4! h-4! md:w-5! md:h-5!" />
           Decline invitation
         </Button>
 
-        <Button disabled={loading} className="flex flex-row gap-2 items-center">
-          <Check />
+        <Button
+          disabled={loading}
+          onClick={handleAcceptInvitation}
+          className="flex-1 flex-row gap-2 items-center px-4 py-6 md:py-8 md:text-lg"
+        >
+          <Check className="w-4! h-4! md:w-5! md:h-5!" />
           Accept invitation
         </Button>
       </div>
