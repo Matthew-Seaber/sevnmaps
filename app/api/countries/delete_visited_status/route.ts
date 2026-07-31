@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { visited_countries } from "@/db/schema";
+import { visited_countries, countries } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
 export async function DELETE(request: Request) {
@@ -18,13 +18,35 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const { countryId } = await request.json();
+  const { countryId, type } = await request.json();
 
-  if (!countryId) {
+  if (!countryId || !type || (type !== "code" && type !== "id")) {
     return NextResponse.json(
-      { error: "Required parameter missing (countryId)" },
+      { error: "Required parameter missing or invalid (countryId or type)" },
       { status: 400 },
     );
+  }
+
+  let countryID: string;
+
+  if (type === "code") {
+    const [countryInfo] = await db
+      .select({
+        id: countries.id,
+      })
+      .from(countries)
+      .where(eq(countries.countryCode, countryId));
+
+    if (!countryInfo) {
+      return NextResponse.json(
+        { error: `Country with code ${countryId} not found` },
+        { status: 404 },
+      );
+    }
+
+    countryID = countryInfo.id;
+  } else {
+    countryID = countryId;
   }
 
   const result = await db
@@ -32,7 +54,7 @@ export async function DELETE(request: Request) {
     .where(
       and(
         eq(visited_countries.userId, session.user.id),
-        eq(visited_countries.countryId, countryId),
+        eq(visited_countries.countryId, countryID),
       ),
     );
 

@@ -114,7 +114,7 @@ function VisitedCountries({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ countryId }),
+      body: JSON.stringify({ countryId, type: "id" }),
     });
 
     if (!response.ok) {
@@ -159,7 +159,11 @@ function VisitedCountries({
           >
             <div className="relative shrink-0 w-10 h-10 border-2 border-border rounded-full">
               <Image
-                src={getImageURL(country.flag, true)}
+                src={
+                  country.flag
+                    ? getImageURL(country.flag, true)
+                    : "/assets/square-placeholder.png"
+                }
                 alt={`Flag for ${country.name}`}
                 width={64}
                 height={48}
@@ -198,7 +202,11 @@ function VisitedCountries({
                 <div className="flex flex-row gap-4 items-center">
                   <div className="relative shrink-0 w-5 h-5 rounded-full">
                     <Image
-                      src={getImageURL(selectedCountry?.flag, true)}
+                      src={
+                        selectedCountry?.flag
+                          ? getImageURL(selectedCountry.flag, true)
+                          : "/assets/square-placeholder.png"
+                      }
                       alt={`Flag for ${selectedCountry?.name}`}
                       fill
                       sizes="80px"

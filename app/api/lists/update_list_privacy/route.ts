@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { lists, list_members } from "@/db/schema";
-import { and, inArray, eq } from "drizzle-orm";
+import { and, or, inArray, eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({
@@ -63,7 +63,18 @@ export async function POST(request: Request) {
         .where(eq(lists.id, listID));
 
       if (newPrivacy === "Private") {
-        await tx.delete(list_members).where(eq(list_members.listId, listID));
+        await tx
+          .delete(list_members)
+          .where(
+            and(
+              eq(list_members.listId, listID),
+              or(
+                eq(list_members.role, "Viewer"),
+                eq(list_members.role, "Editor"),
+                eq(list_members.role, "Admin"),
+              ),
+            ),
+          );
       }
     });
   } catch (error) {

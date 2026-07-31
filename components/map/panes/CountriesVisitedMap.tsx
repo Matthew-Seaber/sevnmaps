@@ -8,12 +8,18 @@ import { zoom, zoomIdentity } from "d3-zoom";
 import type { ZoomBehavior } from "d3-zoom";
 import "d3-transition";
 import { select } from "d3-selection";
-import { useRef } from "react";
 
+import { useRef } from "react";
 import { useMemo, useEffect, useState } from "react";
+
+import { useInfoPane } from ".././InfoPaneContext";
+
+import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 countries.registerLocale(en);
 
@@ -45,8 +51,14 @@ function CountriesVisitedMap({
 }) {
   const [countryFeatures, setCountryFeatures] = useState<Country[]>([]);
   const [specialRegions, setSpecialRegions] = useState<Feature[]>([]);
+  const [markVisitedPopupOpen, setMarkVisitedPopupOpen] = useState(false);
+  const [removeVisitedPopupOpen, setRemoveVisitedPopupOpen] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
+  const [selectedCountryName, setSelectedCountryName] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const { openPane, closePane } = useInfoPane();
 
   const visitedSet = useMemo(
     () => new Set(visitedCountries.map((country) => country.countryCode)),
@@ -152,6 +164,68 @@ function CountriesVisitedMap({
     select(SVGRef.current).transition().call(zoomRef.current.scaleBy, 0.5);
   };
 
+  async function handleMarkAsVisited() {
+    if (!selectedCountryCode) return;
+
+    try {
+      const response = await fetch("/api/countries/mark_visited", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ countryId: selectedCountryCode }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark country as visited");
+      }
+
+      toast.success(
+        `Successfully marked ${selectedCountryName || selectedCountryCode} as visited!`,
+      );
+
+      closePane();
+      setTimeout(() => {
+        openPane({ type: "visited" });
+      }, 50);
+    } catch (error) {
+      console.error("Error marking country as visited:", error);
+
+      toast.error("Failed to mark country as visited. Please try again later.");
+    }
+  }
+
+  async function handleRemoveVisited() {
+    if (!selectedCountryCode) return;
+
+    try {
+      const response = await fetch("/api/countries/delete_visited_status", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ countryId: selectedCountryCode, type: "code" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark country as not visited");
+      }
+
+      toast.success(
+        `Successfully removed visited status from ${selectedCountryName || selectedCountryCode}.`,
+      );
+
+      closePane();
+      setTimeout(() => {
+        openPane({ type: "visited" });
+      }, 50);
+    } catch (error) {
+      console.error("Error marking country as not visited:", error);
+
+      toast.error("Failed to remove visited status. Please try again later.");
+    }
+  }
+
   return (
     <>
       {loading ? (
@@ -199,6 +273,21 @@ function CountriesVisitedMap({
                       className={
                         isVisited ? "fill-primary" : "fill-muted-foreground"
                       }
+                      onClick={() => {
+                        const clickedCountryCode =
+                          code || country.properties.name;
+                        const clickedCountryName =
+                          country.properties.name || clickedCountryCode;
+
+                        setSelectedCountryCode(clickedCountryCode);
+                        setSelectedCountryName(clickedCountryName);
+
+                        if (isVisited === false) {
+                          setMarkVisitedPopupOpen(true);
+                        } else {
+                          setRemoveVisitedPopupOpen(true);
+                        }
+                      }}
                       stroke="white"
                       strokeWidth="0.5"
                     />
@@ -236,6 +325,30 @@ function CountriesVisitedMap({
           </div>
         </>
       )}
+
+      <ConfirmationPopup
+        open={markVisitedPopupOpen}
+        setOpen={setMarkVisitedPopupOpen}
+        title="Mark as visited"
+        message={`Are you sure you want to mark '${selectedCountryName || selectedCountryCode}' as visited?`}
+        destructive={false}
+        confirmText="Mark as visited"
+        cancelText="Cancel"
+        onConfirm={handleMarkAsVisited}
+      />
+
+      <ConfirmationPopup
+        open={removeVisitedPopupOpen}
+        setOpen={setRemoveVisitedPopupOpen}
+        title="Remove visited status"
+        message={`Are you sure you want to mark ${selectedCountryName || selectedCountryCode} as 'not visited?'`}
+        destructive={true}
+        confirmText="Confirm"
+        cancelText="Cancel"
+        onConfirm={handleRemoveVisited}
+      />
+
+      <Toaster position="top-center" />
     </>
   );
 }

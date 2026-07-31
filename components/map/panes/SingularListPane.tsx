@@ -221,8 +221,6 @@ function SingularListPane({ listID }: { listID: string }) {
 
       setInviteUIVisible(false);
       setPrivacyCollapsibleOpen(false);
-      setNewListColor("#1273F6");
-      setNewListIcon(null);
       setNewMemberEmail("");
       setNewMemberRole("");
       setSearchQuery("");
@@ -615,20 +613,24 @@ function SingularListPane({ listID }: { listID: string }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-40">
-                    {userRole === "Creator" ||
-                      (userRole === "Admin" && (
-                        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
-                          <Settings /> Manage list
+                    {(userRole === "Creator" || userRole === "Admin") && (
+                      <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+                        <Settings /> Manage list
+                      </DropdownMenuItem>
+                    )}
+
+                    {(listData?.visibility === "Public" ||
+                      listData?.visibility === "Shared") &&
+                      (userRole === "Creator" || userRole === "Admin") && (
+                        <DropdownMenuItem>
+                          <Link2 /> Copy link
                         </DropdownMenuItem>
-                      ))}
-                    {listData?.visibility === "Public" ||
-                      (listData?.visibility === "Shared" &&
-                        userRole === "Creator" && (
-                          <DropdownMenuItem>
-                            <Link2 /> Copy link
-                          </DropdownMenuItem>
-                        ))}
-                    {userRole === "Creator" && <DropdownMenuSeparator />}
+                      )}
+
+                    {userRole === "Creator" || userRole === "Admin" ? (
+                      <DropdownMenuSeparator />
+                    ) : null}
+
                     {userRole === "Creator" ? (
                       <DropdownMenuItem
                         variant="destructive"
