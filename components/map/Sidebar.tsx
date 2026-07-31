@@ -43,7 +43,6 @@ async function MapPageSidebar() {
       .where(
         and(
           eq(list_members.userId, session.user.id),
-          eq(list_members.role, "Creator"),
         ),
       )
       .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)

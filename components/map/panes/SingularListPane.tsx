@@ -219,6 +219,15 @@ function SingularListPane({ listID }: { listID: string }) {
 
       setNewListPrivacy(data.listData.visibility);
 
+      setInviteUIVisible(false);
+      setPrivacyCollapsibleOpen(false);
+      setNewListColor("#1273F6");
+      setNewListIcon(null);
+      setNewMemberEmail("");
+      setNewMemberRole("");
+      setSearchQuery("");
+      setSortType("dateAddedNewest");
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching list data:", error);
@@ -656,10 +665,12 @@ function SingularListPane({ listID }: { listID: string }) {
                 </p>
               </div>
               <div
-                className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground cursor-pointer"
+                className={`flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground ${userRole === "Creator" || userRole === "Admin" ? "cursor-pointer" : ""}`}
                 onClick={() => {
-                  setDialogOpen(true);
-                  setPrivacyCollapsibleOpen(true);
+                  if (userRole === "Creator" || userRole === "Admin") {
+                    setDialogOpen(true);
+                    setPrivacyCollapsibleOpen(true);
+                  }
                 }}
               >
                 {listData?.visibility === "Public" ? (

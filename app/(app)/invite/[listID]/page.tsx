@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import {
   CalendarDays,
   Check,
@@ -22,9 +25,12 @@ function InvitePage() {
   const [invitedAt, setInvitedAt] = useState("");
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
+  const [buttonsLoading, setButtonsLoading] = useState(true);
 
   const params = useParams();
   const listID = params.listID as string;
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchInviteDetails = async () => {
@@ -61,17 +67,69 @@ function InvitePage() {
         setRole(data.role);
 
         setLoading(false);
+        setButtonsLoading(false);
       } catch (error) {
         console.error("Error fetching invite details:", error);
+        toast.error(
+          "Failed to fetch invite details. This could be because the invitation has expired or has already been accepted/declined.",
+        );
       }
     };
 
     fetchInviteDetails();
   }, [listID]);
 
-  function handleAcceptInvitation() {}
+  async function handleAcceptInvitation() {
+    setButtonsLoading(true);
 
-  function handleDeclineInvitation() {}
+    try {
+      const response = await fetch("/api/lists/accept_invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listID }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to accept invitation");
+      }
+
+      toast.success("Invitation accepted!");
+      router.push("/map");
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      toast.error("Failed to accept the invitation. Please try again later.");
+    }
+
+    setButtonsLoading(false);
+  }
+
+  async function handleDeclineInvitation() {
+    setButtonsLoading(true);
+
+    try {
+      const response = await fetch("/api/lists/decline_invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listID }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to decline invitation");
+      }
+
+      toast.success("Invitation declined.");
+      router.push("/map");
+    } catch (error) {
+      console.error("Error declining invitation:", error);
+      toast.error("Failed to decline the invitation. Please try again later.");
+    }
+
+    setButtonsLoading(false);
+  }
 
   return (
     <div className="max-w-4xl text-center flex flex-col gap-8 mx-auto p-4 md:p-8">
@@ -92,7 +150,7 @@ function InvitePage() {
         </p>
       </div>
 
-      {!loading && (
+      {!loading ? (
         <div className="flex flex-row gap-4 items-center p-4 md:p-6 rounded-md border border-border shadow-sm">
           <div className="hidden sm:flex relative w-36 h-36 shrink-0">
             <Image
@@ -151,12 +209,17 @@ function InvitePage() {
             </div>
           </div>
         </div>
+      ) : (
+        <div className="flex flex-row items-center justify-center gap-2">
+          <Spinner />
+          <p className="text-sm">Loading...</p>
+        </div>
       )}
 
       <div className="flex flex-row gap-2 md:gap-4 items-center justify-between">
         <Button
           variant="destructive"
-          disabled={loading}
+          disabled={buttonsLoading}
           onClick={handleDeclineInvitation}
           className="flex-1 flex-row gap-2 items-center px-4 py-6 md:py-8 md:text-lg"
         >
@@ -165,7 +228,7 @@ function InvitePage() {
         </Button>
 
         <Button
-          disabled={loading}
+          disabled={buttonsLoading}
           onClick={handleAcceptInvitation}
           className="flex-1 flex-row gap-2 items-center px-4 py-6 md:py-8 md:text-lg"
         >
@@ -178,6 +241,8 @@ function InvitePage() {
         The owner of the list will only be notified if you accept the
         invitation.
       </p>
+
+      <Toaster position="top-center" />
     </div>
   );
 }

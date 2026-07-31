@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { lists, list_members } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, inArray, eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
           and(
             eq(list_members.listId, listID),
             eq(list_members.userId, userId),
-            eq(list_members.role, "Creator"),
+            inArray(list_members.role, ["Creator", "Admin"]),
           ),
         );
 

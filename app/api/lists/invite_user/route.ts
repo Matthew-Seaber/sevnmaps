@@ -44,7 +44,7 @@ export async function POST(request: Request) {
           and(
             eq(list_members.listId, listID),
             eq(list_members.userId, userId),
-            inArray(list_members.role, ["Owner", "Admin"]),
+            inArray(list_members.role, ["Creator", "Admin"]),
           ),
         );
 
@@ -61,11 +61,8 @@ export async function POST(request: Request) {
         .from(user)
         .where(eq(user.email, email));
 
-      if (!recipientUser) {
-        return NextResponse.json(
-          { error: "Failed to invite user" },
-          { status: 500 },
-        );
+      if (!recipientUser || recipientUser.id === userId) {
+        throw new Error("Failed to invite user");
       }
 
       await tx.insert(list_invites).values({
@@ -98,7 +95,10 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({
-    message: "User successfully invited to the list",
-  });
+  return NextResponse.json(
+    {
+      message: "User successfully invited to the list",
+    },
+    { status: 200 },
+  );
 }
