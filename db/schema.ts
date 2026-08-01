@@ -251,9 +251,7 @@ export const reviews = pgTable("reviews", {
   placeId: text("place_id")
     .notNull()
     .references(() => places.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   stars: integer("stars").notNull(),
   comment: text("comment"),

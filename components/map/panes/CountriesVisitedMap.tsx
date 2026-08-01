@@ -18,6 +18,11 @@ import ConfirmationPopup from "@/components/utility/ConfirmationPopup";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
@@ -236,8 +241,29 @@ function CountriesVisitedMap({
       ) : (
         <>
           <div className="relative w-full aspect-800/440">
+            <div className="absolute top-1/8 -translate-y-1/2 right-4 z-20 flex flex-col gap-0.5">
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="font-bold opacity-75"
+                  >
+                    ?
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    We are aware of some geopolitical issues with borders on
+                    this map and are actively working to address them. Thank you
+                    for your patience.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
             {allowZoom && (
-              <div className="absolute top-1/2 -translate-y-1/2 right-4 z-2 flex flex-col gap-0.5">
+              <div className="absolute top-1/2 -translate-y-1/2 right-4 z-20 flex flex-col gap-0.5">
                 <Button
                   variant="outline"
                   size="xs"
@@ -270,9 +296,9 @@ function CountriesVisitedMap({
                     <path
                       key={code || country.properties.name}
                       d={country.svgPath}
-                      className={
-                        isVisited ? "fill-primary" : "fill-muted-foreground"
-                      }
+                      className={` hover:fill-primary/80 cursor-pointer transition-colors
+                        ${isVisited ? "fill-primary" : "fill-muted-foreground"}
+                      `}
                       onClick={() => {
                         const clickedCountryCode =
                           code || country.properties.name;
@@ -298,15 +324,16 @@ function CountriesVisitedMap({
                   <path
                     key={region.properties?.name}
                     d={region.svgPath}
-                    className={
-                      visitedCountries.some(
-                        (country) =>
-                          country.countryCode ===
-                          region.properties?.countryCode,
-                      )
-                        ? "fill-primary"
-                        : "fill-muted-foreground"
-                    }
+                    className={`hover:fill-primary/80 cursor-pointer transition-colors
+                      ${
+                        visitedCountries.some(
+                          (country) =>
+                            country.countryCode ===
+                            region.properties?.countryCode,
+                        )
+                          ? "fill-primary"
+                          : "fill-muted-foreground"
+                      }`}
                   />
                 ))}
               </g>
