@@ -19,7 +19,7 @@ import {
 } from "@/db/schema";
 import { and, inArray, eq } from "drizzle-orm";
 
-interface Image {
+interface Photo {
   id: string;
   imageURL: string;
   uploadedAt: Date;
@@ -35,13 +35,12 @@ interface Review {
   createdAt: Date;
   stars: number;
   comment: string | null;
-  images: Image[];
+  images: Photo[];
 }
 
 interface List {
   id: string;
   listName: string;
-  listDescription: string | null;
   listColor: string;
   listIcon: string | null;
 }
@@ -64,7 +63,7 @@ interface Place {
 
   tags: string[];
   lists: string[];
-  images: Image[];
+  images: Photo[];
   reviews: Review[];
 }
 
@@ -92,7 +91,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const result = db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       const [placeDetails] = await tx
         .select({
           id: places.id,
@@ -133,10 +132,11 @@ export async function GET(req: Request) {
           id: place_images.id,
           imageURL: place_images.imageURL,
           uploadedAt: place_images.uploadedAt,
-          uploadedBy: place_images.uploadedBy,
+          uploadedBy: profiles.username,
           primaryImage: place_images.primaryImage,
         })
         .from(place_images)
+        .innerJoin(profiles, eq(place_images.uploadedBy, profiles.userId))
         .where(
           and(
             eq(place_images.placeId, placeID),
@@ -162,12 +162,13 @@ export async function GET(req: Request) {
           reviewID: reviews.id,
           imageURL: place_images.imageURL,
           uploadedAt: place_images.uploadedAt,
-          uploadedBy: place_images.uploadedBy,
+          uploadedBy: profiles.username,
           primaryImage: place_images.primaryImage,
         })
         .from(review_image_link)
         .innerJoin(place_images, eq(review_image_link.imageId, place_images.id))
         .innerJoin(reviews, eq(review_image_link.reviewId, reviews.id))
+        .innerJoin(profiles, eq(place_images.uploadedBy, profiles.userId))
         .where(eq(reviews.placeId, placeID));
 
       const placeInLists = await tx
@@ -191,7 +192,6 @@ export async function GET(req: Request) {
         .select({
           id: lists.id,
           listName: lists.listName,
-          listDescription: lists.listDescription,
           listColor: lists.listColor,
           listIcon: lists.listIcon,
         })
@@ -206,23 +206,27 @@ export async function GET(req: Request) {
 
       const formattedTags = placeTags.map((tag) => tag.tagName);
 
-      const formattedPlaceImages: Image[] = placeImages.map((image) => ({
+      const formattedPlaceImages: Photo[] = placeImages.map((image) => ({
         id: image.id,
         imageURL: image.imageURL,
         uploadedAt: image.uploadedAt,
-        uploadedBy: image.uploadedBy,
+        uploadedBy: image.uploadedBy || "",
         primaryImage: image.primaryImage,
         source: "place",
       }));
 
-      const reviewImageMap = new Map<string, Image[]>();
+      formattedPlaceImages.sort(
+        (a, b) => Number(b.primaryImage) - Number(a.primaryImage),
+      );
+
+      const reviewImageMap = new Map<string, Photo[]>();
 
       for (const image of reviewImages) {
-        const formattedImage: Image = {
+        const formattedImage: Photo = {
           id: image.id,
           imageURL: image.imageURL,
           uploadedAt: image.uploadedAt,
-          uploadedBy: image.uploadedBy,
+          uploadedBy: image.uploadedBy || "",
           primaryImage: image.primaryImage,
           source: "review",
           reviewID: image.reviewID,
@@ -249,7 +253,6 @@ export async function GET(req: Request) {
       const formattedLists: List[] = listDetails.map((list) => ({
         id: list.id,
         listName: list.listName,
-        listDescription: list.listDescription || null,
         listColor: list.listColor,
         listIcon: list.listIcon || null,
       }));
@@ -275,6 +278,8 @@ export async function GET(req: Request) {
         images: formattedPlaceImages,
         reviews: formattedReviews,
       };
+
+      console.log(formattedPlace);
 
       return {
         place: formattedPlace,
