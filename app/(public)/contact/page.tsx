@@ -141,6 +141,8 @@ function ContactPage() {
                 <SelectItem value="Billing question">
                   Billing question
                 </SelectItem>
+                <SelectItem value="Legal issue">Legal issue</SelectItem>
+                <SelectItem value="Report content">Report content</SelectItem>
                 <SelectItem value="Technical support">
                   Technical support
                 </SelectItem>

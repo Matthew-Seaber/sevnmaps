@@ -607,10 +607,10 @@ function SingularListPane({ listID }: { listID: string }) {
 
               <div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Button variant="outline" className="h-10 w-10">
-                      <Ellipsis className="h-4 w-4" />
-                    </Button>
+                  <DropdownMenuTrigger
+                    render={<Button variant="outline" className="h-10 w-10" />}
+                  >
+                    <Ellipsis className="h-4 w-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-40">
                     {(userRole === "Creator" || userRole === "Admin") && (
@@ -709,10 +709,8 @@ function SingularListPane({ listID }: { listID: string }) {
               </InputGroup>
 
               <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Button variant="outline">
-                    <ListSortDescending className="h-4 w-4" />
-                  </Button>
+                <DropdownMenuTrigger render={<Button variant="outline" />}>
+                  <ListSortDescending className="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-40">
                   <DropdownMenuItem
@@ -923,22 +921,18 @@ function SingularListPane({ listID }: { listID: string }) {
                           <DropdownMenuTrigger
                             id="privacyOptions"
                             className="ml-auto"
+                            render={<Button variant="outline" />}
                           >
-                            <Button
-                              variant="outline"
-                              onClick={() => setPrivacyDropdownOpen(true)}
-                            >
-                              {listData?.visibility === "Public" ? (
-                                <Globe className="h-4 w-4 mr-1" />
-                              ) : listData?.visibility === "Private" ? (
-                                <Lock className="h-4 w-4 mr-1" />
-                              ) : listData?.visibility === "Shared" ? (
-                                <Network className="h-4 w-4 mr-1" />
-                              ) : listData?.visibility === "Paid access" ? (
-                                <CircleDollarSign className="h-4 w-4 mr-1" />
-                              ) : null}
-                              {newListPrivacy}
-                            </Button>
+                            {listData?.visibility === "Public" ? (
+                              <Globe className="h-4 w-4 mr-1" />
+                            ) : listData?.visibility === "Private" ? (
+                              <Lock className="h-4 w-4 mr-1" />
+                            ) : listData?.visibility === "Shared" ? (
+                              <Network className="h-4 w-4 mr-1" />
+                            ) : listData?.visibility === "Paid access" ? (
+                              <CircleDollarSign className="h-4 w-4 mr-1" />
+                            ) : null}
+                            {newListPrivacy}
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="w-40">
                             <DropdownMenuGroup>
@@ -983,19 +977,22 @@ function SingularListPane({ listID }: { listID: string }) {
                         <Label>Members</Label>
 
                         <Tooltip>
-                          <TooltipTrigger className="ml-auto">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              disabled={listData?.visibility === "Private"}
-                              onClick={() =>
-                                setInviteUIVisible((prev) => !prev)
-                              }
-                              className="text-primary"
-                            >
-                              Invite
-                            </Button>
-                          </TooltipTrigger>
+                          <TooltipTrigger
+                            className="ml-auto"
+                            render={
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={listData?.visibility === "Private"}
+                                onClick={() =>
+                                  setInviteUIVisible((prev) => !prev)
+                                }
+                                className="text-primary"
+                              >
+                                Invite
+                              </Button>
+                            }
+                          ></TooltipTrigger>
                           {listData?.visibility === "Private" && (
                             <TooltipContent>
                               <p>
@@ -1025,15 +1022,13 @@ function SingularListPane({ listID }: { listID: string }) {
                           <Field>
                             <Label>Role</Label>
                             <DropdownMenu>
-                              <DropdownMenuTrigger>
-                                <Button variant="outline">
-                                  {newMemberRole === "Admin" && (
-                                    <UserRoundCog />
-                                  )}
-                                  {newMemberRole === "Editor" && <Pencil />}
-                                  {newMemberRole === "Viewer" && <Eye />}
-                                  {newMemberRole || "Select role"}
-                                </Button>
+                              <DropdownMenuTrigger
+                                render={<Button variant="outline" />}
+                              >
+                                {newMemberRole === "Admin" && <UserRoundCog />}
+                                {newMemberRole === "Editor" && <Pencil />}
+                                {newMemberRole === "Viewer" && <Eye />}
+                                {newMemberRole || "Select role"}
                               </DropdownMenuTrigger>
                               <DropdownMenuContent className="w-40">
                                 <DropdownMenuGroup>
@@ -1059,7 +1054,11 @@ function SingularListPane({ listID }: { listID: string }) {
                             </DropdownMenu>
                           </Field>
 
-                          <Button type="submit" onClick={handleInviteMember}>
+                          <Button
+                            type="submit"
+                            disabled={!newMemberEmail || !newMemberRole}
+                            onClick={handleInviteMember}
+                          >
                             Invite member
                           </Button>
                           <p className="text-center text-xs text-muted-foreground italic">
@@ -1110,24 +1109,24 @@ function SingularListPane({ listID }: { listID: string }) {
                                   open={memberRoleDropdownOpen}
                                   onOpenChange={setMemberRoleDropdownOpen}
                                 >
-                                  <DropdownMenuTrigger className="ml-auto">
-                                    <Button
-                                      variant="outline"
-                                      onClick={() =>
-                                        setMemberRoleDropdownOpen(true)
-                                      }
-                                    >
-                                      {member?.role ===
-                                      "Creator" ? null : member?.role ===
-                                        "Admin" ? (
-                                        <UserRoundCog className="h-4 w-4 mr-1" />
-                                      ) : member?.role === "Editor" ? (
-                                        <Pencil className="h-4 w-4 mr-1" />
-                                      ) : member?.role === "Viewer" ? (
-                                        <Eye className="h-4 w-4 mr-1" />
-                                      ) : null}
-                                      {member?.role}
-                                    </Button>
+                                  <DropdownMenuTrigger
+                                    render={
+                                      <Button
+                                        variant="outline"
+                                        className="ml-auto"
+                                      />
+                                    }
+                                  >
+                                    {member?.role ===
+                                    "Creator" ? null : member?.role ===
+                                      "Admin" ? (
+                                      <UserRoundCog className="h-4 w-4 mr-1" />
+                                    ) : member?.role === "Editor" ? (
+                                      <Pencil className="h-4 w-4 mr-1" />
+                                    ) : member?.role === "Viewer" ? (
+                                      <Eye className="h-4 w-4 mr-1" />
+                                    ) : null}
+                                    {member?.role}
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent className="w-40">
                                     <DropdownMenuGroup>
