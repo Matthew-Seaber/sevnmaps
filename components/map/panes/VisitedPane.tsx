@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { useInfoPane } from ".././InfoPaneContext";
 import { getImageURL } from "@/lib/images";
 
 import CountriesVisitedMap from "./CountriesVisitedMap";
@@ -65,6 +66,8 @@ function VisitedPane() {
   const [selectedPlace, setSelectedPlace] = useState<VisitedPlace | null>(null);
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const { openPane } = useInfoPane();
 
   const fetchVisitedPlaces = useCallback(async () => {
     setLoading(true);
@@ -309,7 +312,10 @@ function VisitedPane() {
                       {visitedPlaces.slice(0, 3).map((place) => (
                         <div
                           key={place.id}
-                          className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
+                          className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
+                          onClick={() =>
+                            openPane({ type: "place", placeID: place.id })
+                          }
                         >
                           <div className="relative w-35 h-30 shrink-0">
                             <Image

@@ -737,7 +737,7 @@ function SingularListPane({ listID }: { listID: string }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-1">
             {listData?.items.length === 0 ? (
               <p className="mt-2 text-center text-sm text-muted-foreground">
                 This list seems to be a little empty. Start exploring the map
@@ -764,7 +764,8 @@ function SingularListPane({ listID }: { listID: string }) {
                 <div
                   key={item.id}
                   title={`Added by ${listData?.members?.find((m) => m.id === item.addedBy)?.name || "Unknown"} on ${new Date(item.addedAt).toLocaleString()}`}
-                  className="flex flex-row items-center gap-3 p-2 cursor-default"
+                  className="flex flex-row items-center gap-3 p-4 border border-transparent hover:border-border rounded-md cursor-pointer hover:bg-accent/50 transition-all"
+                  onClick={() => openPane({ type: "place", placeID: item.id })}
                 >
                   <p className="flex h-8 w-8 items-center justify-center bg-muted text-muted-foreground rounded-md font-semibold text-sm">
                     {index + 1}

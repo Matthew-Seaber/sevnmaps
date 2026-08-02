@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { useInfoPane } from ".././InfoPaneContext";
 import { getImageURL } from "@/lib/images";
 
 import Image from "next/image";
@@ -62,6 +63,8 @@ function VisitedPlaces({
   const [selectedPlace, setSelectedPlace] = useState<VisitedPlace | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
+
+  const { openPane } = useInfoPane();
 
   const numberOfVisitedPlaces = visitedPlaces.filter(
     (place) => place.visited,
@@ -126,7 +129,8 @@ function VisitedPlaces({
               filteredVisitedPlaces.map((place) => (
                 <div
                   key={place.id}
-                  className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
+                  className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
+                  onClick={() => openPane({ type: "place", placeID: place.id })}
                 >
                   <div className="relative w-35 h-30 shrink-0">
                     <Image

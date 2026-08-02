@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { useInfoPane } from ".././InfoPaneContext";
 import { getImageURL } from "@/lib/images";
 
 import Image from "next/image";
@@ -27,6 +28,8 @@ function FavoritesPane() {
   const [favoritePlaces, setFavoritePlaces] = useState<FavoritePlace[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+
+  const { openPane } = useInfoPane();
 
   const numberOfFavorites = favoritePlaces.filter(
     (place) => place.favorited,
@@ -82,7 +85,8 @@ function FavoritesPane() {
       },
       body: JSON.stringify({
         placeId: placeID,
-        favorite: !favoritePlaces.find((place) => place.id === placeID)?.favorited,
+        favorite: !favoritePlaces.find((place) => place.id === placeID)
+          ?.favorited,
       }),
     });
 
@@ -159,7 +163,10 @@ function FavoritesPane() {
                 filteredFavoritePlaces.map((place) => (
                   <div
                     key={place.id}
-                    className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
+                    className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
+                    onClick={() =>
+                      openPane({ type: "place", placeID: place.id })
+                    }
                   >
                     <div className="relative w-35 h-30 shrink-0">
                       <Image
