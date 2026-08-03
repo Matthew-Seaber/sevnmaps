@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
   }
 
-  if (newRole !== "Creator" && newRole !== "Editor" && newRole !== "Viewer") {
+  if (newRole !== "Creator" && newRole !== "Admin" && newRole !== "Editor" && newRole !== "Viewer") {
     return NextResponse.json({ error: "Invalid role option" }, { status: 400 });
   }
 

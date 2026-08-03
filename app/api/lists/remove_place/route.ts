@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { list_members } from "@/db/schema";
+import { list_place_link, list_members } from "@/db/schema";
 import { and, inArray, eq } from "drizzle-orm";
 
 export async function DELETE(request: Request) {
@@ -18,9 +18,9 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const { listID, memberID } = await request.json();
+  const { listID, placeID } = await request.json();
 
-  if (!listID || !memberID) {
+  if (!listID || !placeID) {
     return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
   }
 
@@ -35,33 +35,35 @@ export async function DELETE(request: Request) {
           and(
             eq(list_members.listId, listID),
             eq(list_members.userId, userID),
-            inArray(list_members.role, ["Creator", "Admin"]),
+            inArray(list_members.role, ["Creator", "Admin", "Editor"]),
           ),
         );
 
       if (!userRole) {
         throw new Error(
-          "User is not authorised to remove a member from this list",
+          "User is not authorised to remove a place from this list",
         );
       }
 
       await tx
-        .delete(list_members)
+        .delete(list_place_link)
         .where(
           and(
-            eq(list_members.listId, listID),
-            eq(list_members.userId, memberID),
+            eq(list_place_link.listId, listID),
+            eq(list_place_link.placeId, placeID),
           ),
         );
     });
   } catch (error) {
-    console.error("Error removing member:", error);
+    console.error("Error removing place from list:", error);
 
     return NextResponse.json(
-      { error: "Failed to remove member" },
+      { error: "Failed to remove place from list" },
       { status: 500 },
     );
   }
 
-  return NextResponse.json({ message: "Member successfully removed" });
+  return NextResponse.json({
+    message: "Place successfully removed from the list",
+  });
 }

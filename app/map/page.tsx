@@ -40,7 +40,7 @@ function MapPage() {
 
           <div className="flex flex-1 overflow-hidden">
             <main className="flex-1">
-              <div className="relative w-full max-w-90">
+              <div className="relative top-4 left-4 w-full max-w-90">
                 <InputGroup className="p-1 py-5">
                   <InputGroupInput
                     id="search-input"
@@ -57,6 +57,7 @@ function MapPage() {
                   </InputGroupAddon>
                 </InputGroup>
               </div>
+
               <h1>map</h1>
             </main>
 

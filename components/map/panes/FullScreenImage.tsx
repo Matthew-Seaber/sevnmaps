@@ -23,10 +23,12 @@ function FullScreenImage({
   images,
   initialImageID,
   placeName,
+  onClose,
 }: {
   images: Photo[];
   initialImageID?: string;
   placeName: string;
+  onClose: () => void;
 }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(() => {
     const initialIndex = images.findIndex(
@@ -66,6 +68,7 @@ function FullScreenImage({
 
         <Button
           variant="outline"
+          onClick={onClose}
           className="z-30 rounded-full w-12 h-12 shadow-lg opacity-90"
         >
           <X className="w-5! h-5!" />
@@ -75,7 +78,7 @@ function FullScreenImage({
       <div className="absolute inset-0 top-1/2 mx-8 flex flex-row justify-between gap-4">
         <Button
           variant="outline"
-          disabled={selectedImageIndex === 0}
+          disabled={selectedImageIndex <= 0}
           onClick={() => {
             setSelectedImageIndex((prev) => prev - 1);
           }}
@@ -86,7 +89,7 @@ function FullScreenImage({
 
         <Button
           variant="outline"
-          disabled={selectedImageIndex === images.length - 1}
+          disabled={selectedImageIndex >= images.length - 1}
           onClick={() => {
             setSelectedImageIndex((prev) => prev + 1);
           }}

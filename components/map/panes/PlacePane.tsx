@@ -7,8 +7,19 @@ import { getImageURL } from "@/lib/images";
 import FullScreenImage from "@/components/map/panes/FullScreenImage";
 
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { MapPin, Images } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import {
+  MapPin,
+  Images,
+  Bookmark,
+  Heart,
+  CircleCheck,
+  Share2,
+  Calendar,
+} from "lucide-react";
 
 interface Photo {
   id: string;
@@ -50,6 +61,7 @@ interface Place {
 
   favorited: boolean;
   visited: boolean;
+  visitedAt: Date | null;
   privateNote: string | null;
 
   tags: string[];
@@ -62,6 +74,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [placeData, setPlaceData] = useState<Place | null>(null);
   const [listData, setListData] = useState<List[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [fullScreenImageOpen, setFullScreenImageOpen] = useState(false);
 
   useEffect(() => {
     const fetchFullPaneData = async () => {
@@ -87,6 +100,71 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     fetchFullPaneData();
   }, [placeID]);
 
+  async function handleFavoriteToggle() {
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? { ...prevPlaceData, favorited: !prevPlaceData.favorited }
+        : prevPlaceData,
+    );
+
+    const response = await fetch("/api/places/favorites/toggle_favorite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        placeId: placeID,
+        favorite: !placeData?.favorited,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to toggle favorite:", response.statusText);
+      toast.error("Failed to toggle favourite. Please try again.");
+
+      setPlaceData((prevPlaceData) =>
+        prevPlaceData
+          ? { ...prevPlaceData, favorited: !prevPlaceData.favorited }
+          : prevPlaceData,
+      );
+
+      return;
+    }
+  }
+
+  async function handleVisitedToggle() {
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? { ...prevPlaceData, visited: !prevPlaceData.visited }
+        : prevPlaceData,
+    );
+
+    const response = await fetch("/api/places/visited/toggle_visited", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        placeId: placeID,
+        visited: !placeData?.visited,
+        visitedAt: null,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to toggle visited:", response.statusText);
+      toast.error("Failed to toggle visited. Please try again.");
+
+      setPlaceData((prevPlaceData) =>
+        prevPlaceData
+          ? { ...prevPlaceData, visited: !prevPlaceData.visited }
+          : prevPlaceData,
+      );
+
+      return;
+    }
+  }
+
   return loading ? (
     <div className="mt-6 flex flex-row items-center gap-2">
       <Spinner />
@@ -96,37 +174,108 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     <p>Failed to load place information.</p>
   ) : (
     <>
-      <div className="group relative -mt-6 -mx-6 w-[calc(100%+3rem)] aspect-square shrink-0 overflow-hidden [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_85%,transparent_100%)]">
-        <Image
-          src={getImageURL(
-            placeData?.images[0]?.imageURL,
-            !placeData?.images[0]?.imageURL,
-          )}
-          alt={`Image of ${placeData?.name}`}
-          fill
-          sizes="400px"
-          draggable={false}
-          className="object-cover rounded-b-md cursor-pointer"
-        />
+      <div
+        onClick={() => setFullScreenImageOpen(true)}
+        className="group relative -mt-6 -mx-6 w-[calc(100%+3rem)] aspect-square shrink-0 overflow-hidden cursor-pointer [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_85%,transparent_100%)]"
+      >
+        <div className="absolute inset-0">
+          <Image
+            src={getImageURL(
+              placeData?.images[0]?.imageURL,
+              !placeData?.images[0]?.imageURL,
+            )}
+            alt={`Image of ${placeData?.name}`}
+            fill
+            sizes="400px"
+            draggable={false}
+            className="object-cover rounded-b-md"
+          />
+        </div>
 
-        <div className="absolute top-8 left-8 flex flex-row items-center gap-2 p-2 bg-accent hover:bg-accent/80 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+        <div className="absolute top-8 left-8 flex flex-row items-center gap-2 p-2 bg-accent hover:bg-accent/80 rounded-md opacity-0 group-hover:opacity-90 transition-opacity duration-200">
           <Images className="h-4 w-4" />
           <p className="text-sm">See more</p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 p-4">
-        <h1 className="font-bold text-xl">{placeData?.name}</h1>
-        <div className="flex flex-row items-center gap-2 text-muted-foreground">
-          <MapPin className="h-4 w-4" />
-          <p className="font-medium text-sm">
-            {placeData?.mainAddress}, {placeData?.city},{" "}
-            {!placeData?.city ? placeData?.state : ""} {placeData?.country}
-          </p>
+      <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-bold text-xl">{placeData?.name}</h1>
+          <div className="flex flex-row items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4" />
+            <p className="font-medium text-sm">
+              {placeData?.mainAddress}, {placeData?.city},{" "}
+              {!placeData?.city ? placeData?.state : ""} {placeData?.country}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-row items-center gap-3 justify-between">
+          <div className="flex flex-row items-center gap-2">
+            <Button
+              variant="outline"
+              className="flex flex-row items-center gap-2 p-5"
+            >
+              <Bookmark
+                className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${placeData?.lists.length > 0 ? "fill-blue-500 stroke-blue-500" : "fill-none stroke-current"}`}
+              />
+              Add{placeData?.lists.length > 0 && `ed`} to list
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleFavoriteToggle}
+              className="p-5"
+            >
+              <Heart
+                className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${placeData?.favorited ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`}
+              />
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleVisitedToggle}
+              className="p-5"
+            >
+              <CircleCheck
+                strokeWidth={2.75}
+                className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${placeData?.visited ? "stroke-primary" : "stroke-current"}`}
+              />
+            </Button>
+          </div>
+
+          <Button variant="outline" className="p-5">
+            <Share2 className="h-7 w-7" />
+          </Button>
+        </div>
+
+        <p className="font-medium text-muted-foreground">
+          {placeData?.description}
+        </p>
+
+        <div className="grid grid-rows-2 gap-4">
+          <div></div>
+          {placeData?.visitedAt && (
+            <div className="flex flex-row items-center gap-2">
+              <Calendar />
+              <div>
+                <p>Visited on</p>
+                <p>{new Date(placeData.visitedAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <FullScreenImage images={placeData?.images} placeName={placeData?.name} />
+      {fullScreenImageOpen ? (
+        <FullScreenImage
+          images={placeData?.images}
+          placeName={placeData?.name}
+          onClose={() => setFullScreenImageOpen(false)}
+        />
+      ) : null}
+
+      <Toaster position="top-center" />
     </>
   );
 }

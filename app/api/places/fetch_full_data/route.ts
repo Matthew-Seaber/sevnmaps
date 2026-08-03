@@ -59,6 +59,7 @@ interface Place {
 
   favorited: boolean;
   visited: boolean;
+  visitedAt: Date | null;
   privateNote: string | null;
 
   tags: string[];
@@ -106,6 +107,7 @@ export async function GET(req: Request) {
           mainAddress: places.mainAddress,
           favorited: place_user_link.favorite,
           visited: place_user_link.visited,
+          visitedAt: place_user_link.visitedAt,
           privateNote: place_user_link.privateNote,
         })
         .from(places)
@@ -271,6 +273,7 @@ export async function GET(req: Request) {
 
         favorited: placeDetails.favorited || false,
         visited: placeDetails.visited || false,
+        visitedAt: placeDetails.visitedAt || null,
         privateNote: placeDetails.privateNote || null,
 
         tags: formattedTags,
@@ -278,8 +281,6 @@ export async function GET(req: Request) {
         images: formattedPlaceImages,
         reviews: formattedReviews,
       };
-
-      console.log(formattedPlace);
 
       return {
         place: formattedPlace,

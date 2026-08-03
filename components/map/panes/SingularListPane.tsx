@@ -385,6 +385,19 @@ function SingularListPane({ listID }: { listID: string }) {
         };
       });
 
+      if (privacy === "Private") {
+        setListData((prevData) => {
+          if (!prevData) return prevData;
+
+          return {
+            ...prevData,
+            members: prevData.members.filter(
+              (member) => member.role === "Creator",
+            ),
+          };
+        });
+      }
+
       setNewListPrivacy(privacy);
       setLoading(false);
       setDialogOpen(false);
@@ -526,6 +539,53 @@ function SingularListPane({ listID }: { listID: string }) {
     } catch (error) {
       console.error("Error removing member:", error);
       toast.error("Failed to remove member. Please try again later.");
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveItemFromList = async (placeID: string) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/lists/remove_place", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listID,
+          placeID,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error removing item:", response.statusText);
+        toast.error(
+          "Failed to remove place from list. Please try again later.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Place removed from the list.");
+
+      setListData((prevData) => {
+        if (!prevData) return prevData;
+
+        const updatedItems = prevData.items.filter(
+          (item) => item.id !== placeID,
+        );
+
+        return {
+          ...prevData,
+          items: updatedItems,
+        };
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error removing item:", error);
+      toast.error("Failed to remove place from list. Please try again later.");
       setLoading(false);
     }
   };
@@ -787,7 +847,27 @@ function SingularListPane({ listID }: { listID: string }) {
                   </div>
 
                   <div className="flex items-center justify-end px-4 ml-auto">
-                    <Bookmark className="h-7 w-7 cursor-pointer hover:scale-110 transition-all fill-blue-500 stroke-blue-500" />
+                    <Bookmark
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        if (
+                          userRole === "Creator" ||
+                          userRole === "Admin" ||
+                          userRole === "Editor"
+                        ) {
+                          handleRemoveItemFromList(item.id);
+                        }
+                      }}
+                      className={`h-7 w-7 ${
+                        userRole !== "Creator" &&
+                        userRole !== "Admin" &&
+                        userRole !== "Editor"
+                          ? "cursor-not-allowed fill-blue-500 stroke-blue-500 opacity-50"
+                          : "cursor-pointer hover:scale-110 transition-all fill-blue-500 stroke-blue-500"
+                      }
+                      `}
+                    />
                   </div>
                 </div>
               ))
@@ -1097,7 +1177,7 @@ function SingularListPane({ listID }: { listID: string }) {
                                 </h5>
                                 <p className="text-sm text-muted-foreground">
                                   {member.role !== "Creator"
-                                    ? `Joined: ${member.joinedAt}`
+                                    ? `Joined: ${new Date(member.joinedAt).toLocaleDateString()}`
                                     : "Creator"}
                                 </p>
                               </div>

@@ -359,19 +359,20 @@ function VisitedPane() {
                           <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
                             <div className="flex flex-row items-center gap-2">
                               <CircleCheck
-                                className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "fill-none stroke-current"}`}
-                                onClick={() =>
+                                className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "stroke-current"}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleVisitedToggle(
                                     place.id,
                                     true,
                                     null,
                                     null,
-                                  )
-                                }
+                                  );
+                                }}
                               />
 
                               <DropdownMenu>
-                                <DropdownMenuTrigger>
+                                <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
                                   <EllipsisVertical className="h-5 w-5 cursor-pointer hover:scale-110 transition-all text-muted-foreground" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-48">
