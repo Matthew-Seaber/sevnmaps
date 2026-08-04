@@ -16,6 +16,7 @@ import {
   reviews,
   review_image_link,
   profiles,
+  user,
 } from "@/db/schema";
 import { and, inArray, eq } from "drizzle-orm";
 
@@ -150,12 +151,14 @@ export async function GET(req: Request) {
         .select({
           id: reviews.id,
           username: profiles.username,
+          profilePictureURL: user.image,
           createdAt: reviews.createdAt,
           stars: reviews.stars,
           comment: reviews.comment,
         })
         .from(reviews)
         .innerJoin(profiles, eq(reviews.userId, profiles.userId))
+        .innerJoin(user, eq(reviews.userId, user.id))
         .where(eq(reviews.placeId, placeID));
 
       const reviewImages = await tx
@@ -244,6 +247,7 @@ export async function GET(req: Request) {
       const formattedReviews: Review[] = placeReviews.map((review) => ({
         id: review.id,
         username: review.username || null,
+        profilePictureURL: review.profilePictureURL || null,
         createdAt: review.createdAt,
         stars: review.stars,
         comment: review.comment || null,

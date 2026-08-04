@@ -6,6 +6,7 @@ import { getImageURL } from "@/lib/images";
 
 import FullScreenImage from "@/components/map/panes/FullScreenImage";
 
+import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -16,6 +17,17 @@ import {
   DialogTitle,
   DialogContent,
 } from "@/components/ui/dialog";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
@@ -30,7 +42,11 @@ import {
   Copy,
   Notebook,
   Binoculars,
+  Search,
   Map,
+  EllipsisVertical,
+  CircleUserRound,
+  Star,
 } from "lucide-react";
 
 interface Photo {
@@ -46,6 +62,7 @@ interface Photo {
 interface Review {
   id: string;
   username: string | null;
+  profilePictureURL: string | null;
   createdAt: Date;
   stars: number;
   comment: string | null;
@@ -86,6 +103,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [placeData, setPlaceData] = useState<Place | null>(null);
   const [listData, setListData] = useState<List[] | null>(null);
   const [privateNote, setPrivateNote] = useState<string | null>(null);
+  const [reviewSearchQuery, setReviewSearchQuery] = useState<string>("");
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [privateNoteDialogOpen, setPrivateNoteDialogOpen] = useState(false);
   const [fullScreenImageOpen, setFullScreenImageOpen] = useState(false);
@@ -116,6 +134,13 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
     fetchFullPaneData();
   }, [placeID]);
+
+  const filteredReviews =
+    placeData?.reviews.filter((review) => {
+      const query = reviewSearchQuery.toLowerCase();
+
+      return review.comment?.toLowerCase().includes(query);
+    }) ?? [];
 
   async function handleFavoriteToggle() {
     setPlaceData((prevPlaceData) =>
@@ -224,6 +249,17 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     const formattedLongitude = `${Math.abs(longitude).toFixed(4)}° ${longitudeDirection}`;
 
     return `${formattedLatitude}, ${formattedLongitude}`;
+  }
+
+  function calculateAverageRating() {
+    if (!placeData || placeData.reviews.length === 0) return 0;
+
+    const totalStars = placeData.reviews.reduce(
+      (sum, review) => sum + review.stars,
+      0,
+    );
+
+    return totalStars / placeData.reviews.length;
   }
 
   function copyAddress() {
@@ -393,6 +429,130 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
             </div>
           </div>
         </div>
+
+        <div className="flex flex-row items-center justify-between gap-2">
+          <h3 className="font-semibold text-lg">Reviews</h3>
+
+          <InputGroup className="p-1 py-4 max-w-48">
+            <InputGroupInput
+              id="search-input"
+              placeholder="Search reviews..."
+              value={reviewSearchQuery}
+              onChange={(e) => setReviewSearchQuery(e.target.value)}
+            />
+            <InputGroupAddon>
+              <Search className="h-4 w-4" />
+            </InputGroupAddon>
+          </InputGroup>
+        </div>
+
+        {placeData?.reviews.length === 0 ? (
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            There are no currently no reviews for {placeData?.name}. You can be
+            the first to add one!
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="p-2 flex flex-col items-center justify-center gap-1">
+              <h2 className="text-xl">{calculateAverageRating().toFixed(1)}</h2>
+
+              <div className="flex flex-row gap-0.5">
+                <Star className="w-3 h-3" />
+                {Math.round(calculateAverageRating()) === 2 ? (
+                  <Star className="w-3 h-3" />
+                ) : null}
+                {Math.round(calculateAverageRating()) === 3 ? (
+                  <Star className="w-3 h-3" />
+                ) : null}
+                {Math.round(calculateAverageRating()) === 4 ? (
+                  <Star className="w-3 h-3" />
+                ) : null}
+                {Math.round(calculateAverageRating()) === 5 ? (
+                  <Star className="w-3 h-3" />
+                ) : null}
+              </div>
+
+              <p>
+                {placeData.reviews.length} review
+                {placeData.reviews.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            {filteredReviews.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 mt-2">
+                <p className="text-sm">
+                  No reviews found that match your search query.
+                </p>
+                <Button
+                  size="lg"
+                  className="p-4"
+                  onClick={() => setReviewSearchQuery("")}
+                >
+                  Clear search
+                </Button>
+              </div>
+            ) : (
+              filteredReviews.map((review) => (
+                <div key={review.id} className="flex flex-col gap-2">
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <div>
+                      {review.profilePictureURL ? (
+                        <Image
+                          src={review.profilePictureURL}
+                          alt="Reviewer's profile picture"
+                          className="w-4 h-4 rounded-full"
+                        />
+                      ) : (
+                        <CircleUserRound
+                          strokeWidth={1.5}
+                          className="w-4 h-4 bg-primary text-primary-foreground rounded-full"
+                        />
+                      )}
+
+                      <div className="flex flex-col items-center gap-0.5">
+                        <p>@{review.username}</p>
+                        <p className="text-xm text-muted-foreground">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
+                        <EllipsisVertical />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Link href="/contact" target="_blank">
+                            Report review
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {review.images.length > 0 && (
+                    <Image src={review.images[0]} alt="Review image" />
+                  )}
+
+                  <div className="flex flex-row items-center gap-0.5">
+                    <Star className="w-3 h-3" />
+                    {review.stars === 2 ? <Star className="w-3 h-3" /> : null}
+                    {review.stars === 3 ? <Star className="w-3 h-3" /> : null}
+                    {review.stars === 4 ? <Star className="w-3 h-3" /> : null}
+                    {review.stars === 5 ? <Star className="w-3 h-3" /> : null}
+                  </div>
+
+                  <p>{review.comment}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {fullScreenImageOpen ? (
