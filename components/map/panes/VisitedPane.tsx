@@ -372,12 +372,16 @@ function VisitedPane() {
                               />
 
                               <DropdownMenu>
-                                <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuTrigger
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <EllipsisVertical className="h-5 w-5 cursor-pointer hover:scale-110 transition-all text-muted-foreground" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-48">
                                   <DropdownMenuItem
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+
                                       setSelectedPlace(place);
                                       setDateDialogOpen(true);
                                     }}
@@ -386,7 +390,9 @@ function VisitedPane() {
                                   </DropdownMenuItem>
 
                                   <DropdownMenuItem
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+
                                       handleVisitedToggle(
                                         place.id,
                                         false,

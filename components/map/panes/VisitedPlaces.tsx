@@ -169,11 +169,11 @@ function VisitedPlaces({
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
                     <div className="flex flex-row items-center gap-2">
                       <CircleCheck
-                      strokeWidth={2}
+                        strokeWidth={2}
                         className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "stroke-current"}`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -182,12 +182,16 @@ function VisitedPlaces({
                       />
 
                       <DropdownMenu>
-                        <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuTrigger
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <EllipsisVertical className="h-5 w-5 cursor-pointer hover:scale-110 transition-all text-muted-foreground" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-48">
                           <DropdownMenuItem
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
+
                               setSelectedPlace(place);
                               setDateDialogOpen(true);
                             }}
@@ -196,7 +200,9 @@ function VisitedPlaces({
                           </DropdownMenuItem>
 
                           <DropdownMenuItem
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
+
                               handleVisitedToggle(place.id, false, true, null);
                             }}
                           >
@@ -218,6 +224,7 @@ function VisitedPlaces({
                   Edit visited date for {selectedPlace?.name}
                 </DialogTitle>
               </DialogHeader>
+
               <Calendar
                 mode="single"
                 selected={selectedPlace?.visitedAt || undefined}

@@ -9,6 +9,13 @@ import FullScreenImage from "@/components/map/panes/FullScreenImage";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
@@ -19,6 +26,11 @@ import {
   CircleCheck,
   Share2,
   Calendar,
+  Tag,
+  Copy,
+  Notebook,
+  Binoculars,
+  Map,
 } from "lucide-react";
 
 interface Photo {
@@ -73,8 +85,11 @@ interface Place {
 function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [placeData, setPlaceData] = useState<Place | null>(null);
   const [listData, setListData] = useState<List[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [privateNote, setPrivateNote] = useState<string | null>(null);
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+  const [privateNoteDialogOpen, setPrivateNoteDialogOpen] = useState(false);
   const [fullScreenImageOpen, setFullScreenImageOpen] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchFullPaneData = async () => {
@@ -91,6 +106,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
         setPlaceData(data.place);
         setListData(data.lists);
+        setPrivateNote(data.place.privateNote);
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching place data:", error);
@@ -163,6 +180,68 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
       return;
     }
+  }
+
+  async function handleEditPrivateNote() {
+    const response = await fetch("/api/places/edit_private_note", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        placeId: placeID,
+        privateNote: privateNote,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to edit private note:", response.statusText);
+      toast.error("Failed to edit private note. Please try again.");
+
+      return;
+    }
+
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? { ...prevPlaceData, privateNote: privateNote }
+        : prevPlaceData,
+    );
+
+    toast.success("Private note successfully updated!");
+    setPrivateNoteDialogOpen(false);
+  }
+
+  function formatCoordinates() {
+    if (!placeData) return "";
+
+    const latitude = placeData.latitude;
+    const longitude = placeData.longitude;
+
+    const latitudeDirection = latitude >= 0 ? "N" : "S";
+    const longitudeDirection = longitude >= 0 ? "E" : "W";
+
+    const formattedLatitude = `${Math.abs(latitude).toFixed(4)}° ${latitudeDirection}`;
+    const formattedLongitude = `${Math.abs(longitude).toFixed(4)}° ${longitudeDirection}`;
+
+    return `${formattedLatitude}, ${formattedLongitude}`;
+  }
+
+  function copyAddress() {
+    if (!placeData) return;
+
+    const fullAddress = `${placeData.mainAddress || ""}, ${placeData.city || ""}, ${placeData.state || ""}, ${placeData.country || ""}, ${placeData.zipCode || ""}`;
+
+    navigator.clipboard
+      .writeText(fullAddress)
+      .then(() => {
+        toast.success("Copied address to clipboard!");
+        setAddressDialogOpen(false);
+      })
+      .catch((error) => {
+        console.error("Failed to copy address:", error);
+
+        toast.error("Failed to copy address. Please try again later.");
+      });
   }
 
   return loading ? (
@@ -249,21 +328,70 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           </Button>
         </div>
 
-        <p className="font-medium text-muted-foreground">
+        <p className="mb-4 font-medium text-muted-foreground">
           {placeData?.description}
         </p>
 
-        <div className="grid grid-rows-2 gap-4">
-          <div></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-row items-center gap-4">
+            <Tag className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col gap-0.5 text-sm">
+              <p className="font-medium text-muted-foreground">Tags</p>
+              <p className="font-semibold">
+                {placeData?.tags.length > 0
+                  ? placeData?.tags.join(", ")
+                  : "None"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-row items-center gap-4">
+            <Binoculars className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col gap-0.5 text-sm">
+              <p className="font-medium text-muted-foreground">Coordinates</p>
+              <p className="font-semibold">{formatCoordinates() || "N/A"}</p>
+            </div>
+          </div>
+
           {placeData?.visitedAt && (
-            <div className="flex flex-row items-center gap-2">
-              <Calendar />
-              <div>
-                <p>Visited on</p>
-                <p>{new Date(placeData.visitedAt).toLocaleDateString()}</p>
+            <div className="flex flex-row items-center gap-4">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col gap-0.5 text-sm">
+                <p className="font-medium text-muted-foreground">Visited on</p>
+                <p className="font-semibold">
+                  {new Date(placeData.visitedAt).toLocaleDateString()}
+                </p>
               </div>
             </div>
           )}
+
+          <div className="flex flex-row items-center gap-4">
+            <Map className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col gap-0.5 text-sm">
+              <p className="font-medium text-muted-foreground">Address</p>
+              <Button
+                variant="link"
+                onClick={() => setAddressDialogOpen(true)}
+                className="p-0 font-semibold cursor-pointer"
+              >
+                Click for full address
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-row items-center gap-4">
+            <Notebook className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col gap-0.5 text-sm">
+              <p className="font-medium text-muted-foreground">Private note</p>
+              <Button
+                variant="link"
+                onClick={() => setPrivateNoteDialogOpen(true)}
+                className="p-0 font-semibold cursor-pointer"
+              >
+                Click to {placeData?.privateNote ? "view" : "add"} note
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -274,6 +402,56 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           onClose={() => setFullScreenImageOpen(false)}
         />
       ) : null}
+
+      <Dialog open={addressDialogOpen} onOpenChange={setAddressDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Full address</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col font-medium">
+            <p>{placeData?.mainAddress}</p>
+            <p>{placeData?.city}</p>
+            <p>{placeData?.state}</p>
+            <p>{placeData?.country}</p>
+            <p>{placeData?.zipCode}</p>
+          </div>
+
+          <Button
+            variant="default"
+            onClick={copyAddress}
+            className="flex flex-row gap-2"
+          >
+            <Copy />
+            Copy address
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={privateNoteDialogOpen}
+        onOpenChange={setPrivateNoteDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Private note</DialogTitle>
+          </DialogHeader>
+
+          <Textarea
+            placeholder="Enter a private note here..."
+            value={privateNote || ""}
+            onChange={(e) => setPrivateNote(e.target.value)}
+          />
+
+          <Button
+            variant="default"
+            onClick={handleEditPrivateNote}
+            className="flex flex-row gap-2"
+          >
+            Save
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <Toaster position="top-center" />
     </>

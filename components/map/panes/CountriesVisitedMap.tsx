@@ -324,7 +324,7 @@ function CountriesVisitedMap({
                   <path
                     key={region.properties?.name}
                     d={region.svgPath}
-                    className={`hover:fill-primary/80 cursor-pointer transition-colors
+                    className={`hover:fill-primary cursor-pointer transition-colors
                       ${
                         visitedCountries.some(
                           (country) =>
