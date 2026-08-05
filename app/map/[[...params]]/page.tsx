@@ -1,5 +1,6 @@
 import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
 
+import MapPageClient from "@/components/map/MapPageClient";
 import MapPageSidebar from "@/components/map/Sidebar";
 import MapPageInfoPane from "@/components/map/InfoPane";
 import InfoPaneCloseKeybind from "@/components/map/InfoPaneCloseKeybind";
@@ -12,6 +13,12 @@ import {
 } from "@/components/ui/input-group";
 import { Kbd } from "@/components/ui/kbd";
 import { Search } from "lucide-react";
+
+type MapPageProps = {
+  params: Promise<{
+    params?: string[];
+  }>;
+};
 
 interface Place {
   id: string;
@@ -28,7 +35,12 @@ interface PlaceListLink {
   listId: string;
 }
 
-function MapPage() {
+async function MapPage({ params }: MapPageProps) {
+  const resolvedParams = await params;
+
+  const type = resolvedParams.params?.[0];
+  const id = resolvedParams.params?.[1];
+
   return (
     <InfoPaneProvider>
       <div className="flex h-screen">
@@ -65,6 +77,8 @@ function MapPage() {
           </div>
         </div>
       </div>
+
+      <MapPageClient type={type} id={id} />
     </InfoPaneProvider>
   );
 }

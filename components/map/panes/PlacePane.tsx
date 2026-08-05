@@ -50,6 +50,7 @@ import {
   CircleUserRound,
   Star,
   Pencil,
+  Check,
 } from "lucide-react";
 
 interface Photo {
@@ -114,6 +115,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [reviewStars, setReviewStars] = useState<number>(0);
   const [reviewComment, setReviewComment] = useState<string>("");
   const [fullScreenImageOpen, setFullScreenImageOpen] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   const { openPane, closePane } = useInfoPane();
@@ -324,6 +326,28 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
       });
   }
 
+  function handleShare() {
+    if (!placeData) return;
+
+    const shareLink = `${window.location.origin}/map/place/${placeData.id}`;
+
+    navigator.clipboard
+      .writeText(shareLink)
+      .then(() => {
+        toast.success("Copied place link to clipboard!");
+        setShareSuccess(true);
+        setTimeout(() => {
+          setShareSuccess(false);
+        }, 2000);
+        
+      })
+      .catch((error) => {
+        console.error("Failed to copy share link:", error);
+
+        toast.error("Failed to copy place link. Please try again later.");
+      });
+  }
+
   return loading ? (
     <div className="mt-6 flex flex-row items-center gap-2">
       <Spinner />
@@ -403,8 +427,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
             </Button>
           </div>
 
-          <Button variant="outline" className="p-5">
-            <Share2 className="h-7 w-7" />
+          <Button variant="outline" onClick={handleShare} className="p-5">
+            {shareSuccess ? <Check /> : <Share2 className="h-7 w-7" />}
           </Button>
         </div>
 

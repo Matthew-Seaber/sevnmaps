@@ -26,7 +26,13 @@ export function InfoPaneProvider({ children }: { children: React.ReactNode }) {
   });
 
   function openPane(paneType: Exclude<InfoPaneState, { type: "closed" }>) {
-    setInfoPaneState(paneType);
+    setInfoPaneState((current) => {
+      if (JSON.stringify(current) === JSON.stringify(paneType)) {
+        return current;
+      }
+
+      return paneType;
+    });
   }
 
   function closePane() {
