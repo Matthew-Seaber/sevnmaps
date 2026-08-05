@@ -150,6 +150,7 @@ export async function GET(req: Request) {
       const placeReviews = await tx
         .select({
           id: reviews.id,
+          userId: reviews.userId,
           username: profiles.username,
           profilePictureURL: user.image,
           createdAt: reviews.createdAt,
@@ -208,6 +209,10 @@ export async function GET(req: Request) {
             inArray(list_members.role, ["Creator", "Admin", "Editor"]),
           ),
         );
+
+      const userHasReviewed = placeReviews.some(
+        (review) => review.userId === userID,
+      );
 
       const formattedTags = placeTags.map((tag) => tag.tagName);
 
@@ -289,6 +294,7 @@ export async function GET(req: Request) {
       return {
         place: formattedPlace,
         lists: formattedLists,
+        userHasReviewed,
       };
     });
 

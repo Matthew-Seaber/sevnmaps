@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { getImageURL } from "@/lib/images";
+import { useInfoPane } from "@/components/map/InfoPaneContext";
 
 import FullScreenImage from "@/components/map/panes/FullScreenImage";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogContent,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   InputGroup,
@@ -47,6 +49,7 @@ import {
   EllipsisVertical,
   CircleUserRound,
   Star,
+  Pencil,
 } from "lucide-react";
 
 interface Photo {
@@ -106,8 +109,14 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [reviewSearchQuery, setReviewSearchQuery] = useState<string>("");
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [privateNoteDialogOpen, setPrivateNoteDialogOpen] = useState(false);
+  const [createReviewDialogOpen, setCreateReviewDialogOpen] = useState(false);
+  const [userHasReviewed, setUserHasReviewed] = useState<boolean>(false);
+  const [reviewStars, setReviewStars] = useState<number>(0);
+  const [reviewComment, setReviewComment] = useState<string>("");
   const [fullScreenImageOpen, setFullScreenImageOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const { openPane, closePane } = useInfoPane();
 
   useEffect(() => {
     const fetchFullPaneData = async () => {
@@ -124,6 +133,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
         setPlaceData(data.place);
         setListData(data.lists);
+        setUserHasReviewed(data.userHasReviewed);
         setPrivateNote(data.place.privateNote);
 
         setLoading(false);
@@ -234,6 +244,40 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
     toast.success("Private note successfully updated!");
     setPrivateNoteDialogOpen(false);
+  }
+
+  async function handleCreateReview() {
+    if (reviewStars < 1 || reviewStars > 5) {
+      toast.info("Please select a star rating from 1 to 5.");
+      return;
+    }
+
+    const response = await fetch("/api/places/reviews/create_review", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        placeId: placeID,
+        stars: reviewStars,
+        comment: reviewComment,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to post review:", response.statusText);
+      toast.error("Failed to post review. Please try again later.");
+
+      return;
+    }
+
+    toast.success("Review posted!");
+    setCreateReviewDialogOpen(false);
+
+    closePane();
+    setTimeout(() => {
+      openPane({ type: "place", placeID: placeID });
+    }, 50);
   }
 
   function formatCoordinates() {
@@ -447,35 +491,65 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
         </div>
 
         {placeData?.reviews.length === 0 ? (
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            There are no currently no reviews for {placeData?.name}. You can be
-            the first to add one!
-          </p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <div className="p-2 flex flex-col items-center justify-center gap-1">
-              <h2 className="text-xl">{calculateAverageRating().toFixed(1)}</h2>
+          <div className="flex flex-col items-center justify-center gap-4">
+            <p className="mt-2 text-sm text-muted-foreground">
+              There are no currently no reviews for {placeData?.name}. You can
+              be the first to add one!
+            </p>
 
-              <div className="flex flex-row gap-0.5">
-                <Star className="w-3 h-3" />
-                {Math.round(calculateAverageRating()) === 2 ? (
-                  <Star className="w-3 h-3" />
-                ) : null}
-                {Math.round(calculateAverageRating()) === 3 ? (
-                  <Star className="w-3 h-3" />
-                ) : null}
-                {Math.round(calculateAverageRating()) === 4 ? (
-                  <Star className="w-3 h-3" />
-                ) : null}
-                {Math.round(calculateAverageRating()) === 5 ? (
-                  <Star className="w-3 h-3" />
-                ) : null}
+            <Button
+              className="flex flex-row gap-1 py-5 px-4"
+              onClick={() => setCreateReviewDialogOpen(true)}
+            >
+              <Pencil />
+              Write a review
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-row items-center justify-between gap-2 mb-2">
+              <div className="p-2 flex flex-col items-center justify-center gap-1">
+                <h2 className="font-semibold text-3xl">
+                  {calculateAverageRating().toFixed(1)}
+                </h2>
+
+                <div className="flex flex-row items-center gap-0.5">
+                  <Star
+                    strokeWidth={1.5}
+                    className={`w-6 h-6 ${calculateAverageRating() >= 1 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                  />
+                  <Star
+                    strokeWidth={1.5}
+                    className={`w-6 h-6 ${calculateAverageRating() >= 2 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                  />
+                  <Star
+                    strokeWidth={1.5}
+                    className={`w-6 h-6 ${calculateAverageRating() >= 3 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                  />
+                  <Star
+                    strokeWidth={1.5}
+                    className={`w-6 h-6 ${calculateAverageRating() >= 4 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                  />
+                  <Star
+                    strokeWidth={1.5}
+                    className={`w-6 h-6 ${calculateAverageRating() >= 5 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                  />
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  {placeData.reviews.length} review
+                  {placeData.reviews.length !== 1 ? "s" : ""}
+                </p>
               </div>
 
-              <p>
-                {placeData.reviews.length} review
-                {placeData.reviews.length !== 1 ? "s" : ""}
-              </p>
+              <Button
+                className="flex flex-row gap-1 py-5 px-4"
+                disabled={userHasReviewed}
+                onClick={() => setCreateReviewDialogOpen(true)}
+              >
+                <Pencil />
+                Write a review
+              </Button>
             </div>
 
             {filteredReviews.length === 0 ? (
@@ -493,25 +567,33 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
               </div>
             ) : (
               filteredReviews.map((review) => (
-                <div key={review.id} className="flex flex-col gap-2">
+                <div
+                  key={review.id}
+                  className="flex flex-col gap-2 border border-border rounded-md p-4"
+                >
                   <div className="flex flex-row items-center justify-between gap-2">
-                    <div>
+                    <div className="flex flex-row items-center gap-2">
                       {review.profilePictureURL ? (
                         <Image
                           src={review.profilePictureURL}
                           alt="Reviewer's profile picture"
-                          className="w-4 h-4 rounded-full"
+                          width={6}
+                          height={6}
+                          sizes="24px"
+                          className="w-7 h-7 rounded-full"
                         />
                       ) : (
                         <CircleUserRound
                           strokeWidth={1.5}
-                          className="w-4 h-4 bg-primary text-primary-foreground rounded-full"
+                          className="w-7 h-7 bg-primary text-primary-foreground rounded-full"
                         />
                       )}
 
-                      <div className="flex flex-col items-center gap-0.5">
-                        <p>@{review.username}</p>
-                        <p className="text-xm text-muted-foreground">
+                      <div className="flex flex-col items-start gap-0.5">
+                        <p className="font-semibold text-sm">
+                          @{review.username}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
                           {new Date(review.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -519,7 +601,9 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
-                        <EllipsisVertical />
+                        <div className="hover:bg-muted rounded-full p-2">
+                          <EllipsisVertical className="w-5 h-5" />
+                        </div>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
@@ -527,24 +611,42 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
                             e.stopPropagation();
                           }}
                         >
-                          <Link href="/contact" target="_blank">
+                          <p
+                            onClick={() => window.open("/contact", "_blank")}
+                            className="w-full"
+                          >
                             Report review
-                          </Link>
+                          </p>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
 
                   {review.images.length > 0 && (
-                    <Image src={review.images[0]} alt="Review image" />
+                    <Image src={review.images[0].imageURL} alt="Review image" />
                   )}
 
-                  <div className="flex flex-row items-center gap-0.5">
-                    <Star className="w-3 h-3" />
-                    {review.stars === 2 ? <Star className="w-3 h-3" /> : null}
-                    {review.stars === 3 ? <Star className="w-3 h-3" /> : null}
-                    {review.stars === 4 ? <Star className="w-3 h-3" /> : null}
-                    {review.stars === 5 ? <Star className="w-3 h-3" /> : null}
+                  <div className="flex flex-row items-center gap-1">
+                    <Star
+                      strokeWidth={1.5}
+                      className={`w-5 h-5 ${review.stars >= 1 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                    />
+                    <Star
+                      strokeWidth={1.5}
+                      className={`w-5 h-5 ${review.stars >= 2 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                    />
+                    <Star
+                      strokeWidth={1.5}
+                      className={`w-5 h-5 ${review.stars >= 3 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                    />
+                    <Star
+                      strokeWidth={1.5}
+                      className={`w-5 h-5 ${review.stars >= 4 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                    />
+                    <Star
+                      strokeWidth={1.5}
+                      className={`w-5 h-5 ${review.stars >= 5 ? "fill-yellow-400 stroke-yellow-400" : "stroke-slate-500"}`}
+                    />
                   </div>
 
                   <p>{review.comment}</p>
@@ -610,6 +712,64 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           >
             Save
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={createReviewDialogOpen}
+        onOpenChange={setCreateReviewDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Write a review</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-row items-center gap-1 pt-1 pl-2">
+            <Star
+              strokeWidth={1.5}
+              className={`w-7 h-7 cursor-pointer ${reviewStars >= 1 ? "fill-yellow-400 stroke-yellow-400" : "fill-none stroke-slate-500"}`}
+              onClick={() => setReviewStars(1)}
+            />
+            <Star
+              strokeWidth={1.5}
+              className={`w-7 h-7 cursor-pointer ${reviewStars >= 2 ? "fill-yellow-400 stroke-yellow-400" : "fill-none stroke-slate-500"}`}
+              onClick={() => setReviewStars(2)}
+            />
+            <Star
+              strokeWidth={1.5}
+              className={`w-7 h-7 cursor-pointer ${reviewStars >= 3 ? "fill-yellow-400 stroke-yellow-400" : "fill-none stroke-slate-500"}`}
+              onClick={() => setReviewStars(3)}
+            />
+            <Star
+              strokeWidth={1.5}
+              className={`w-7 h-7 cursor-pointer ${reviewStars >= 4 ? "fill-yellow-400 stroke-yellow-400" : "fill-none stroke-slate-500"}`}
+              onClick={() => setReviewStars(4)}
+            />
+            <Star
+              strokeWidth={1.5}
+              className={`w-7 h-7 cursor-pointer ${reviewStars >= 5 ? "fill-yellow-400 stroke-yellow-400" : "fill-none stroke-slate-500"}`}
+              onClick={() => setReviewStars(5)}
+            />
+          </div>
+
+          <Textarea
+            placeholder="Share your thoughts about this place..."
+            value={reviewComment || ""}
+            onChange={(e) => setReviewComment(e.target.value)}
+            className="min-h-24"
+          />
+
+          <DialogFooter>
+            <DialogClose>Close</DialogClose>
+
+            <Button
+              variant="default"
+              onClick={handleCreateReview}
+              className="flex flex-row gap-2 md:ml-2 sm:px-4"
+            >
+              Post
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

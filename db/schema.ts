@@ -247,7 +247,9 @@ export const list_place_link = pgTable(
 );
 
 export const reviews = pgTable("reviews", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => randomUUID()),
   placeId: text("place_id")
     .notNull()
     .references(() => places.id, { onDelete: "cascade" }),
