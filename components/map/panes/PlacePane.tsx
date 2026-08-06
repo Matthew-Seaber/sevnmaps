@@ -6,6 +6,7 @@ import { getImageURL } from "@/lib/images";
 import { useInfoPane } from "@/components/map/InfoPaneContext";
 
 import FullScreenImage from "@/components/map/panes/FullScreenImage";
+import { listIcons } from "@/components/map/ListIcons";
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   InputGroup,
@@ -108,6 +110,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [listData, setListData] = useState<List[] | null>(null);
   const [privateNote, setPrivateNote] = useState<string | null>(null);
   const [reviewSearchQuery, setReviewSearchQuery] = useState<string>("");
+  const [addToListDialogOpen, setAddToListDialogOpen] = useState(false);
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [privateNoteDialogOpen, setPrivateNoteDialogOpen] = useState(false);
   const [createReviewDialogOpen, setCreateReviewDialogOpen] = useState(false);
@@ -282,6 +285,71 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     }, 50);
   }
 
+  async function handleAddPlaceToList(listId: string) {
+    const response = await fetch("/api/lists/add_place", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        listID: listId,
+        placeID: placeID,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to add place to list:", response.statusText);
+      toast.error("Failed to add place to list. Please try again later.");
+
+      return;
+    }
+
+    const listName = listData?.find((list) => list.id === listId)?.listName;
+
+    toast.success(
+      `${placeData?.name} added to your list${listName ? ` '${listName}'` : ""}!`,
+    );
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? { ...prevPlaceData, lists: [...prevPlaceData.lists, listId] }
+        : prevPlaceData,
+    );
+  }
+
+  async function handleRemovePlaceFromList(listId: string) {
+    const response = await fetch("/api/lists/remove_place", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        listID: listId,
+        placeID: placeID,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to remove place from list:", response.statusText);
+      toast.error("Failed to remove place from list. Please try again later.");
+
+      return;
+    }
+
+    const listName = listData?.find((list) => list.id === listId)?.listName;
+
+    toast.success(
+      `${placeData?.name} removed from your list${listName ? ` '${listName}'` : ""}.`,
+    );
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? {
+            ...prevPlaceData,
+            lists: prevPlaceData.lists.filter((id) => id !== listId),
+          }
+        : prevPlaceData,
+    );
+  }
+
   function formatCoordinates() {
     if (!placeData) return "";
 
@@ -339,7 +407,6 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
         setTimeout(() => {
           setShareSuccess(false);
         }, 2000);
-        
       })
       .catch((error) => {
         console.error("Failed to copy share link:", error);
@@ -371,6 +438,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
             fill
             sizes="400px"
             draggable={false}
+            loading="eager"
             className="object-cover rounded-b-md"
           />
         </div>
@@ -401,6 +469,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
             >
               <Bookmark
                 className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${placeData?.lists.length > 0 ? "fill-blue-500 stroke-blue-500" : "fill-none stroke-current"}`}
+                onClick={() => setAddToListDialogOpen(true)}
               />
               Add{placeData?.lists.length > 0 && `ed`} to list
             </Button>
@@ -688,6 +757,70 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           onClose={() => setFullScreenImageOpen(false)}
         />
       ) : null}
+
+      <Dialog open={addToListDialogOpen} onOpenChange={setAddToListDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add ${placeData?.name} to a list</DialogTitle>
+            <DialogDescription>
+              Only lists which you own or are an editor/admin of are shown
+              below.
+            </DialogDescription>
+          </DialogHeader>
+
+          {listData?.length === 0 ? (
+            <p>You currently have no lists.</p>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-2">
+              {listData?.map((list) => {
+                const ListIconComponent = listIcons.find(
+                  (icon) => icon.id === list.listIcon,
+                )?.icon;
+
+                return (
+                  <Button
+                    key={list.id}
+                    variant="ghost"
+                    className="w-full flex flex-row items-center justify-between gap-2 hover:bg-accent/50"
+                    onClick={() => {
+                      if (placeData?.lists.includes(list.id)) {
+                        handleRemovePlaceFromList(list.id);
+                      } else {
+                        handleAddPlaceToList(list.id);
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row items-center gap-2">
+                      {ListIconComponent ? (
+                        <ListIconComponent
+                          className="h-20 w-20 text-accent rounded-md p-4"
+                          strokeWidth={1.5}
+                          style={{ backgroundColor: `#${list.listColor}` }}
+                        />
+                      ) : (
+                        <span
+                          className="inline-block w-4 h-4 rounded-full"
+                          style={{ backgroundColor: `#${list.listColor}` }}
+                        />
+                      )}
+
+                      <h3 className="font-semibold">{list.listName}</h3>
+                    </div>
+
+                    {placeData?.lists.includes(list.id) && (
+                      <CircleCheck className="h-5 w-5 fill-primary" />
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          )}
+
+          <DialogFooter>
+            <DialogClose>Close</DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={addressDialogOpen} onOpenChange={setAddressDialogOpen}>
         <DialogContent>

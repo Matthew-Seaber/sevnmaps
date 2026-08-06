@@ -835,6 +835,7 @@ function SingularListPane({ listID }: { listID: string }) {
                       alt={item.name}
                       fill
                       sizes="80px"
+                      draggable={false}
                       className="object-cover rounded-md"
                     />
                   </div>
@@ -1063,11 +1064,12 @@ function SingularListPane({ listID }: { listID: string }) {
                               <Button
                                 variant="secondary"
                                 size="sm"
-                                disabled={listData?.visibility === "Private"}
-                                onClick={() =>
-                                  setInviteUIVisible((prev) => !prev)
-                                }
-                                className="text-primary"
+                                onClick={() => {
+                                  if (listData?.visibility !== "Private") {
+                                    setInviteUIVisible((prev) => !prev);
+                                  }
+                                }}
+                                className={`text-primary ${listData?.visibility === "Private" ? "opacity-50 hover:bg-muted" : ""}`}
                               >
                                 Invite
                               </Button>

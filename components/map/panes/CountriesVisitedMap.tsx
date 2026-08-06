@@ -243,15 +243,17 @@ function CountriesVisitedMap({
           <div className="relative w-full aspect-800/440">
             <div className="absolute top-1/8 -translate-y-1/2 right-4 z-20 flex flex-col gap-0.5">
               <Tooltip>
-                <TooltipTrigger>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    className="font-bold opacity-75"
-                  >
-                    ?
-                  </Button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      className="font-bold opacity-75"
+                    >
+                      ?
+                    </Button>
+                  }
+                />
                 <TooltipContent>
                   <p>
                     We are aware of some geopolitical issues with borders on

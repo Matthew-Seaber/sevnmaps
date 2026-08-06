@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
 export type InfoPaneState =
   | { type: "closed" }
@@ -25,22 +31,30 @@ export function InfoPaneProvider({ children }: { children: React.ReactNode }) {
     type: "closed",
   });
 
-  function openPane(paneType: Exclude<InfoPaneState, { type: "closed" }>) {
-    setInfoPaneState((current) => {
-      if (JSON.stringify(current) === JSON.stringify(paneType)) {
-        return current;
-      }
+  const openPane = useCallback(
+    (paneType: Exclude<InfoPaneState, { type: "closed" }>) => {
+      setInfoPaneState((current) => {
+        if (JSON.stringify(current) === JSON.stringify(paneType)) {
+          return current;
+        }
 
-      return paneType;
-    });
-  }
+        return paneType;
+      });
+    },
+    [],
+  );
 
-  function closePane() {
+  const closePane = useCallback(() => {
     setInfoPaneState({ type: "closed" });
-  }
+  }, []);
+
+  const value = useMemo(
+    () => ({ infoPaneState, openPane, closePane }),
+    [infoPaneState, openPane, closePane],
+  );
 
   return (
-    <InfoPaneContext.Provider value={{ infoPaneState, openPane, closePane }}>
+    <InfoPaneContext.Provider value={value}>
       {children}
     </InfoPaneContext.Provider>
   );

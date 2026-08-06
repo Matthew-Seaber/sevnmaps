@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useInfoPane } from "@/components/map/InfoPaneContext";
 
@@ -11,13 +11,22 @@ type MapPageProps = {
 
 export default function MapPageClient({ type, id }: MapPageProps) {
   const { openPane } = useInfoPane();
+  const lastRoute = useRef<string | null>(null);
 
   useEffect(() => {
-    if (type === "place" && id) {
-      openPane({ type: "place", placeID: id });
-
+    if (type !== "place" || !id) {
+      lastRoute.current = null;
       return;
     }
+
+    const newRoute = `${type}:${id}`;
+
+    if (lastRoute.current === newRoute) {
+      return;
+    }
+
+    lastRoute.current = newRoute;
+    openPane({ type: "place", placeID: id });
   }, [type, id, openPane]);
 
   return null;
