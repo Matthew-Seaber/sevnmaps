@@ -51,9 +51,11 @@ async function MapPage({ params }: MapPageProps) {
           <InfoPaneCloseKeybind />
 
           <div className="flex flex-1 overflow-hidden">
-            <main className="flex-1">
-              <div className="relative top-4 left-4 w-full max-w-90">
-                <InputGroup className="p-1 py-5">
+            <main className="relative flex-1">
+              <MapPageClient type={type} id={id} />
+
+              <div className="absolute top-4 left-4 w-full max-w-90 z-20">
+                <InputGroup className="p-1 py-5 bg-background">
                   <InputGroupInput
                     id="search-input"
                     placeholder="Search locations..."
@@ -69,16 +71,12 @@ async function MapPage({ params }: MapPageProps) {
                   </InputGroupAddon>
                 </InputGroup>
               </div>
-
-              <h1>map</h1>
             </main>
 
             <MapPageInfoPane />
           </div>
         </div>
       </div>
-
-      <MapPageClient type={type} id={id} />
     </InfoPaneProvider>
   );
 }

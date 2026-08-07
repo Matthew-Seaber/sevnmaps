@@ -9,6 +9,7 @@ import FullScreenImage from "@/components/map/panes/FullScreenImage";
 import { listIcons } from "@/components/map/ListIcons";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,6 +54,7 @@ import {
   Star,
   Pencil,
   Check,
+  CirclePlus,
 } from "lucide-react";
 
 interface Photo {
@@ -286,6 +288,12 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   }
 
   async function handleAddPlaceToList(listId: string) {
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? { ...prevPlaceData, lists: [...prevPlaceData.lists, listId] }
+        : prevPlaceData,
+    );
+
     const response = await fetch("/api/lists/add_place", {
       method: "POST",
       headers: {
@@ -301,6 +309,15 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
       console.error("Failed to add place to list:", response.statusText);
       toast.error("Failed to add place to list. Please try again later.");
 
+      setPlaceData((prevPlaceData) =>
+        prevPlaceData
+          ? {
+              ...prevPlaceData,
+              lists: prevPlaceData.lists.filter((id) => id !== listId),
+            }
+          : prevPlaceData,
+      );
+
       return;
     }
 
@@ -309,16 +326,20 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     toast.success(
       `${placeData?.name} added to your list${listName ? ` '${listName}'` : ""}!`,
     );
-    setPlaceData((prevPlaceData) =>
-      prevPlaceData
-        ? { ...prevPlaceData, lists: [...prevPlaceData.lists, listId] }
-        : prevPlaceData,
-    );
   }
 
   async function handleRemovePlaceFromList(listId: string) {
+    setPlaceData((prevPlaceData) =>
+      prevPlaceData
+        ? {
+            ...prevPlaceData,
+            lists: prevPlaceData.lists.filter((id) => id !== listId),
+          }
+        : prevPlaceData,
+    );
+
     const response = await fetch("/api/lists/remove_place", {
-      method: "POST",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
@@ -332,6 +353,12 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
       console.error("Failed to remove place from list:", response.statusText);
       toast.error("Failed to remove place from list. Please try again later.");
 
+      setPlaceData((prevPlaceData) =>
+        prevPlaceData
+          ? { ...prevPlaceData, lists: [...prevPlaceData.lists, listId] }
+          : prevPlaceData,
+      );
+
       return;
     }
 
@@ -339,14 +366,6 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
     toast.success(
       `${placeData?.name} removed from your list${listName ? ` '${listName}'` : ""}.`,
-    );
-    setPlaceData((prevPlaceData) =>
-      prevPlaceData
-        ? {
-            ...prevPlaceData,
-            lists: prevPlaceData.lists.filter((id) => id !== listId),
-          }
-        : prevPlaceData,
     );
   }
 
@@ -466,10 +485,10 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
             <Button
               variant="outline"
               className="flex flex-row items-center gap-2 p-5"
+              onClick={() => setAddToListDialogOpen(true)}
             >
               <Bookmark
                 className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${placeData?.lists.length > 0 ? "fill-blue-500 stroke-blue-500" : "fill-none stroke-current"}`}
-                onClick={() => setAddToListDialogOpen(true)}
               />
               Add{placeData?.lists.length > 0 && `ed`} to list
             </Button>
@@ -748,6 +767,13 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
             )}
           </div>
         )}
+
+        <Link
+          href="/contact"
+          className="mt-8 text-center text-xs text-muted-foreground hover:underline hover:text-foreground"
+        >
+          Report an issue with this place.
+        </Link>
       </div>
 
       {fullScreenImageOpen ? (
@@ -761,7 +787,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
       <Dialog open={addToListDialogOpen} onOpenChange={setAddToListDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add ${placeData?.name} to a list</DialogTitle>
+            <DialogTitle>Add {placeData?.name} to a list</DialogTitle>
             <DialogDescription>
               Only lists which you own or are an editor/admin of are shown
               below.
@@ -771,17 +797,16 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           {listData?.length === 0 ? (
             <p>You currently have no lists.</p>
           ) : (
-            <div className="flex flex-col items-center gap-2 p-2">
+            <div className="flex flex-col items-center gap-0.5">
               {listData?.map((list) => {
                 const ListIconComponent = listIcons.find(
                   (icon) => icon.id === list.listIcon,
                 )?.icon;
 
                 return (
-                  <Button
+                  <div
                     key={list.id}
-                    variant="ghost"
-                    className="w-full flex flex-row items-center justify-between gap-2 hover:bg-accent/50"
+                    className="group w-full flex flex-row items-center justify-between gap-2 rounded-md p-2 hover:bg-accent cursor-pointer"
                     onClick={() => {
                       if (placeData?.lists.includes(list.id)) {
                         handleRemovePlaceFromList(list.id);
@@ -793,13 +818,13 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
                     <div className="flex flex-row items-center gap-2">
                       {ListIconComponent ? (
                         <ListIconComponent
-                          className="h-20 w-20 text-accent rounded-md p-4"
+                          className="h-8 w-8 text-accent rounded-sm p-1"
                           strokeWidth={1.5}
                           style={{ backgroundColor: `#${list.listColor}` }}
                         />
                       ) : (
                         <span
-                          className="inline-block w-4 h-4 rounded-full"
+                          className="inline-block w-8 h-8 rounded-sm"
                           style={{ backgroundColor: `#${list.listColor}` }}
                         />
                       )}
@@ -807,10 +832,12 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
                       <h3 className="font-semibold">{list.listName}</h3>
                     </div>
 
-                    {placeData?.lists.includes(list.id) && (
-                      <CircleCheck className="h-5 w-5 fill-primary" />
+                    {placeData?.lists.includes(list.id) ? (
+                      <CircleCheck className="h-8 w-8 fill-primary stroke-background" />
+                    ) : (
+                      <CirclePlus className="hidden group-hover:flex mr-1 h-6 w-6 stroke-slate-600" />
                     )}
-                  </Button>
+                  </div>
                 );
               })}
             </div>

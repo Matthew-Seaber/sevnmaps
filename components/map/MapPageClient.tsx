@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { useInfoPane } from "@/components/map/InfoPaneContext";
+import Map from "@/components/map/Map";
 
 type MapPageProps = {
   type?: string;
@@ -29,5 +30,5 @@ export default function MapPageClient({ type, id }: MapPageProps) {
     openPane({ type: "place", placeID: id });
   }, [type, id, openPane]);
 
-  return null;
+  return <Map />;
 }
