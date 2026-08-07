@@ -149,4 +149,10 @@
   li {
     margin: 0.5rem 0;
   }
+
+  @media (max-width: 768px) {
+    .mapboxgl-ctrl-top-right {
+      display: none;
+    }
+  }
 }

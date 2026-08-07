@@ -4,7 +4,29 @@ import { useEffect, useRef } from "react";
 import * as mapboxgl from "mapbox-gl/esm";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-export default function Map() {
+type MapProps = {
+  placesGeoJSON: {
+    type: "FeatureCollection";
+    features: {
+      type: "Feature";
+      properties: {
+        id: string;
+        placeName: string;
+        longitude: number;
+        latitude: number;
+        favorite: boolean;
+        visited: boolean;
+      };
+
+      geometry: {
+        type: "Point";
+        coordinates: [number, number];
+      };
+    }[];
+  };
+};
+
+export default function Map({ placesGeoJSON }: MapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,8 +66,17 @@ export default function Map() {
           }),
           "top-right",
         );
+
+        mapRef.current.addSource("places", {
+          type: "geojson",
+          data: placesGeoJSON,
+
+          cluster: true,
+          clusterMaxZoom: 10,
+          clusterRadius: 50,
+        });
       },
-      (error) => {
+      (error: GeolocationPositionError) => {
         console.log("Error getting user's location:", error);
 
         mapRef.current = new mapboxgl.Map({
@@ -63,13 +94,22 @@ export default function Map() {
           }),
           "top-right",
         );
+
+        mapRef.current.addSource("places", {
+          type: "geojson",
+          data: placesGeoJSON,
+
+          cluster: true,
+          clusterMaxZoom: 10,
+          clusterRadius: 50,
+        });
       },
     );
 
     return () => {
       mapRef.current?.remove();
     };
-  }, []);
+  }, [placesGeoJSON]);
 
   return (
     <>

@@ -1,3 +1,11 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { places, place_user_link } from "@/db/schema";
+import { sql, and, eq } from "drizzle-orm";
+
 import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
 
 import MapPageClient from "@/components/map/MapPageClient";
@@ -23,16 +31,10 @@ type MapPageProps = {
 interface Place {
   id: string;
   placeName: string;
-  latitude: number;
   longitude: number;
-  createdAt: Date;
+  latitude: number;
   favorite: boolean;
   visited: boolean;
-}
-
-interface PlaceListLink {
-  placeId: string;
-  listId: string;
 }
 
 async function MapPage({ params }: MapPageProps) {
@@ -40,6 +42,55 @@ async function MapPage({ params }: MapPageProps) {
 
   const type = resolvedParams.params?.[0];
   const id = resolvedParams.params?.[1];
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const userId = session.user.id;
+
+  const placeData = await db
+    .select({
+      id: places.id,
+      placeName: places.placeName,
+      longitude: places.longitude,
+      latitude: places.latitude,
+      favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
+      visited: sql<boolean>`COALESCE(${place_user_link.visited}, false)`,
+    })
+    .from(places)
+    .leftJoin(
+      place_user_link,
+      and(
+        eq(places.id, place_user_link.placeId),
+        eq(place_user_link.userId, userId),
+      ),
+    );
+
+  const placesGeoJSON = {
+    type: "FeatureCollection" as const,
+    features: placeData.map((place: Place) => ({
+      type: "Feature" as const,
+
+      properties: {
+        id: place.id,
+        placeName: place.placeName,
+        longitude: place.longitude,
+        latitude: place.latitude,
+        favorite: place.favorite ?? false,
+        visited: place.visited ?? false,
+      },
+
+      geometry: {
+        type: "Point" as const,
+        coordinates: [place.longitude, place.latitude] as [number, number],
+      },
+    })),
+  };
 
   return (
     <InfoPaneProvider>
@@ -52,7 +103,11 @@ async function MapPage({ params }: MapPageProps) {
 
           <div className="flex flex-1 overflow-hidden">
             <main className="relative flex-1">
-              <MapPageClient type={type} id={id} />
+              <MapPageClient
+                type={type}
+                id={id}
+                placesGeoJSON={placesGeoJSON}
+              />
 
               <div className="absolute top-4 left-4 w-full max-w-90 z-20">
                 <InputGroup className="p-1 py-5 bg-background">

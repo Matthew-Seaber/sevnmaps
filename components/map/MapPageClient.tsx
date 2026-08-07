@@ -8,9 +8,32 @@ import Map from "@/components/map/Map";
 type MapPageProps = {
   type?: string;
   id?: string;
+  placesGeoJSON: {
+    type: "FeatureCollection";
+    features: {
+      type: "Feature";
+      properties: {
+        id: string;
+        placeName: string;
+        longitude: number;
+        latitude: number;
+        favorite: boolean;
+        visited: boolean;
+      };
+
+      geometry: {
+        type: "Point";
+        coordinates: [number, number];
+      };
+    }[];
+  };
 };
 
-export default function MapPageClient({ type, id }: MapPageProps) {
+export default function MapPageClient({
+  type,
+  id,
+  placesGeoJSON,
+}: MapPageProps) {
   const { openPane } = useInfoPane();
   const lastRoute = useRef<string | null>(null);
 
@@ -30,5 +53,5 @@ export default function MapPageClient({ type, id }: MapPageProps) {
     openPane({ type: "place", placeID: id });
   }, [type, id, openPane]);
 
-  return <Map />;
+  return <Map placesGeoJSON={placesGeoJSON} />;
 }
