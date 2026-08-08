@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
-import { useInfoPane } from "@/components/map/InfoPaneContext";
-import Map from "@/components/map/Map";
+import { useInfoPaneActions } from "@/components/map/InfoPaneContext";
+import Map from "./Map";
 
 type MapPageProps = {
   type?: string;
@@ -34,7 +34,7 @@ export default function MapPageClient({
   id,
   placesGeoJSON,
 }: MapPageProps) {
-  const { openPane } = useInfoPane();
+  const { openPane } = useInfoPaneActions();
   const lastRoute = useRef<string | null>(null);
 
   useEffect(() => {
