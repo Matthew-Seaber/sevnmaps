@@ -19,6 +19,7 @@ type MapProps = {
         latitude: number;
         favorite: boolean;
         visited: boolean;
+        inList: boolean;
       };
 
       geometry: {
@@ -34,6 +35,36 @@ function Map({ placesGeoJSON }: MapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { openPane } = useInfoPaneActions();
+
+  function createIcon(iconPath: string, backgroundColor: string): string {
+    return `
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="10"
+        fill="${backgroundColor}"
+        stroke="white"
+        stroke-width="1.5"
+      />
+
+      <path
+        d="${iconPath}"
+        transform="translate(5 4.8) scale(0.5)"
+        fill="white"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  `;
+  }
 
   useEffect(() => {
     if (!mapContainerRef.current || !process.env.NEXT_PUBLIC_MAPBOX_TOKEN)
@@ -78,6 +109,73 @@ function Map({ placesGeoJSON }: MapProps) {
       }
 
       map.on("load", () => {
+        const svgMarkup = createIcon(
+          "M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5",
+          "#FB2C36",
+        );
+
+        if (!svgMarkup) {
+          console.error("Failed to create SVG markup");
+          return;
+        }
+
+        const iconBlob = new Blob([svgMarkup], { type: "image/svg+xml" });
+        const iconURL = URL.createObjectURL(iconBlob);
+
+        const image = new Image(20, 20);
+
+        image.onload = () => {
+          URL.revokeObjectURL(iconURL);
+
+          if (!map.hasImage("heart-icon")) {
+            map.addImage("heart-icon", image);
+          }
+
+          map.addLayer({
+            // Favourite points
+            id: "favorite-places",
+            type: "symbol",
+            source: "places",
+            filter: [
+              "all",
+              ["!", ["has", "point_count"]],
+              ["==", ["get", "favorite"], true],
+              ["==", ["get", "inList"], false],
+            ],
+            layout: {
+              "icon-image": "heart-icon",
+              "icon-size": 1,
+              "icon-allow-overlap": true,
+            },
+          });
+
+          map.on("click", "favorite-places", (e) => {
+            const feature = e.features?.[0];
+
+            if (!feature || !feature.properties) return;
+
+            const placeId = feature.properties.id;
+
+            if (!placeId) return;
+
+            openPane({ type: "place", placeID: placeId });
+          });
+
+          map.on("mouseenter", "favorite-places", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseleave", "favorite-places", () => {
+            map.getCanvas().style.cursor = "";
+          });
+        };
+
+        image.onerror = (error) => {
+          console.error("Error loading place icon:", error);
+        };
+
+        image.src = iconURL;
+
         map.addSource("places", {
           type: "geojson",
           data: placesGeoJSON,
@@ -111,10 +209,15 @@ function Map({ placesGeoJSON }: MapProps) {
         });
 
         map.addLayer({
+          // Normal points
           id: "places",
           type: "circle",
           source: "places",
-          filter: ["!", ["has", "point_count"]],
+          filter: [
+            "all",
+            ["!", ["has", "point_count"]],
+            ["==", ["get", "favorite"], false],
+          ],
           paint: {
             "circle-radius": 8,
             "circle-color": "#3B82F6",

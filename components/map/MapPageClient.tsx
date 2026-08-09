@@ -19,6 +19,7 @@ type MapPageProps = {
         latitude: number;
         favorite: boolean;
         visited: boolean;
+        inList: boolean;
       };
 
       geometry: {

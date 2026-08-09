@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { places, place_user_link } from "@/db/schema";
+import {
+  places,
+  place_user_link,
+  list_place_link,
+  list_members,
+} from "@/db/schema";
 import { sql, and, eq } from "drizzle-orm";
 
 import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
@@ -35,6 +40,7 @@ interface Place {
   latitude: number;
   favorite: boolean;
   visited: boolean;
+  inList: boolean;
 }
 
 async function MapPage({ params }: MapPageProps) {
@@ -61,6 +67,7 @@ async function MapPage({ params }: MapPageProps) {
       latitude: places.latitude,
       favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
       visited: sql<boolean>`COALESCE(${place_user_link.visited}, false)`,
+      inList: sql<boolean>`EXISTS (SELECT 1 FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId})`,
     })
     .from(places)
     .leftJoin(
@@ -83,6 +90,7 @@ async function MapPage({ params }: MapPageProps) {
         latitude: place.latitude,
         favorite: place.favorite ?? false,
         visited: place.visited ?? false,
+        inList: place.inList ?? false,
       },
 
       geometry: {
