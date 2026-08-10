@@ -67,7 +67,7 @@ async function MapPage({ params }: MapPageProps) {
       latitude: places.latitude,
       favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
       visited: sql<boolean>`COALESCE(${place_user_link.visited}, false)`,
-      inList: sql<boolean>`EXISTS (SELECT 1 FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId})`,
+      inList: sql<boolean>`EXISTS (SELECT 1 FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor'))`,
     })
     .from(places)
     .leftJoin(

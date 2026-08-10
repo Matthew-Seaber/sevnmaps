@@ -57,6 +57,8 @@ import {
   CirclePlus,
 } from "lucide-react";
 
+const MAP_PLACE_UPDATED_EVENT = "map:place-updated";
+
 interface Photo {
   id: string;
   imageURL: string;
@@ -107,6 +109,13 @@ interface Place {
   reviews: Review[];
 }
 
+type MapPlaceUpdatedEventDetail = {
+  placeId: string;
+  favorite?: boolean;
+  visited?: boolean;
+  inList?: boolean;
+};
+
 function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [placeData, setPlaceData] = useState<Place | null>(null);
   const [listData, setListData] = useState<List[] | null>(null);
@@ -124,6 +133,14 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [loading, setLoading] = useState<boolean>(true);
 
   const { openPane, closePane } = useInfoPane();
+
+  const emitMapPlaceUpdate = (detail: MapPlaceUpdatedEventDetail) => {
+    window.dispatchEvent(
+      new CustomEvent<MapPlaceUpdatedEventDetail>(MAP_PLACE_UPDATED_EVENT, {
+        detail,
+      }),
+    );
+  };
 
   useEffect(() => {
     const fetchFullPaneData = async () => {
@@ -160,11 +177,17 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     }) ?? [];
 
   async function handleFavoriteToggle() {
+    if (!placeData) return;
+
+    const newFavorite = !placeData.favorited;
+
     setPlaceData((prevPlaceData) =>
       prevPlaceData
         ? { ...prevPlaceData, favorited: !prevPlaceData.favorited }
         : prevPlaceData,
     );
+
+    emitMapPlaceUpdate({ placeId: placeID, favorite: newFavorite });
 
     const response = await fetch("/api/places/favorites/toggle_favorite", {
       method: "POST",
@@ -173,7 +196,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
       },
       body: JSON.stringify({
         placeId: placeID,
-        favorite: !placeData?.favorited,
+        favorite: newFavorite,
       }),
     });
 
@@ -186,6 +209,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           ? { ...prevPlaceData, favorited: !prevPlaceData.favorited }
           : prevPlaceData,
       );
+
+      emitMapPlaceUpdate({ placeId: placeID, favorite: !newFavorite });
 
       return;
     }
@@ -288,11 +313,17 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   }
 
   async function handleAddPlaceToList(listId: string) {
+    if (!placeData) return;
+
+    const previousInList = placeData.lists.length > 0;
+
     setPlaceData((prevPlaceData) =>
       prevPlaceData
         ? { ...prevPlaceData, lists: [...prevPlaceData.lists, listId] }
         : prevPlaceData,
     );
+
+    emitMapPlaceUpdate({ placeId: placeID, inList: true });
 
     const response = await fetch("/api/lists/add_place", {
       method: "POST",
@@ -318,6 +349,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           : prevPlaceData,
       );
 
+      emitMapPlaceUpdate({ placeId: placeID, inList: previousInList });
+
       return;
     }
 
@@ -329,6 +362,11 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   }
 
   async function handleRemovePlaceFromList(listId: string) {
+    if (!placeData) return;
+
+    const previousInList = placeData.lists.length > 0;
+    const nextInList = placeData.lists.filter((id) => id !== listId).length > 0;
+
     setPlaceData((prevPlaceData) =>
       prevPlaceData
         ? {
@@ -337,6 +375,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           }
         : prevPlaceData,
     );
+
+    emitMapPlaceUpdate({ placeId: placeID, inList: nextInList });
 
     const response = await fetch("/api/lists/remove_place", {
       method: "DELETE",
@@ -358,6 +398,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           ? { ...prevPlaceData, lists: [...prevPlaceData.lists, listId] }
           : prevPlaceData,
       );
+
+      emitMapPlaceUpdate({ placeId: placeID, inList: previousInList });
 
       return;
     }
