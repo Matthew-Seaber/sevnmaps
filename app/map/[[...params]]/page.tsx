@@ -19,7 +19,7 @@ import MapPageClient from "@/components/map/MapPageClient";
 import MapPageSidebar from "@/components/map/Sidebar";
 import MapPageInfoPane from "@/components/map/InfoPane";
 import InfoPaneCloseKeybind from "@/components/map/InfoPaneCloseKeybind";
-import SearchKeybind from "@/components/map/SearchKeybind";
+import { SearchOpenKeybind } from "@/components/map/SearchKeybind";
 
 type MapPageProps = {
   params: Promise<{
@@ -109,7 +109,7 @@ async function MapPage({ params }: MapPageProps) {
         <MapPageSidebar />
 
         <div className="flex flex-1 flex-col">
-          <SearchKeybind />
+          <SearchOpenKeybind />
           <InfoPaneCloseKeybind />
 
           <div className="flex flex-1 overflow-hidden">

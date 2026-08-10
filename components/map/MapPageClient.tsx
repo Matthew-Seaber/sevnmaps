@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 
 import { useInfoPaneActions } from "@/components/map/InfoPaneContext";
+
 import Map from "./Map";
 
 import {
@@ -81,8 +82,9 @@ export default function MapPageClient({
 
     for (const feature of placesGeoJSON.features) {
       const name = feature.properties.placeName.toLowerCase();
+      const address = feature.properties.address.toLowerCase();
 
-      if (name.includes(query)) {
+      if (name.includes(query) || address.includes(query)) {
         const { id } = feature.properties;
         potentialPlaces.push(id);
       }
@@ -93,6 +95,66 @@ export default function MapPageClient({
       potentialPlaces.length > 0 ? potentialPlaces[0] : null,
     );
   }
+
+  function handleQuickSearch() {
+    openPane({
+      type: "place",
+      placeID: highlightedSearchResult || searchResults[0],
+    });
+
+    setSearchQuery("");
+    setHighlightedSearchResult(null);
+  }
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const activeElement = document.activeElement as HTMLElement;
+
+      if (activeElement.tagName !== "INPUT") {
+        return;
+      }
+
+      if (event.key === "Enter" && activeElement?.tagName === "INPUT") {
+        event.preventDefault();
+
+        handleQuickSearch();
+      }
+
+      if (event.key === "ArrowDown" && activeElement?.tagName === "INPUT") {
+        event.preventDefault();
+
+        setHighlightedSearchResult((prev) => {
+          if (!prev) {
+            return searchResults[0];
+          }
+
+          const currentIndex = searchResults.indexOf(prev);
+          const newIndex = (currentIndex + 1) % searchResults.length;
+
+          return searchResults[newIndex];
+        });
+      }
+
+      if (event.key === "ArrowUp" && activeElement?.tagName === "INPUT") {
+        event.preventDefault();
+
+        setHighlightedSearchResult((prev) => {
+          if (!prev) {
+            return searchResults[0];
+          }
+
+          const currentIndex = searchResults.indexOf(prev);
+          const newIndex =
+            (currentIndex - 1 + searchResults.length) % searchResults.length;
+
+          return searchResults[newIndex];
+        });
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
   return (
     <>

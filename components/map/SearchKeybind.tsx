@@ -2,20 +2,19 @@
 
 import { useEffect } from "react";
 
-function SearchKeybind() {
+export function SearchOpenKeybind() {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       const activeElement = document.activeElement as HTMLElement;
 
       if (
         activeElement.tagName === "INPUT" ||
-        activeElement.tagName === "TEXTAREA" ||
         activeElement.isContentEditable
       ) {
         return;
       }
 
-      if (event.key === "/" && document.activeElement?.tagName !== "INPUT") {
+      if (event.key === "/" && activeElement?.tagName !== "INPUT") {
         event.preventDefault();
 
         const searchInput = document.getElementById(
@@ -32,5 +31,3 @@ function SearchKeybind() {
 
   return null;
 }
-
-export default SearchKeybind;
