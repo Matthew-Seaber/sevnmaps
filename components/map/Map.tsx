@@ -13,6 +13,7 @@ const MAP_PLACE_UPDATED_EVENT = "map:place-updated";
 type PlaceProperties = {
   id: string;
   placeName: string;
+  address: string;
   longitude: number;
   latitude: number;
   favorite: boolean;

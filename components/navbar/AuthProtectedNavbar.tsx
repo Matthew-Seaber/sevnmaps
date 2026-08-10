@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { notifications } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc, lt, sql } from "drizzle-orm";
 
 import NavbarMenu from "./NavbarMenu";
 import TextLogo from "./TextLogoLink";
@@ -27,11 +27,22 @@ async function AuthProtectedNavbar() {
     redirect("/login");
   }
 
-  const fetchedNotifications = await db
-    .select()
-    .from(notifications)
-    .where(eq(notifications.userId, session.user.id))
-    .orderBy(desc(notifications.sentAt));
+  const fetchedNotifications = await db.transaction(async (tx) => {
+    await tx
+      .delete(notifications)
+      .where(
+        and(
+          eq(notifications.userId, session.user.id),
+          lt(notifications.sentAt, sql`NOW() - INTERVAL '14 days'`),
+        ),
+      ).returning();
+
+    return await tx
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, session.user.id))
+      .orderBy(desc(notifications.sentAt));
+  });
 
   const notificationData: Notification[] = fetchedNotifications.map(
     (notification) => ({

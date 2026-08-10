@@ -9,6 +9,7 @@ import {
   list_place_link,
   list_members,
   lists,
+  countries,
 } from "@/db/schema";
 import { sql, and, eq } from "drizzle-orm";
 
@@ -29,6 +30,7 @@ type MapPageProps = {
 interface Place {
   id: string;
   placeName: string;
+  address: string;
   longitude: number;
   latitude: number;
   favorite: boolean;
@@ -57,6 +59,7 @@ async function MapPage({ params }: MapPageProps) {
     .select({
       id: places.id,
       placeName: places.placeName,
+      address: sql<string>`CONCAT_WS(', ', NULLIF(${places.mainAddress}, ''), NULLIF(${places.city}, ''), NULLIF(${places.state}, ''), NULLIF(${countries.countryName}, ''), NULLIF(${places.zipCode}, ''))`,
       longitude: places.longitude,
       latitude: places.latitude,
       favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
@@ -73,7 +76,8 @@ async function MapPage({ params }: MapPageProps) {
         eq(places.id, place_user_link.placeId),
         eq(place_user_link.userId, userId),
       ),
-    );
+    )
+    .leftJoin(countries, eq(places.countryId, countries.id));
 
   const placesGeoJSON = {
     type: "FeatureCollection" as const,
@@ -83,6 +87,7 @@ async function MapPage({ params }: MapPageProps) {
       properties: {
         id: place.id,
         placeName: place.placeName,
+        address: place.address,
         longitude: place.longitude,
         latitude: place.latitude,
         favorite: place.favorite ?? false,

@@ -7,6 +7,7 @@ import {
   primaryKey,
   boolean,
   unique,
+  index,
 } from "drizzle-orm/pg-core";
 
 import { randomUUID } from "crypto";
@@ -82,19 +83,24 @@ export const subscriptions = pgTable("subscriptions", {
   end: timestamp("end"),
 });
 
-export const notifications = pgTable("notifications", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => randomUUID()),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  message: text("message"),
-  sentAt: timestamp("sent_at").notNull().defaultNow(),
-  link: text("link"),
-  read: boolean("read").notNull().default(false),
-});
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    message: text("message"),
+    sentAt: timestamp("sent_at").notNull().defaultNow(),
+    link: text("link"),
+    read: boolean("read").notNull().default(false),
+  },
+
+  (table) => [index("notifications_sent_at_idx").on(table.sentAt)],
+);
 
 export const countries = pgTable("countries", {
   id: text("id").primaryKey(),
@@ -116,6 +122,7 @@ export const visited_countries = pgTable(
       .references(() => countries.id, { onDelete: "cascade" }),
     visitedAt: timestamp("visited_at"),
   },
+
   (table) => [primaryKey({ columns: [table.userId, table.countryId] })],
 );
 
@@ -162,6 +169,7 @@ export const place_tag_link = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
   },
+
   (table) => [primaryKey({ columns: [table.placeId, table.tagId] })],
 );
 
@@ -180,6 +188,7 @@ export const place_user_link = pgTable(
     visitedAt: timestamp("visited_at"),
     privateNote: text("private_note"),
   },
+
   (table) => [unique().on(table.placeId, table.userId)],
 );
 
@@ -208,6 +217,7 @@ export const list_members = pgTable(
     role: text("role").notNull().default("Viewer"),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },
+
   (table) => [primaryKey({ columns: [table.listId, table.userId] })],
 );
 
@@ -226,6 +236,7 @@ export const list_invites = pgTable(
     invitedAt: timestamp("invited_at").defaultNow().notNull(),
     role: text("role").notNull().default("Viewer"),
   },
+
   (table) => [primaryKey({ columns: [table.listId, table.userId] })],
 );
 
@@ -243,6 +254,7 @@ export const list_place_link = pgTable(
       onDelete: "set null",
     }),
   },
+
   (table) => [primaryKey({ columns: [table.listId, table.placeId] })],
 );
 
@@ -269,5 +281,6 @@ export const review_image_link = pgTable(
       .notNull()
       .references(() => place_images.id, { onDelete: "cascade" }),
   },
+
   (table) => [primaryKey({ columns: [table.reviewId, table.imageId] })],
 );
