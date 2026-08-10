@@ -36,6 +36,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 
+const MAP_PLACE_UPDATED_EVENT = "map:place-updated";
+
 interface VisitedPlace {
   id: string;
   name: string;
@@ -57,6 +59,13 @@ interface VisitedCountry {
   visitedAt: Date | null;
 }
 
+type MapPlaceUpdatedEventDetail = {
+  placeId: string;
+  favorite?: boolean;
+  visited?: boolean;
+  inList?: boolean;
+};
+
 function VisitedPane() {
   const [section, setSection] = useState<"all" | "countries" | "places">("all");
   const [visitedPlaces, setVisitedPlaces] = useState<VisitedPlace[]>([]);
@@ -68,6 +77,14 @@ function VisitedPane() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const { openPane } = useInfoPane();
+
+  const emitMapPlaceUpdate = (detail: MapPlaceUpdatedEventDetail) => {
+    window.dispatchEvent(
+      new CustomEvent<MapPlaceUpdatedEventDetail>(MAP_PLACE_UPDATED_EVENT, {
+        detail,
+      }),
+    );
+  };
 
   const fetchVisitedPlaces = useCallback(async () => {
     setLoading(true);
@@ -150,6 +167,8 @@ function VisitedPane() {
       newVisited = visited;
     }
 
+    emitMapPlaceUpdate({ placeId: placeID, visited: newVisited });
+
     const response = await fetch("/api/places/visited/toggle_visited", {
       method: "POST",
       headers: {
@@ -174,6 +193,8 @@ function VisitedPane() {
               : place,
           ),
         );
+
+        emitMapPlaceUpdate({ placeId: placeID, visited: !newVisited });
       }
 
       return;

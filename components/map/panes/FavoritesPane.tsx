@@ -15,6 +15,8 @@ import { Calendar, Heart, MapPin, RefreshCw, Search } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
+const MAP_PLACE_UPDATED_EVENT = "map:place-updated";
+
 interface FavoritePlace {
   id: string;
   name: string;
@@ -24,12 +26,27 @@ interface FavoritePlace {
   favoritedAt: Date | null;
 }
 
+type MapPlaceUpdatedEventDetail = {
+  placeId: string;
+  favorite?: boolean;
+  visited?: boolean;
+  inList?: boolean;
+};
+
 function FavoritesPane() {
   const [favoritePlaces, setFavoritePlaces] = useState<FavoritePlace[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
   const { openPane } = useInfoPane();
+
+  const emitMapPlaceUpdate = (detail: MapPlaceUpdatedEventDetail) => {
+    window.dispatchEvent(
+      new CustomEvent<MapPlaceUpdatedEventDetail>(MAP_PLACE_UPDATED_EVENT, {
+        detail,
+      }),
+    );
+  };
 
   const numberOfFavorites = favoritePlaces.filter(
     (place) => place.favorited,
@@ -70,13 +87,16 @@ function FavoritesPane() {
   });
 
   async function handleFavoriteToggle(placeID: string) {
+    const newState = !favoritePlaces.find((place) => place.id === placeID)
+      ?.favorited;
+
     setFavoritePlaces((prevPlaces) =>
       prevPlaces.map((place) =>
-        place.id === placeID
-          ? { ...place, favorited: !place.favorited }
-          : place,
+        place.id === placeID ? { ...place, favorited: newState } : place,
       ),
     );
+
+    emitMapPlaceUpdate({ placeId: placeID, favorite: newState });
 
     const response = await fetch("/api/places/favorites/toggle_favorite", {
       method: "POST",
@@ -85,8 +105,7 @@ function FavoritesPane() {
       },
       body: JSON.stringify({
         placeId: placeID,
-        favorite: !favoritePlaces.find((place) => place.id === placeID)
-          ?.favorited,
+        favorite: newState,
       }),
     });
 
@@ -96,11 +115,11 @@ function FavoritesPane() {
 
       setFavoritePlaces((prevPlaces) =>
         prevPlaces.map((place) =>
-          place.id === placeID
-            ? { ...place, favorited: !place.favorited }
-            : place,
+          place.id === placeID ? { ...place, favorited: newState } : place,
         ),
       );
+
+      emitMapPlaceUpdate({ placeId: placeID, favorite: !newState });
 
       return;
     }
@@ -210,7 +229,10 @@ function FavoritesPane() {
                     <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
                       <Heart
                         className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.favorited ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`}
-                        onClick={() => handleFavoriteToggle(place.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFavoriteToggle(place.id);
+                        }}
                       />
                     </div>
                   </div>

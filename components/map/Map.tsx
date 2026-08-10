@@ -18,6 +18,7 @@ type PlaceProperties = {
   favorite: boolean;
   visited: boolean;
   inList: boolean;
+  listColor?: string | null;
 };
 
 type MapPlaceUpdatedEventDetail = {

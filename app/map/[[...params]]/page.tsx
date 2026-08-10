@@ -8,6 +8,7 @@ import {
   place_user_link,
   list_place_link,
   list_members,
+  lists,
 } from "@/db/schema";
 import { sql, and, eq } from "drizzle-orm";
 
@@ -18,14 +19,6 @@ import MapPageSidebar from "@/components/map/Sidebar";
 import MapPageInfoPane from "@/components/map/InfoPane";
 import InfoPaneCloseKeybind from "@/components/map/InfoPaneCloseKeybind";
 import SearchKeybind from "@/components/map/SearchKeybind";
-
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import { Kbd } from "@/components/ui/kbd";
-import { Search } from "lucide-react";
 
 type MapPageProps = {
   params: Promise<{
@@ -41,6 +34,7 @@ interface Place {
   favorite: boolean;
   visited: boolean;
   inList: boolean;
+  listColor?: string | null;
 }
 
 async function MapPage({ params }: MapPageProps) {
@@ -68,6 +62,9 @@ async function MapPage({ params }: MapPageProps) {
       favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
       visited: sql<boolean>`COALESCE(${place_user_link.visited}, false)`,
       inList: sql<boolean>`EXISTS (SELECT 1 FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor'))`,
+      listColor: sql<
+        string | null
+      >`(SELECT ${lists.listColor} FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} INNER JOIN ${lists} ON ${list_place_link.listId} = ${lists.id} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor') ORDER BY ${list_members.joinedAt} ASC LIMIT 1)`,
     })
     .from(places)
     .leftJoin(
@@ -91,6 +88,7 @@ async function MapPage({ params }: MapPageProps) {
         favorite: place.favorite ?? false,
         visited: place.visited ?? false,
         inList: place.inList ?? false,
+        listColor: place.listColor ?? null,
       },
 
       geometry: {
@@ -116,24 +114,6 @@ async function MapPage({ params }: MapPageProps) {
                 id={id}
                 placesGeoJSON={placesGeoJSON}
               />
-
-              <div className="absolute top-4 left-4 w-full max-w-90 z-20">
-                <InputGroup className="p-1 py-5 bg-background">
-                  <InputGroupInput
-                    id="search-input"
-                    placeholder="Search locations..."
-                  />
-                  <InputGroupAddon>
-                    <Search className="h-4 w-4" />
-                  </InputGroupAddon>
-                  <InputGroupAddon
-                    align="inline-end"
-                    className="hidden lg:flex"
-                  >
-                    <Kbd>/</Kbd>
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
             </main>
 
             <MapPageInfoPane />
