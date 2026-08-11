@@ -43,17 +43,15 @@ export const auth = betterAuth({
 
           await db.insert(schema.subscriptions).values({
             userId: user.id,
-            planType: "free",
-            paidPlanStatus: "inactive",
-            usedFreeTrial: false,
-            start: new Date(),
           });
         },
       },
     },
   },
 
-  plugins: [dash({
-    apiKey: process.env.BETTER_AUTH_API_KEY,
-  })],
+  plugins: [
+    dash({
+      apiKey: process.env.BETTER_AUTH_API_KEY,
+    }),
+  ],
 });

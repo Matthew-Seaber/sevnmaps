@@ -76,11 +76,14 @@ export const subscriptions = pgTable("subscriptions", {
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
   planType: text("plan_type").notNull().default("free"),
-  paidPlanStatus: text("status").notNull().default("inactive"),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  stripePriceId: text("stripe_price_id"),
+  status: text("status").notNull().default("inactive"),
   usedFreeTrial: boolean("used_free_trial").notNull().default(false),
-  period: text("period"),
-  start: timestamp("start").notNull().defaultNow(),
-  end: timestamp("end"),
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
 });
 
 export const notifications = pgTable(
@@ -148,7 +151,7 @@ export const place_images = pgTable("place_images", {
   imageURL: text("image_url").notNull(),
   uploadedBy: text("uploaded_by")
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
   underReview: boolean("under_review").notNull().default(true),
   primaryImage: boolean("primary_image").notNull().default(false),
