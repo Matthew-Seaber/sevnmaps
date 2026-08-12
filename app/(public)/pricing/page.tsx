@@ -14,6 +14,7 @@ import PerkRow from "@/components/pricing/PerkRow";
 import confetti from "canvas-confetti";
 
 function PricingPage() {
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [annualBilling, setAnnualBilling] = useState<boolean>(true);
   const [countryCode, setCountryCode] = useState<string>("US");
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,27 +31,32 @@ function PricingPage() {
   };
 
   useEffect(() => {
-    const fetchCountryCode = async () => {
+    const fetchPageData = async () => {
       try {
-        const countryCodeResponse = await fetch(
-          "api/billing/get_country_code",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
+        const [planResponse, countryResponse] = await Promise.all([
+          fetch("/api/billing/get_plan_info"),
+          fetch("api/billing/get_country_code"),
+        ]);
 
-        const countryCode = await countryCodeResponse.text();
-        setCountryCode(countryCode);
+        if (!planResponse.ok || !countryResponse.ok) {
+          throw new Error("Failed to fetch billing info");
+        }
+
+        const planData = await planResponse.json();
+        const countryData = await countryResponse.text();
+
+        if (planData !== "User not authenticated") {
+          setCurrentPlan(planData.planInfo[0].planType);
+        }
+
+        setCountryCode(countryData);
       } catch (error) {
-        console.error("Error fetching country code:", error);
+        console.error("Error fetching current plan info:", error);
       }
     };
 
-    fetchCountryCode();
-  }, []);
+    fetchPageData();
+  });
 
   const getCurrencySymbol = (countryCode: string) => {
     if (countryCode === "GB") {
@@ -190,13 +196,21 @@ function PricingPage() {
             <Button
               variant="outline"
               size="lg"
-              disabled={loading}
+              disabled={loading || currentPlan === "free"}
               className="w-full border border-primary text-primary hover:text-primary/90 hover:bg-primary/10 font-semibold rounded-sm"
               onClick={() => {
-                window.location.href = "/signup";
+                if (currentPlan !== null) {
+                  window.location.href = "/billing";
+                } else {
+                  window.location.href = "/signup";
+                }
               }}
             >
-              Get started
+              {currentPlan === null
+                ? "Get started"
+                : currentPlan === "free"
+                  ? "Current plan"
+                  : "Downgrade to Free"}
             </Button>
 
             <div className="mt-10 flex flex-col justify-between gap-2">
@@ -272,11 +286,20 @@ function PricingPage() {
 
             <Button
               size="lg"
-              disabled={loading}
+              disabled={
+                loading ||
+                (currentPlan?.startsWith("pro") &&
+                  currentPlan.endsWith(annualBilling ? "annual" : "monthly"))
+              }
               onClick={() => handleCheckout("pro")}
               className="w-full rounded-sm"
             >
-              Upgrade to Pro
+              {currentPlan?.startsWith("pro") &&
+              currentPlan.endsWith(annualBilling ? "annual" : "monthly")
+                ? "Current plan"
+                : currentPlan === "free"
+                  ? "Upgrade to Pro"
+                  : `Switch to Pro (${annualBilling ? "annual" : "monthly"})`}
             </Button>
             <p className="font-semibold text-xs text-foreground/50 my-2 text-center">
               7-day free trial. Cancel anytime.
@@ -368,11 +391,20 @@ function PricingPage() {
             <Button
               variant="outline"
               size="lg"
-              disabled={loading}
+              disabled={
+                loading ||
+                (currentPlan?.startsWith("explorer") &&
+                  currentPlan.endsWith(annualBilling ? "annual" : "monthly"))
+              }
               onClick={() => handleCheckout("explorer")}
               className="w-full border border-primary text-primary hover:text-primary/90 hover:bg-primary/10 font-semibold rounded-sm"
             >
-              Upgrade to Explorer
+              {currentPlan?.startsWith("explorer") &&
+              currentPlan.endsWith(annualBilling ? "annual" : "monthly")
+                ? "Current plan"
+                : currentPlan === "free"
+                  ? "Upgrade to Explorer"
+                  : `Switch to Explorer (${annualBilling ? "annual" : "monthly"})`}
             </Button>
             <p className="font-semibold text-xs text-foreground/50 my-2 text-center">
               7-day free trial. Cancel anytime.
