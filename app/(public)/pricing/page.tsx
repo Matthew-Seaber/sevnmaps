@@ -16,6 +16,7 @@ import confetti from "canvas-confetti";
 function PricingPage() {
   const [annualBilling, setAnnualBilling] = useState<boolean>(true);
   const [countryCode, setCountryCode] = useState<string>("US");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const prices = {
     pro: {
@@ -89,8 +90,10 @@ function PricingPage() {
   const currency = getCurrencySymbol(countryCode);
 
   async function handleCheckout(planType: "pro" | "explorer") {
+    setLoading(true);
+
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/stripe/change_plan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +109,29 @@ function PricingPage() {
         throw new Error(data.error);
       }
 
-      window.location.href = data.url;
+      if (data.type === "checkout") {
+        window.location.href = data.url;
+        return;
+      }
+
+      if (data.type === "updated") {
+        toast.success(
+          `Successfully switched your plan to SevnMaps ${planType.charAt(0).toUpperCase() + planType.slice(1)}!`,
+        );
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 4500);
+
+        return;
+      }
+
+      if (data.type === "existing") {
+        toast.info("You are already on this plan.");
+        setLoading(false);
+
+        return;
+      }
     } catch (error) {
       console.error("Error during checkout:", error);
 
@@ -165,6 +190,7 @@ function PricingPage() {
             <Button
               variant="outline"
               size="lg"
+              disabled={loading}
               className="w-full border border-primary text-primary hover:text-primary/90 hover:bg-primary/10 font-semibold rounded-sm"
               onClick={() => {
                 window.location.href = "/signup";
@@ -246,6 +272,7 @@ function PricingPage() {
 
             <Button
               size="lg"
+              disabled={loading}
               onClick={() => handleCheckout("pro")}
               className="w-full rounded-sm"
             >
@@ -341,6 +368,7 @@ function PricingPage() {
             <Button
               variant="outline"
               size="lg"
+              disabled={loading}
               onClick={() => handleCheckout("explorer")}
               className="w-full border border-primary text-primary hover:text-primary/90 hover:bg-primary/10 font-semibold rounded-sm"
             >
