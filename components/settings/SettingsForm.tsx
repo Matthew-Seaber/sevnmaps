@@ -157,6 +157,7 @@ function SettingsForm({ userInfo }: Props) {
         >
           Logout
         </Button>
+
         <Button
           variant="destructive"
           size="lg"
@@ -164,6 +165,26 @@ function SettingsForm({ userInfo }: Props) {
           onClick={() => setDeletePopupOpen(true)}
         >
           Delete SevnMaps account
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-1 mt-12 items-start">
+        <h3 className="text-lg font-semibold">Quick links</h3>
+
+        <Button
+          variant="link"
+          onClick={() => router.push("/billing")}
+          className="hover:cursor-pointer"
+        >
+          Billing information
+        </Button>
+
+        <Button
+          variant="link"
+          onClick={() => router.push("/contact")}
+          className="hover:cursor-pointer"
+        >
+          Contact support
         </Button>
       </div>
 

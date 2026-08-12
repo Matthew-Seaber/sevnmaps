@@ -144,6 +144,7 @@ function PricingPage() {
       toast.error(
         "An error occurred. Please try again later or contact support.",
       );
+      setLoading(false);
     }
   }
 
