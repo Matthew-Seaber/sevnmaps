@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { subscriptions } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 const prices = {
   pro_monthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID!,
@@ -33,6 +36,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const currentSubscriptionData = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.userId, session.user.id),
+    });
+
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "subscription",
 
@@ -43,7 +50,13 @@ export async function POST(request: Request) {
         },
       ],
 
-      customer_email: session.user.email,
+      ...(currentSubscriptionData?.stripeCustomerId
+        ? {
+            customer: currentSubscriptionData.stripeCustomerId,
+          }
+        : {
+            customer_email: session.user.email,
+          }),
 
       client_reference_id: session.user.id,
 
