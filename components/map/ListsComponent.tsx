@@ -81,7 +81,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
           });
           return updatedLists;
         });
-        
+
         setDisplayedLists((currentDisplayedLists) => {
           const updatedDisplayedLists = currentDisplayedLists.map((list) => {
             if (list.id === customEvent.detail.listID) {
@@ -136,7 +136,15 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
 
       if (!response.ok) {
         console.error("Failed to create list:", response.statusText);
-        toast.error("Failed to create list. Please try again later.");
+
+        if (response.status === 403) {
+          toast.info(
+            "You have reached the maximum number of lists allowed for your subscription plan.",
+          );
+        } else {
+          toast.error("Failed to create list. Please try again later.");
+        }
+
         return;
       }
 

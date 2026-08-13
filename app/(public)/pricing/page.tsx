@@ -298,7 +298,7 @@ function PricingPage() {
               {currentPlan?.startsWith("pro") &&
               currentPlan.endsWith(annualBilling ? "annual" : "monthly")
                 ? "Current plan"
-                : currentPlan === "free"
+                : currentPlan === "free" || currentPlan === null
                   ? "Upgrade to Pro"
                   : `Switch to Pro (${annualBilling ? "annual" : "monthly"})`}
             </Button>
@@ -403,7 +403,7 @@ function PricingPage() {
               {currentPlan?.startsWith("explorer") &&
               currentPlan.endsWith(annualBilling ? "annual" : "monthly")
                 ? "Current plan"
-                : currentPlan === "free"
+                : currentPlan === "free" || currentPlan === null
                   ? "Upgrade to Explorer"
                   : `Switch to Explorer (${annualBilling ? "annual" : "monthly"})`}
             </Button>

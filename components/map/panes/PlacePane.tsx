@@ -338,7 +338,14 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
     if (!response.ok) {
       console.error("Failed to add place to list:", response.statusText);
-      toast.error("Failed to add place to list. Please try again later.");
+
+      if (response.status === 403) {
+        toast.info(
+          "You have reached the maximum number of places allowed per list under your (or the list owner's) subscription plan.",
+        );
+      } else {
+        toast.error("Failed to add place to list. Please try again later.");
+      }
 
       setPlaceData((prevPlaceData) =>
         prevPlaceData
