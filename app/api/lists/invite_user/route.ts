@@ -54,6 +54,40 @@ export async function POST(request: Request) {
         );
       }
 
+      const [creatorData] = await tx
+        .select({
+          userId: list_members.userId,
+        })
+        .from(list_members)
+        .where(
+          and(
+            eq(list_members.listId, listID),
+            eq(list_members.role, "Creator"),
+          ),
+        );
+
+      if (!creatorData) {
+        throw new Error("List creator not found");
+      }
+
+      const highestPlanData = await fetch(
+        "/api/billing/get_highest_plan_info?userIDs=" +
+          [userId, creatorData.userId].join(","),
+      );
+
+      if (!highestPlanData.ok) {
+        throw new Error("Failed to fetch highest plan info");
+      }
+
+      const highestPlanInfo = await highestPlanData.json();
+      const highestPlanType = highestPlanInfo.planType;
+
+      if (highestPlanType === "free") {
+        throw new Error(
+          "403: Collaboration unauthorised on the current user's and owner's plan",
+        );
+      }
+
       const [recipientUser] = await tx
         .select({
           id: user.id,

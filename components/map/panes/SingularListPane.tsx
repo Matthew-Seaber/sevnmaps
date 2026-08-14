@@ -150,6 +150,7 @@ function SingularListPane({ listID }: { listID: string }) {
     useState<boolean>(false);
   const [memberRoleDropdownOpen, setMemberRoleDropdownOpen] =
     useState<boolean>(false);
+  const [highestPlanType, setHighestPlanType] = useState<string | null>(null);
   const [inviteUIVisible, setInviteUIVisible] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortType, setSortType] = useState<
@@ -176,48 +177,76 @@ function SingularListPane({ listID }: { listID: string }) {
       return null;
     }
     try {
-      const response = await fetch(
+      const listResponse = await fetch(
         `/api/lists/get_list_data?listID=${listID}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
       );
 
-      if (!response.ok) {
-        console.error("Failed to fetch list data:", response.statusText);
+      if (!listResponse.ok) {
+        console.error("Failed to fetch list data:", listResponse.statusText);
         toast.error("Failed to fetch list data. Please try again later.");
+
         return;
       }
 
-      const data = await response.json();
+      const listData = await listResponse.json();
 
-      if (!data || !data.listData) {
+      if (!listData || !listData.listData) {
         toast.error("Error fetching list data. Please try again later.");
         return;
       }
 
-      setListData(data.listData);
+      setListData(listData.listData);
 
-      const userID = data.userID;
+      const userID = listData.userID;
 
-      const userMember = data.listData.members.find(
+      const userMember = listData.listData.members.find(
         (member: ListMember) => member.id === userID,
       );
+      const creatorID = listData.listData.members.find(
+        (member: ListMember) => member.role === "Creator",
+      )?.id;
+
       if (userMember) {
         setUserRole(userMember.role);
       } else {
         return;
       }
 
-      setNewListName(data.listData.name);
-      setNewListDescription(data.listData.description);
-      setNewListColor("#" + data.listData.listColor);
-      setNewListIcon(data.listData.listIcon);
+      let planResponse: Response | null = null;
 
-      setNewListPrivacy(data.listData.visibility);
+      if (userMember?.role === "Creator") {
+        planResponse = await fetch(
+          `/api/billing/get_highest_plan_info?userIDs=${userID}`,
+        );
+      } else {
+        planResponse = await fetch(
+          `/api/billing/get_highest_plan_info?userIDs=${[userID, creatorID].join(",")}`,
+        );
+      }
+
+      if (!planResponse.ok) {
+        console.error("Failed to fetch plan data:", planResponse.statusText);
+        toast.error("Failed to fetch plan data. Please try again later.");
+
+        return;
+      }
+
+      const planData = await planResponse.json();
+
+      if (!planData || !planData.planType) {
+        toast.error(
+          "Error fetching plan data. Your experience may be downgraded.",
+        );
+      }
+
+      setHighestPlanType(planData.planType);
+
+      setNewListName(listData.listData.name);
+      setNewListDescription(listData.listData.description);
+      setNewListColor("#" + listData.listData.listColor);
+      setNewListIcon(listData.listData.listIcon);
+
+      setNewListPrivacy(listData.listData.visibility);
 
       setInviteUIVisible(false);
       setPrivacyCollapsibleOpen(false);
@@ -1065,16 +1094,19 @@ function SingularListPane({ listID }: { listID: string }) {
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => {
-                                  if (listData?.visibility !== "Private") {
+                                  if (
+                                    listData?.visibility !== "Private" &&
+                                    highestPlanType !== "free"
+                                  ) {
                                     setInviteUIVisible((prev) => !prev);
                                   }
                                 }}
-                                className={`text-primary ${listData?.visibility === "Private" ? "opacity-50 hover:bg-muted" : ""}`}
+                                className={`text-primary ${listData?.visibility === "Private" || highestPlanType === "free" ? "opacity-50 hover:bg-muted" : ""}`}
                               >
                                 Invite
                               </Button>
                             }
-                          ></TooltipTrigger>
+                          />
                           {listData?.visibility === "Private" && (
                             <TooltipContent>
                               <p>
@@ -1082,6 +1114,17 @@ function SingularListPane({ listID }: { listID: string }) {
                               </p>
                             </TooltipContent>
                           )}
+                          {highestPlanType === "free" &&
+                            listData?.visibility !== "Private" && (
+                              <TooltipContent>
+                                <p>
+                                  You{" "}
+                                  {userRole !== "Creator" &&
+                                    "(or the list owner) "}
+                                  must have a paid plan to collaborate on lists.
+                                </p>
+                              </TooltipContent>
+                            )}
                         </Tooltip>
                       </Field>
 
