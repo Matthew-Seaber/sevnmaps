@@ -10,6 +10,7 @@ import {
   list_members,
   lists,
   countries,
+  subscriptions,
 } from "@/db/schema";
 import { sql, and, eq } from "drizzle-orm";
 
@@ -103,6 +104,18 @@ async function MapPage({ params }: MapPageProps) {
     })),
   };
 
+  const planInfo = await db
+    .select({
+      planType: subscriptions.planType,
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+    .limit(1);
+
+  const planName = planInfo[0]?.planType || "free";
+  const advancedMapStyles =
+    planName.startsWith("pro") || planName.startsWith("explorer");
+
   return (
     <InfoPaneProvider>
       <div className="flex h-screen">
@@ -118,6 +131,7 @@ async function MapPage({ params }: MapPageProps) {
                 type={type}
                 id={id}
                 placesGeoJSON={placesGeoJSON}
+                advancedMapStyles={advancedMapStyles}
               />
             </main>
 

@@ -33,15 +33,33 @@ type PlacesGeoJSON = FeatureCollection<Point, PlaceProperties>;
 
 type MapProps = {
   placesGeoJSON: PlacesGeoJSON;
+  mapType: string;
+  immersiveMap: boolean;
+  nightMap: boolean;
 };
 
-function Map({ placesGeoJSON }: MapProps) {
+function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const placesDataRef = useRef(placesGeoJSON);
 
   const infoPaneState = useInfoPaneState();
   const { openPane } = useInfoPaneActions();
+
+  const mapStyles = [
+    {
+      name: "default",
+      url: "mapbox://styles/mapbox/standard",
+    },
+    {
+      name: "satellite",
+      url: "mapbox://styles/mapbox/satellite-streets-v12",
+    },
+    {
+      name: "outdoors",
+      url: "mapbox://styles/mapbox/outdoors-v12",
+    },
+  ];
 
   const syncPlacesSource = useCallback(() => {
     const map = mapRef.current;
@@ -199,7 +217,8 @@ function Map({ placesGeoJSON }: MapProps) {
         center: [longitude, latitude],
         zoom: 12,
         projection: "globe",
-        dragRotate: false,
+        dragRotate: immersiveMap,
+        touchZoomRotate: immersiveMap,
       });
 
       mapRef.current = map;
