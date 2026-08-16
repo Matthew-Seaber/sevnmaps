@@ -12,7 +12,7 @@ import {
   Shuffle,
 } from "lucide-react";
 
-function SidebarButtons() {
+function SidebarButtons({ discoverButtons }: { discoverButtons: boolean }) {
   const { infoPaneState, openPane, closePane } = useInfoPane();
 
   const currentTab =
@@ -83,26 +83,30 @@ function SidebarButtons() {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-0.5 mt-6">
-        <div className="flex items-center gap-3 pb-2">
-          <h3 className="text-sm font-medium pl-3 cursor-default">DISCOVER</h3>
-          <div className="h-px flex-1 bg-border" />
+      {discoverButtons && (
+        <div className="flex flex-col gap-0.5 mt-6">
+          <div className="flex items-center gap-3 pb-2">
+            <h3 className="text-sm font-medium pl-3 cursor-default">
+              DISCOVER
+            </h3>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <Button
+            variant="ghost"
+            className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
+          >
+            <Clock />
+            Recently Added
+          </Button>
+          <Button
+            variant="ghost"
+            className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
+          >
+            <Shuffle />
+            Random Place
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
-        >
-          <Clock />
-          Recently Added
-        </Button>
-        <Button
-          variant="ghost"
-          className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
-        >
-          <Shuffle />
-          Random Place
-        </Button>
-      </div>
+      )}
     </>
   );
 }

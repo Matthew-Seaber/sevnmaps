@@ -38,20 +38,21 @@ type MapProps = {
   nightMap: boolean;
 };
 
+const mapStyles = {
+  default: "mapbox://styles/mapbox/standard",
+  satellite: "mapbox://styles/mapbox/standard-satellite",
+  outdoors: "mapbox://styles/mapbox/outdoors-v12",
+  outdoors_night: "mapbox://styles/matthewseaber/cmsvixs9d003g01qy3l9f9ji3",
+} as const;
+
 function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const placesDataRef = useRef(placesGeoJSON);
+  const initialMapSettingsRef = useRef({ mapType, immersiveMap, nightMap });
 
   const infoPaneState = useInfoPaneState();
   const { openPane } = useInfoPaneActions();
-
-  const mapStyles = {
-    default: "mapbox://styles/mapbox/standard",
-    satellite: "mapbox://styles/mapbox/standard-satellite",
-    outdoors: "mapbox://styles/mapbox/outdoors-v12",
-    outdoors_night: "mapbox://styles/matthewseaber/cmsvixs9d003g01qy3l9f9ji3",
-  } as const;
 
   const syncPlacesSource = useCallback(() => {
     const map = mapRef.current;
@@ -397,6 +398,19 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
     [openPane],
   );
 
+  const addTerrain = (map: mapboxgl.Map) => {
+    if (!map.getSource("mapbox-dem")) {
+      map.addSource("mapbox-dem", {
+        type: "raster-dem",
+        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+        tileSize: 512,
+        maxzoom: 14,
+      });
+    }
+
+    map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+  };
+
   useEffect(() => {
     if (!mapContainerRef.current || !process.env.NEXT_PUBLIC_MAPBOX_TOKEN)
       return;
@@ -408,20 +422,24 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
       latitude: number,
       geolocateControl: boolean,
     ) => {
+      const {mapType, immersiveMap, nightMap} = initialMapSettingsRef.current;
+
       const map = new mapboxgl.Map({
         accessToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
         container,
         style:
           mapType === "outdoors"
-            ? mapStyles.outdoors_night
+            ? nightMap
+              ? mapStyles.outdoors_night
+              : mapStyles.outdoors
             : mapStyles[mapType],
         center: [longitude, latitude],
         zoom: 12,
         projection: "globe",
 
-        dragRotate: immersiveMap,
+        dragRotate: initialMapSettingsRef.current.immersiveMap,
         touchZoomRotate: true,
-        touchPitch: immersiveMap,
+        touchPitch: initialMapSettingsRef.current.immersiveMap,
 
         config: {
           basemap: {
@@ -453,6 +471,8 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
       }
 
       map.on("load", () => {
+        addTerrain(map);
+
         addPlaceLayers(map);
       });
     };
@@ -482,7 +502,11 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
     if (!map) return;
 
     const newStyle =
-      mapType === "outdoors" ? mapStyles.outdoors_night : mapStyles[mapType];
+      mapType === "outdoors"
+        ? nightMap
+          ? mapStyles.outdoors_night
+          : mapStyles.outdoors
+        : mapStyles[mapType];
 
     map.setStyle(newStyle);
 
@@ -495,6 +519,7 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
         );
       }
 
+      addTerrain(map);
       addPlaceLayers(map);
     };
 

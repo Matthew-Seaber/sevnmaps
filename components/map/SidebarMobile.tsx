@@ -10,7 +10,7 @@ interface SidebarList {
   placeCount: number;
 }
 
-async function MapPageSidebar({
+async function MapPageSheet({
   listsKey,
   sidebarLists,
 }: {
@@ -19,10 +19,12 @@ async function MapPageSidebar({
 }) {
   return (
     <div className="flex flex-col justify-between w-72 border-r-2 border-border p-6 shadow-xl">
+      {/* Need to turn into sheet */}
+
       <div>
         <TextLogo link="/map" />
 
-        <SidebarButtons discoverButtons={true} />
+        <SidebarButtons discoverButtons={false} />
 
         <ListsComponent key={listsKey} sidebarLists={sidebarLists} />
       </div>
@@ -34,4 +36,4 @@ async function MapPageSidebar({
   );
 }
 
-export default MapPageSidebar;
+export default MapPageSheet;

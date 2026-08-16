@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
-import { Layers, Search, Lock } from "lucide-react";
+import { Layers, Search, Lock, Menu } from "lucide-react";
 import { Separator } from "../ui/separator";
 
 type MapPageProps = {
@@ -65,9 +65,9 @@ export default function MapPageClient({
   const [highlightedSearchResult, setHighlightedSearchResult] = useState<
     string | null
   >(null);
-  const [mapType, setMapType] = useState<
-    "default" | "satellite" | "outdoors"
-  >("default");
+  const [mapType, setMapType] = useState<"default" | "satellite" | "outdoors">(
+    "default",
+  );
   const [immersiveMap, setImmersiveMap] = useState(false);
   const [nightMap, setNightMap] = useState(false);
   const [mapStylesDialogOpen, setMapStylesDialogOpen] = useState(false);
@@ -183,60 +183,70 @@ export default function MapPageClient({
         nightMap={nightMap}
       />
 
-      <div className="absolute top-4 left-4 w-full max-w-90 z-20">
-        <InputGroup className="p-1 py-5 bg-background">
-          <InputGroupInput
-            id="search-input"
-            placeholder="Search locations..."
-            value={searchQuery}
-            onChange={(e) => {
-              const query = e.target.value;
-
-              setSearchQuery(query);
-              searchPlaces(query);
-            }}
-          />
-          <InputGroupAddon>
-            <Search className="h-4 w-4" />
-          </InputGroupAddon>
-          <InputGroupAddon align="inline-end" className="hidden lg:flex">
-            <Kbd>/</Kbd>
-          </InputGroupAddon>
-        </InputGroup>
-
-        {searchQuery && searchResults.length > 0 ? (
-          <div className="flex flex-col gap-2 bg-background mt-1 rounded-md p-2 max-h-60 overflow-y-scroll">
-            {searchResults.slice(0, 10).map((id) => (
-              <div
-                key={id}
-                onClick={() => {
-                  openPane({ type: "place", placeID: id });
-
-                  setSearchQuery("");
-                  setHighlightedSearchResult(null);
-                }}
-                onMouseEnter={() => setHighlightedSearchResult(id)}
-                className={`flex flex-row gap-2 h-10 p-2 rounded-sm items-center cursor-pointer ${highlightedSearchResult === id ? "bg-accent" : ""}`}
-              >
-                <h4 className="text-sm font-medium shrink-0 truncate">
-                  {placesGeoJSON.features.find(
-                    (feature) => feature.properties.id === id,
-                  )?.properties.placeName || "Error"}
-                </h4>
-
-                <p className="text-sm text-muted-foreground min-w-0 truncate">
-                  {placesGeoJSON.features.find(
-                    (feature) => feature.properties.id === id,
-                  )?.properties.address || "Error"}
-                </p>
-              </div>
-            ))}
+      <div className="absolute top-4 left-4 right-4 md:right-auto w-auto md:w-full md:max-w-120 z-20">
+        <div className="flex flex-row gap-2 items-center w-full">
+          <div className="flex md:hidden">
+            <Button variant="outline" className="size-10">
+              <Menu />
+            </Button>
           </div>
-        ) : searchQuery && searchResults.length === 0 ? (
-          <p className="bg-background mt-1 rounded-md p-3 text-center font-medium text-sm text-muted-foreground">
-            No results found.
-          </p>
-        ) : null}
+
+          <div className="flex-1 min-w-0 max-w-90">
+            <InputGroup className="h-10 px-1 bg-background">
+              <InputGroupInput
+                id="search-input"
+                placeholder="Search locations..."
+                value={searchQuery}
+                onChange={(e) => {
+                  const query = e.target.value;
+
+                  setSearchQuery(query);
+                  searchPlaces(query);
+                }}
+              />
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupAddon align="inline-end" className="hidden lg:flex">
+                <Kbd>/</Kbd>
+              </InputGroupAddon>
+            </InputGroup>
+
+            {searchQuery && searchResults.length > 0 ? (
+              <div className="flex flex-col gap-2 bg-background mt-1 rounded-md p-2 max-h-60 overflow-y-scroll">
+                {searchResults.slice(0, 10).map((id) => (
+                  <div
+                    key={id}
+                    onClick={() => {
+                      openPane({ type: "place", placeID: id });
+
+                      setSearchQuery("");
+                      setHighlightedSearchResult(null);
+                    }}
+                    onMouseEnter={() => setHighlightedSearchResult(id)}
+                    className={`flex flex-row gap-2 h-10 p-2 rounded-sm items-center cursor-pointer ${highlightedSearchResult === id ? "bg-accent" : ""}`}
+                  >
+                    <h4 className="text-sm font-medium shrink-0 truncate">
+                      {placesGeoJSON.features.find(
+                        (feature) => feature.properties.id === id,
+                      )?.properties.placeName || "Error"}
+                    </h4>
+
+                    <p className="text-sm text-muted-foreground min-w-0 truncate">
+                      {placesGeoJSON.features.find(
+                        (feature) => feature.properties.id === id,
+                      )?.properties.address || "Error"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : searchQuery && searchResults.length === 0 ? (
+              <p className="bg-background mt-1 rounded-md p-3 text-center font-medium text-sm text-muted-foreground">
+                No results found.
+              </p>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       <Button
@@ -244,7 +254,7 @@ export default function MapPageClient({
         onClick={() => setMapStylesDialogOpen(true)}
         className="absolute bottom-12 left-4 w-15 h-15 z-20"
       >
-        <Layers className="w-6! h-6! text-foreground/80" />
+        <Layers className="w-6! h-6! text-foreground/90" />
       </Button>
 
       <Dialog open={mapStylesDialogOpen} onOpenChange={setMapStylesDialogOpen}>

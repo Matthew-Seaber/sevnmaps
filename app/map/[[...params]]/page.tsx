@@ -12,12 +12,13 @@ import {
   countries,
   subscriptions,
 } from "@/db/schema";
-import { sql, and, eq } from "drizzle-orm";
+import { sql, and, eq, desc, count } from "drizzle-orm";
 
 import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
 
 import MapPageClient from "@/components/map/MapPageClient";
 import MapPageSidebar from "@/components/map/Sidebar";
+import MapPageSheet from "@/components/map/SidebarMobile";
 import MapPageInfoPane from "@/components/map/InfoPane";
 import InfoPaneCloseKeybind from "@/components/map/InfoPaneCloseKeybind";
 import { SearchOpenKeybind } from "@/components/map/SearchKeybind";
@@ -38,6 +39,13 @@ interface Place {
   visited: boolean;
   inList: boolean;
   listColor?: string | null;
+}
+
+interface SidebarList {
+  id: string;
+  listName: string;
+  listColor: string;
+  placeCount: number;
 }
 
 async function MapPage({ params }: MapPageProps) {
@@ -104,6 +112,28 @@ async function MapPage({ params }: MapPageProps) {
     })),
   };
 
+  let sidebarLists: SidebarList[] = [];
+
+  const userLists = await db
+    .select({
+      id: lists.id,
+      listName: lists.listName,
+      listColor: lists.listColor,
+      placeCount: count(list_place_link.placeId),
+    })
+    .from(lists)
+    .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
+    .leftJoin(list_members, eq(lists.id, list_members.listId))
+    .where(and(eq(list_members.userId, session.user.id)))
+    .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
+    .orderBy(desc(lists.createdAt));
+
+  if (userLists && userLists.length > 0) {
+    sidebarLists = userLists;
+  }
+
+  const sidebarListsKey = sidebarLists.map((list) => list.id).join("|");
+
   const planInfo = await db
     .select({
       planType: subscriptions.planType,
@@ -119,7 +149,19 @@ async function MapPage({ params }: MapPageProps) {
   return (
     <InfoPaneProvider>
       <div className="flex h-screen">
-        <MapPageSidebar />
+        <div className="hidden md:flex">
+          <MapPageSidebar
+            listsKey={sidebarListsKey}
+            sidebarLists={sidebarLists}
+          />
+        </div>
+
+        <div className="flex md:hidden">
+          <MapPageSheet
+            listsKey={sidebarListsKey}
+            sidebarLists={sidebarLists}
+          />
+        </div>
 
         <div className="flex flex-1 flex-col">
           <SearchOpenKeybind />
