@@ -66,7 +66,7 @@ export default function MapPageClient({
     string | null
   >(null);
   const [mapType, setMapType] = useState<
-    "default" | "satellite" | "dark" | "outdoors"
+    "default" | "satellite" | "outdoors"
   >("default");
   const [immersiveMap, setImmersiveMap] = useState(false);
   const [nightMap, setNightMap] = useState(false);
@@ -239,15 +239,13 @@ export default function MapPageClient({
         ) : null}
       </div>
 
-      {!advancedMapStyles && (
-        <Button
-          variant="outline"
-          onClick={() => setMapStylesDialogOpen(true)}
-          className="absolute bottom-12 left-4 w-15 h-15 z-20"
-        >
-          <Layers className="w-6! h-6! text-foreground/80" />
-        </Button>
-      )}
+      <Button
+        variant="outline"
+        onClick={() => setMapStylesDialogOpen(true)}
+        className="absolute bottom-12 left-4 w-15 h-15 z-20"
+      >
+        <Layers className="w-6! h-6! text-foreground/80" />
+      </Button>
 
       <Dialog open={mapStylesDialogOpen} onOpenChange={setMapStylesDialogOpen}>
         <DialogContent>
