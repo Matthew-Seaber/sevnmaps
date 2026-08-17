@@ -1,7 +1,7 @@
-import TextLogo from "@/components/navbar/TextLogoLink";
-import MapPageProfileSection from "@/components/map/ProfileSectionServer";
-import SidebarButtons from "@/components/map/SidebarButtons";
-import ListsComponent from "@/components/map/ListsComponent";
+import type { ReactNode } from "react";
+import SidebarMobileClient from "@/components/map/SidebarMobileClient";
+
+import MapPageProfileSection from "@/components/navbar/ProfileSectionServer";
 
 interface SidebarList {
   id: string;
@@ -10,29 +10,23 @@ interface SidebarList {
   placeCount: number;
 }
 
-async function MapPageSheet({
+function MapPageSheet({
   listsKey,
   sidebarLists,
 }: {
   listsKey: string;
   sidebarLists: SidebarList[];
 }) {
+  const profileSection: ReactNode = (
+    <MapPageProfileSection nameVisible="true" />
+  );
+
   return (
-    <div className="flex flex-col justify-between w-72 border-r-2 border-border p-6 shadow-xl">
-      {/* Need to turn into sheet */}
-
-      <div>
-        <TextLogo link="/map" />
-
-        <SidebarButtons discoverButtons={false} />
-
-        <ListsComponent key={listsKey} sidebarLists={sidebarLists} />
-      </div>
-
-      <div className="w-full flex justify-center">
-        <MapPageProfileSection />
-      </div>
-    </div>
+    <SidebarMobileClient
+      listsKey={listsKey}
+      sidebarLists={sidebarLists}
+      profileSection={profileSection}
+    />
   );
 }
 

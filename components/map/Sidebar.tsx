@@ -1,5 +1,5 @@
 import TextLogo from "@/components/navbar/TextLogoLink";
-import MapPageProfileSection from "@/components/map/ProfileSectionServer";
+import MapPageProfileSection from "@/components/navbar/ProfileSectionServer";
 import SidebarButtons from "@/components/map/SidebarButtons";
 import ListsComponent from "@/components/map/ListsComponent";
 
@@ -18,7 +18,7 @@ async function MapPageSidebar({
   sidebarLists: SidebarList[];
 }) {
   return (
-    <div className="flex flex-col justify-between w-72 border-r-2 border-border p-6 shadow-xl">
+    <div className="flex flex-col justify-between w-72 border-r-2 border-border p-6">
       <div>
         <TextLogo link="/map" />
 
@@ -28,7 +28,7 @@ async function MapPageSidebar({
       </div>
 
       <div className="w-full flex justify-center">
-        <MapPageProfileSection />
+        <MapPageProfileSection nameVisible="default" />
       </div>
     </div>
   );

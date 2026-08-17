@@ -408,7 +408,7 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
       });
     }
 
-    map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+    map.setTerrain({ source: "mapbox-dem", exaggeration: 1.2 });
   };
 
   useEffect(() => {
@@ -422,7 +422,7 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
       latitude: number,
       geolocateControl: boolean,
     ) => {
-      const {mapType, immersiveMap, nightMap} = initialMapSettingsRef.current;
+      const { mapType, immersiveMap, nightMap } = initialMapSettingsRef.current;
 
       const map = new mapboxgl.Map({
         accessToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
@@ -471,8 +471,6 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
       }
 
       map.on("load", () => {
-        addTerrain(map);
-
         addPlaceLayers(map);
       });
     };
@@ -519,7 +517,10 @@ function Map({ placesGeoJSON, mapType, immersiveMap, nightMap }: MapProps) {
         );
       }
 
-      addTerrain(map);
+      if (mapType === "outdoors") {
+        addTerrain(map);
+      }
+
       addPlaceLayers(map);
     };
 

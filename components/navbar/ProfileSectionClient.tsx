@@ -1,6 +1,6 @@
 "use client";
 
-import NavbarMenu from "../navbar/NavbarMenu";
+import NavbarMenu from "./NavbarMenu";
 
 interface Notification {
   id: string;
@@ -16,6 +16,7 @@ interface Props {
   name: string;
   notifications: Notification[];
   notificationSide: "left" | "right";
+  nameVisible: "default" | "true" | "false";
 }
 
 function ProfileSectionClient({
@@ -23,6 +24,7 @@ function ProfileSectionClient({
   name,
   notifications,
   notificationSide,
+  nameVisible,
 }: Props) {
   return (
     <NavbarMenu
@@ -30,6 +32,7 @@ function ProfileSectionClient({
       name={name}
       notifications={notifications}
       notificationSide={notificationSide}
+      nameVisible={nameVisible}
       chevronVisible={false}
     />
   );

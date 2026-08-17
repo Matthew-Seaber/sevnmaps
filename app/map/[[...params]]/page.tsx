@@ -15,6 +15,7 @@ import {
 import { sql, and, eq, desc, count } from "drizzle-orm";
 
 import { InfoPaneProvider } from "@/components/map/InfoPaneContext";
+import { MobileSidebarProvider } from "@/components/map/MobileSidebarContext";
 
 import MapPageClient from "@/components/map/MapPageClient";
 import MapPageSidebar from "@/components/map/Sidebar";
@@ -148,39 +149,41 @@ async function MapPage({ params }: MapPageProps) {
 
   return (
     <InfoPaneProvider>
-      <div className="flex h-screen">
-        <div className="hidden md:flex">
-          <MapPageSidebar
-            listsKey={sidebarListsKey}
-            sidebarLists={sidebarLists}
-          />
-        </div>
+      <MobileSidebarProvider>
+        <div className="flex h-screen">
+          <div className="hidden md:flex">
+            <MapPageSidebar
+              listsKey={sidebarListsKey}
+              sidebarLists={sidebarLists}
+            />
+          </div>
 
-        <div className="flex md:hidden">
-          <MapPageSheet
-            listsKey={sidebarListsKey}
-            sidebarLists={sidebarLists}
-          />
-        </div>
+          <div className="flex md:hidden">
+            <MapPageSheet
+              listsKey={sidebarListsKey}
+              sidebarLists={sidebarLists}
+            />
+          </div>
 
-        <div className="flex flex-1 flex-col">
-          <SearchOpenKeybind />
-          <InfoPaneCloseKeybind />
+          <div className="flex flex-1 flex-col">
+            <SearchOpenKeybind />
+            <InfoPaneCloseKeybind />
 
-          <div className="flex flex-1 overflow-hidden">
-            <main className="relative flex-1">
-              <MapPageClient
-                type={type}
-                id={id}
-                placesGeoJSON={placesGeoJSON}
-                advancedMapStyles={advancedMapStyles}
-              />
-            </main>
+            <div className="flex flex-1 overflow-hidden">
+              <main className="relative flex-1">
+                <MapPageClient
+                  type={type}
+                  id={id}
+                  placesGeoJSON={placesGeoJSON}
+                  advancedMapStyles={advancedMapStyles}
+                />
+              </main>
 
-            <MapPageInfoPane />
+              <MapPageInfoPane />
+            </div>
           </div>
         </div>
-      </div>
+      </MobileSidebarProvider>
     </InfoPaneProvider>
   );
 }

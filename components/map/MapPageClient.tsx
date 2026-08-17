@@ -2,7 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 
-import { useInfoPaneActions } from "@/components/map/InfoPaneContext";
+import {
+  useInfoPaneActions,
+  useInfoPaneState,
+} from "@/components/map/InfoPaneContext";
+import { useMobileSidebar } from "@/components/map/MobileSidebarContext";
 
 import Map from "./Map";
 
@@ -59,6 +63,12 @@ export default function MapPageClient({
   advancedMapStyles,
 }: MapPageProps) {
   const { openPane } = useInfoPaneActions();
+  const infoPaneState = useInfoPaneState();
+  const {
+    mobileSidebarState,
+    openPane: openSidebar,
+    closePane: closeSidebar,
+  } = useMobileSidebar();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<string[]>([]);
@@ -186,9 +196,21 @@ export default function MapPageClient({
       <div className="absolute top-4 left-4 right-4 md:right-auto w-auto md:w-full md:max-w-120 z-20">
         <div className="flex flex-row gap-2 items-center w-full">
           <div className="flex md:hidden">
-            <Button variant="outline" className="size-10">
-              <Menu />
-            </Button>
+            {infoPaneState.type === "closed" ? (
+              <Button
+                variant="outline"
+                className="size-10"
+                onClick={() => {
+                  if (mobileSidebarState.type === "open") {
+                    closeSidebar();
+                  } else {
+                    openSidebar();
+                  }
+                }}
+              >
+                <Menu />
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex-1 min-w-0 max-w-90">

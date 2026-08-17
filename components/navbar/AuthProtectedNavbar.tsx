@@ -73,6 +73,7 @@ async function AuthProtectedNavbar() {
           name={name}
           notifications={notificationData}
           notificationSide="left"
+          nameVisible="default"
           chevronVisible={true}
         />
       </div>

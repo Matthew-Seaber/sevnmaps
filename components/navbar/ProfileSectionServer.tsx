@@ -17,7 +17,11 @@ interface Notification {
   read: boolean;
 }
 
-async function MapPageProfileSection() {
+async function MapPageProfileSection({
+  nameVisible,
+}: {
+  nameVisible?: "default" | "true" | "false";
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -70,6 +74,7 @@ async function MapPageProfileSection() {
       name={name}
       notifications={notificationData}
       notificationSide="right"
+      nameVisible={nameVisible || "default"}
     />
   );
 }
