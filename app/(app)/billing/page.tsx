@@ -8,6 +8,8 @@ import { db } from "@/db";
 import { subscriptions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+import { Button } from "@/components/ui/button";
+
 async function BillingPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -28,7 +30,27 @@ async function BillingPage() {
   const stripeCustomerId = response[0]?.stripeCustomerId;
 
   if (response.length === 0 || !stripeCustomerId) {
-    return;
+    return (
+      <div className="max-w-6xl mx-auto p-4">
+        <h1 className="text-2xl sm:text-3xl font-semibold mt-8">
+          No past transactions found.
+        </h1>
+
+        <form action="/pricing">
+          <Button type="submit" className="mt-6 p-5">
+            Upgrade your account
+          </Button>
+        </form>
+
+        <p className="text-sm text-muted-foreground mt-6">
+          Believe this is an error? Please{" "}
+          <a href="/contact" className="underline">
+            contact support
+          </a>{" "}
+          with any queries you may have.
+        </p>
+      </div>
+    );
   }
 
   const billingSession = await stripe.billingPortal.sessions.create({
@@ -36,29 +58,21 @@ async function BillingPage() {
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
   });
 
-  async function openBillingPortal() {
-    "use server";
-
-    redirect(billingSession.url);
-  }
-
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h1 className="text-2xl sm:text-3xl font-semibold mt-8 mb-2">
         Billing Information
       </h1>
+
       <p className="mb-8">
         Click the button below to manage your billing information and payment
         methods on Stripe.
       </p>
 
-      <form action={openBillingPortal}>
-        <button
-          type="submit"
-          className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-clip-padding text-md font-medium outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 bg-primary text-primary-foreground hover:bg-primary/80 px-6 py-4 active:translate-y-px transition-[translate]"
-        >
+      <form action={billingSession.url}>
+        <Button type="submit" className="px-8 py-6 text-md">
           Open Stripe Billing Portal
-        </button>
+        </Button>
       </form>
 
       <p className="text-sm text-muted-foreground mt-8">
