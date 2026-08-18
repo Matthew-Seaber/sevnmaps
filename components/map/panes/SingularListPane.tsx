@@ -649,7 +649,7 @@ function SingularListPane({ listID }: { listID: string }) {
   )?.icon;
 
   return (
-    <div className="flex flex-col gap-6 mt-5">
+    <div className="flex flex-col gap-4 md:gap-6 mt-5">
       <div className="flex flex-row items-center gap-4 mb-2">
         <Button
           variant="outline"
@@ -669,7 +669,7 @@ function SingularListPane({ listID }: { listID: string }) {
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-4 p-4 border border-border rounded-md shadow-xs">
+          <div className="flex flex-col gap-4 p-3 md:p-4 border border-border rounded-md shadow-xs">
             <div className="flex flex-row justify-between items-center w-full">
               <div className="flex flex-row items-center gap-4">
                 {ListIconComponent ? (
@@ -740,23 +740,23 @@ function SingularListPane({ listID }: { listID: string }) {
               </div>
             </div>
 
-            <div className="flex flex-row gap-2 cursor-default">
-              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground">
-                <MapPin strokeWidth={2.25} className="h-4 w-4" />
+            <div className="flex flex-row gap-1.5 md:gap-2 cursor-default">
+              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-sm text-muted-foreground">
+                <MapPin strokeWidth={2.25} className="size-3.5" />
                 <p>
                   {listData?.items.length}{" "}
                   {listData?.items.length === 1 ? "place" : "places"}
                 </p>
               </div>
-              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground">
-                <Users strokeWidth={2.25} className="h-4 w-4" />
+              <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-sm text-muted-foreground">
+                <Users strokeWidth={2.25} className="size-3.5" />
                 <p>
                   {listData?.members.length}{" "}
                   {listData?.members.length === 1 ? "member" : "members"}
                 </p>
               </div>
               <div
-                className={`flex flex-row items-center gap-2 bg-accent rounded-md py-1.5 px-3 font-semibold text-sm text-muted-foreground ${userRole === "Creator" || userRole === "Admin" ? "cursor-pointer" : ""}`}
+                className={`flex flex-row items-center gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-sm text-muted-foreground ${userRole === "Creator" || userRole === "Admin" ? "cursor-pointer" : ""}`}
                 onClick={() => {
                   if (userRole === "Creator" || userRole === "Admin") {
                     setDialogOpen(true);
@@ -765,20 +765,20 @@ function SingularListPane({ listID }: { listID: string }) {
                 }}
               >
                 {listData?.visibility === "Public" ? (
-                  <Globe strokeWidth={2.25} className="h-4 w-4" />
+                  <Globe strokeWidth={2.25} className="size-3.5" />
                 ) : listData?.visibility === "Private" ? (
-                  <Lock strokeWidth={2.25} className="h-4 w-4" />
+                  <Lock strokeWidth={2.25} className="size-3.5" />
                 ) : listData?.visibility === "Shared" ? (
-                  <Network strokeWidth={2.25} className="h-4 w-4" />
+                  <Network strokeWidth={2.25} className="size-3.5" />
                 ) : listData?.visibility === "Paid access" ? (
-                  <CircleDollarSign strokeWidth={2.25} className="h-4 w-4" />
+                  <CircleDollarSign strokeWidth={2.25} className="size-3.5" />
                 ) : null}
                 <p>{listData?.visibility}</p>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-row gap-1 items-center justify-between">
             <p className="font-bold text-sm">
               {listData?.items.length}{" "}
               {listData?.items.length === 1 ? "place" : "places"}
@@ -851,10 +851,10 @@ function SingularListPane({ listID }: { listID: string }) {
                 <div
                   key={item.id}
                   title={`Added by ${listData?.members?.find((m) => m.id === item.addedBy)?.name || "Unknown"} on ${new Date(item.addedAt).toLocaleString()}`}
-                  className="flex flex-row items-center gap-3 p-4 border border-transparent hover:border-border rounded-md cursor-pointer hover:bg-accent/50 transition-all"
+                  className="flex flex-row items-center gap-3 p-3 md:p-4 border border-transparent hover:border-border rounded-md cursor-pointer hover:bg-accent/50 transition-all"
                   onClick={() => openPane({ type: "place", placeID: item.id })}
                 >
-                  <p className="flex h-8 w-8 items-center justify-center bg-muted text-muted-foreground rounded-md font-semibold text-sm">
+                  <p className="flex size-6 md:size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground rounded-md font-semibold text-sm">
                     {index + 1}
                   </p>
 
@@ -871,12 +871,12 @@ function SingularListPane({ listID }: { listID: string }) {
 
                   <div className="p-1">
                     <h3 className="font-bold mb-2">{item.name}</h3>
-                    <p className="font-semibold text-sm text-muted-foreground break-all">
+                    <p className="font-semibold text-sm text-muted-foreground">
                       {item.address}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-end px-4 ml-auto">
+                  <div className="flex items-center justify-end pl-2 ml-auto">
                     <Bookmark
                       onClick={(e) => {
                         e.stopPropagation();

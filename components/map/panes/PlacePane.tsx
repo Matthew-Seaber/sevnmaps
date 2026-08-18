@@ -55,6 +55,7 @@ import {
   Pencil,
   Check,
   CirclePlus,
+  Flag,
 } from "lucide-react";
 
 const MAP_PLACE_UPDATED_EVENT = "map:place-updated";
@@ -517,7 +518,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-4 py-4 md:px-4">
         <div className="flex flex-col gap-2">
           <h1 className="font-bold text-xl">{placeData?.name}</h1>
           <div className="flex flex-row items-center gap-2 text-muted-foreground">
@@ -573,9 +574,9 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           {placeData?.description}
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 min-[440px]:grid-cols-2 gap-4">
           <div className="flex flex-row items-center gap-4">
-            <Tag className="h-5 w-5 text-muted-foreground" />
+            <Tag className="h-5 w-5 text-muted-foreground shrink-0" />
             <div className="flex flex-col gap-0.5 text-sm">
               <p className="font-medium text-muted-foreground">Tags</p>
               <p className="font-semibold">
@@ -587,7 +588,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           </div>
 
           <div className="flex flex-row items-center gap-4">
-            <Binoculars className="h-5 w-5 text-muted-foreground" />
+            <Binoculars className="h-5 w-5 text-muted-foreground shrink-0" />
             <div className="flex flex-col gap-0.5 text-sm">
               <p className="font-medium text-muted-foreground">Coordinates</p>
               <p className="font-semibold">{formatCoordinates() || "N/A"}</p>
@@ -596,7 +597,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
           {placeData?.visitedAt && (
             <div className="flex flex-row items-center gap-4">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
               <div className="flex flex-col gap-0.5 text-sm">
                 <p className="font-medium text-muted-foreground">Visited on</p>
                 <p className="font-semibold">
@@ -607,7 +608,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           )}
 
           <div className="flex flex-row items-center gap-4">
-            <Map className="h-5 w-5 text-muted-foreground" />
+            <Map className="h-5 w-5 text-muted-foreground shrink-0" />
             <div className="flex flex-col gap-0.5 text-sm">
               <p className="font-medium text-muted-foreground">Address</p>
               <Button
@@ -621,7 +622,7 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
           </div>
 
           <div className="flex flex-row items-center gap-4">
-            <Notebook className="h-5 w-5 text-muted-foreground" />
+            <Notebook className="h-5 w-5 text-muted-foreground shrink-0" />
             <div className="flex flex-col gap-0.5 text-sm">
               <p className="font-medium text-muted-foreground">Private note</p>
               <Button
@@ -819,8 +820,9 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
         <Link
           href="/contact"
-          className="mt-8 text-center text-xs text-muted-foreground hover:underline hover:text-foreground"
+          className="mt-8 flex flex-row gap-1 items-center text-xs text-muted-foreground hover:underline hover:text-foreground"
         >
+          <Flag className="h-3 w-3" />
           Report an issue with this place.
         </Link>
       </div>

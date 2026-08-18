@@ -147,7 +147,7 @@ function VisitedCountries({
         </span>
       </h4>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 min-[440px]:grid-cols-2 gap-2">
         {visitedCountries.map((country) => (
           <div
             key={country.countryCode}
@@ -179,7 +179,7 @@ function VisitedCountries({
               </p>
             </div>
 
-            <div className="flex items-center justify-end pl-4 ml-auto">
+            <div className="flex items-center justify-end pl-2 ml-auto">
               <ChevronRight className="text-muted-foreground" />
             </div>
           </div>
@@ -195,11 +195,11 @@ function VisitedCountries({
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="md:min-w-120">
           <DialogHeader>
             <DialogTitle>
               {selectedCountry ? (
-                <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-row gap-4 items-center px-2">
                   <div className="relative shrink-0 w-5 h-5 rounded-full">
                     <Image
                       src={
@@ -220,7 +220,7 @@ function VisitedCountries({
                 "Error fetching country details"
               )}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="mt-1 px-2">
               {selectedCountry?.description}
             </DialogDescription>
           </DialogHeader>
@@ -304,7 +304,7 @@ function VisitedCountries({
                     key={place.id}
                     className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-default"
                   >
-                    <div className="relative w-25 h-auto shrink-0">
+                    <div className="relative w-25 md:w-35 min-h-30 h-auto shrink-0">
                       <Image
                         src={getImageURL(place.imageURL, true)}
                         alt={place.name}
@@ -318,9 +318,7 @@ function VisitedCountries({
                       <h3 className="font-bold mb-2">{place.name}</h3>
                       <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
                         <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                        <p className="font-semibold break-all">
-                          {place.address}
-                        </p>
+                        <p className="font-semibold">{place.address}</p>
                       </div>
                       <div
                         className="flex items-center gap-1.5 text-muted-foreground text-sm"

@@ -345,14 +345,21 @@ function PricingPage() {
               <PerkRow
                 label="AI-powered packing planner"
                 value="5 trips"
-                included={true}
+                included={false}
+                soon={true}
               />
               <PerkRow
                 label="Discount on exclusive lists"
                 value="30% off"
-                included={true}
+                included={false}
+                soon={true}
               />
-              <PerkRow label="Offline mode" value="3 lists" included={true} />
+              <PerkRow
+                label="Offline mode"
+                value="3 lists"
+                included={false}
+                soon={true}
+              />
               <PerkRow label="Priority support" value={null} included={true} />
             </div>
 
@@ -450,14 +457,21 @@ function PricingPage() {
               <PerkRow
                 label="AI-powered packing planner"
                 value="Unlimited"
-                included={true}
+                included={false}
+                soon={true}
               />
               <PerkRow
                 label="Discount on exclusive lists"
                 value="70% off"
-                included={true}
+                included={false}
+                soon={true}
               />
-              <PerkRow label="Offline mode" value="10 lists" included={true} />
+              <PerkRow
+                label="Offline mode"
+                value="10 lists"
+                included={false}
+                soon={true}
+              />
               <PerkRow label="Priority support" value={null} included={true} />
             </div>
 

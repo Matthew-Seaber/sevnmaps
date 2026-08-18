@@ -194,7 +194,7 @@ export default function MapPageClient({
       />
 
       <div className="absolute top-4 left-4 right-4 md:right-auto w-auto md:w-full md:max-w-120 z-20">
-        <div className="flex flex-row gap-2 items-center w-full">
+        <div className="flex flex-row gap-2 w-full">
           <div className="flex md:hidden">
             {infoPaneState.type === "closed" ? (
               <Button

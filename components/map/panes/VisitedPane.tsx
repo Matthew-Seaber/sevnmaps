@@ -338,7 +338,7 @@ function VisitedPane() {
                             openPane({ type: "place", placeID: place.id })
                           }
                         >
-                          <div className="relative w-35 h-30 shrink-0">
+                          <div className="relative w-25 md:w-35 min-h-30 h-auto shrink-0">
                             <Image
                               src={getImageURL(place.imageURL, true)}
                               alt={place.name}
@@ -352,7 +352,7 @@ function VisitedPane() {
                             <h3 className="font-bold mb-2">{place.name}</h3>
                             <div className="flex items-start gap-1.5 text-muted-foreground text-sm mb-1">
                               <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                              <p className="font-semibold break-all">
+                              <p className="font-semibold">
                                 {place.address}
                               </p>
                             </div>
@@ -377,7 +377,8 @@ function VisitedPane() {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center justify-end pl-4 pr-8 ml-auto">
+
+                          <div className="flex items-center justify-end pl-1 md:pl-4 pr-4 md:pr-8 ml-auto">
                             <div className="flex flex-row items-center gap-2">
                               <CircleCheck
                                 className={`h-7 w-7 cursor-pointer hover:scale-110 transition-all ${place.visited ? "stroke-primary" : "stroke-current"}`}
