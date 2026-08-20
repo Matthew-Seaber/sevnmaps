@@ -24,8 +24,9 @@ export async function GET() {
     const createdLists = await tx
       .select({
         id: lists.id,
-        listName: lists.listName,
-        listColor: lists.listColor,
+        name: lists.listName,
+        color: lists.listColor,
+        icon: lists.listIcon,
         visibility: lists.visibility,
         placeCount: count(list_place_link.placeId),
         memberCount: count(list_members.userId),
@@ -48,9 +49,11 @@ export async function GET() {
     const sharedLists = await tx
       .select({
         id: lists.id,
-        listName: lists.listName,
-        listColor: lists.listColor,
-        userRole: list_members.role,
+        name: lists.listName,
+        color: lists.listColor,
+        icon: lists.listIcon,
+        visibility: lists.visibility,
+        role: list_members.role,
         placeCount: count(list_place_link.placeId),
         memberCount: count(list_members.userId),
       })
@@ -75,9 +78,10 @@ export async function GET() {
     const recommendedLists = await tx
       .select({
         id: lists.id,
-        listName: lists.listName,
-        listColor: lists.listColor,
-        listIcon: lists.listIcon,
+        name: lists.listName,
+        color: lists.listColor,
+        icon: lists.listIcon,
+        visibility: lists.visibility,
         creatorName: user.name,
         placeCount: count(list_place_link.placeId),
       })

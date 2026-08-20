@@ -117,6 +117,35 @@ type MapPlaceUpdatedEventDetail = {
   inList?: boolean;
 };
 
+type ListSidebarEventDetail = {
+  action: "deleted" | "updated" | "added";
+  listID: string;
+  newListName?: string;
+  newListColor?: string;
+  newPlaceCountChange?: number;
+};
+
+const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
+
+function notifySidebarListUpdated(
+  listID: string,
+  newListName?: string,
+  newListColor?: string,
+  newPlaceCountChange?: number,
+) {
+  window.dispatchEvent(
+    new CustomEvent<ListSidebarEventDetail>(LIST_SIDEBAR_EVENT, {
+      detail: {
+        action: "updated",
+        listID,
+        newListName,
+        newListColor,
+        newPlaceCountChange,
+      },
+    }),
+  );
+}
+
 function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
   const [placeData, setPlaceData] = useState<Place | null>(null);
   const [listData, setListData] = useState<List[] | null>(null);
@@ -364,6 +393,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
 
     const listName = listData?.find((list) => list.id === listId)?.listName;
 
+    notifySidebarListUpdated(listId, undefined, undefined, 1);
+
     toast.success(
       `${placeData?.name} added to your list${listName ? ` '${listName}'` : ""}!`,
     );
@@ -413,6 +444,8 @@ function PlacePane({ placeID }: { placeID: string; fullBleedImage?: boolean }) {
     }
 
     const listName = listData?.find((list) => list.id === listId)?.listName;
+
+    notifySidebarListUpdated(listId, undefined, undefined, -1);
 
     toast.success(
       `${placeData?.name} removed from your list${listName ? ` '${listName}'` : ""}.`,

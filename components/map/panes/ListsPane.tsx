@@ -15,6 +15,11 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -28,6 +33,7 @@ import {
   Network,
   Globe,
   Lock,
+  Search,
 } from "lucide-react";
 
 interface List {
@@ -47,6 +53,7 @@ type ListSidebarEventDetail = {
   listID: string;
   newListName?: string;
   newListColor?: string;
+  newPlaceCountChange?: number;
 };
 
 const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
@@ -64,6 +71,8 @@ function ListsPane() {
   const [createdLists, setCreatedLists] = useState<List[]>([]);
   const [sharedLists, setSharedLists] = useState<List[]>([]);
   const [recommendedLists, setRecommendedLists] = useState<List[]>([]);
+  const [ownedSearchQuery, setOwnedSearchQuery] = useState<string>("");
+  const [sharedSearchQuery, setSharedSearchQuery] = useState<string>("");
   const [focusedListID, setFocusedListID] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [deletePopupOpen, setDeletePopupOpen] = useState<boolean>(false);
@@ -112,7 +121,7 @@ function ListsPane() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ focusedListID }),
+        body: JSON.stringify({ listID: focusedListID }),
       });
 
       if (!response.ok) {
@@ -128,12 +137,19 @@ function ListsPane() {
         prevLists.filter((list) => list.id !== focusedListID),
       );
       notifySidebarListDeleted(focusedListID);
+
       setFocusedListID(null);
     } catch (error) {
       console.error("Error deleting list:", error);
       toast.error("Failed to delete list. Please try again later.");
     }
   }
+
+  const filteredOwnedLists = createdLists.filter((list) => {
+    const query = ownedSearchQuery.toLowerCase();
+
+    return list.name.toLowerCase().includes(query);
+  });
 
   return (
     <>
@@ -172,92 +188,140 @@ function ListsPane() {
         ) : section === "all" ? (
           <p>All lists content</p>
         ) : section === "owned" ? (
-          createdLists.length === 0 ? (
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              You haven&apos;t created any lists yet. Create your first list to
-              see it here!
-            </p>
-          ) : (
-            <div className="grid grid-cols gap-4">
-              {createdLists.map((list) => (
-                <div
-                  key={list.id}
-                  className="flex flex-row border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
-                  onClick={() =>
-                    openPane({ type: "singular_list", listID: list.id })
-                  }
-                >
-                  <div className="flex flex-col gap-4 p-3 md:p-4 border border-border rounded-md shadow-xs">
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <div className="flex flex-row items-center gap-4">
-                        {ListIconComponent ? (
-                          <ListIconComponent
-                            className="h-20 w-20 text-accent rounded-md p-4"
-                            strokeWidth={1.5}
-                            style={{ backgroundColor: `#${list.color}` }}
-                          />
-                        ) : (
-                          <span
-                            className={`inline-block w-20 h-20 rounded-md`}
-                            style={{ backgroundColor: `#${list.color}` }}
-                          />
-                        )}
-                        <div className="flex flex-col gap-1">
-                          <h2 className="font-bold text-lg">{list.name}</h2>
+          <>
+            <div className="flex flex-row justify-between items-center">
+              <p className="font-bold text-sm">
+                {createdLists.length} list{createdLists.length !== 1 ? "s" : ""}
+              </p>
 
-                          <div className="flex flex-row items-center gap-2 font-semibold text-sm text-muted-foreground">
-                            <p>{list.placeCount}</p>
-                            {list.memberCount > 0 && (
-                              <p>{list.memberCount} members</p>
-                            )}
+              <InputGroup className="p-1 py-4 max-w-48">
+                <InputGroupInput
+                  id="search-input"
+                  placeholder="Search your lists..."
+                  value={ownedSearchQuery}
+                  onChange={(e) => setOwnedSearchQuery(e.target.value)}
+                />
+                <InputGroupAddon>
+                  <Search className="h-4 w-4" />
+                </InputGroupAddon>
+              </InputGroup>
+            </div>
+            {createdLists.length === 0 ? (
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                You haven&apos;t created any lists yet. Create your first list
+                to see it here!
+              </p>
+            ) : (
+              <div className="grid grid-cols gap-4">
+                {filteredOwnedLists.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 mt-2">
+                    <p className="text-sm">
+                      No lists found that match your search query.
+                    </p>
+                    <Button
+                      size="lg"
+                      className="p-4"
+                      onClick={() => setOwnedSearchQuery("")}
+                    >
+                      Clear search
+                    </Button>
+                  </div>
+                ) : (
+                  filteredOwnedLists.map((list) => {
+                    const ListIconComponent = listIcons.find(
+                      (icon) => icon.id === list.icon,
+                    )?.icon;
+
+                    return (
+                      <div
+                        key={list.id}
+                        className="flex flex-row items-center justify-between p-4 border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
+                        onClick={() =>
+                          openPane({ type: "singular_list", listID: list.id })
+                        }
+                      >
+                        <div className="flex flex-row items-center gap-4">
+                          {ListIconComponent ? (
+                            <ListIconComponent
+                              className="h-20 w-20 text-accent rounded-md p-4"
+                              strokeWidth={1.5}
+                              style={{ backgroundColor: `#${list.color}` }}
+                            />
+                          ) : (
+                            <span
+                              className={`inline-block w-20 h-20 rounded-md`}
+                              style={{ backgroundColor: `#${list.color}` }}
+                            />
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <h2 className="font-bold text-lg">{list.name}</h2>
+
+                            <div className="flex flex-row items-center gap-2 font-semibold text-sm text-muted-foreground">
+                              <p>
+                                {list.placeCount} place
+                                {list.placeCount !== 1 ? "s" : ""}
+                              </p>
+                              {list.memberCount > 0 && (
+                                <p>
+                                  {list.memberCount} member
+                                  {list.memberCount !== 1 ? "s" : ""}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-sm text-muted-foreground cursor-default">
-                        {list.visibility === "Public" ? (
-                          <Globe strokeWidth={2.25} className="size-3.5" />
-                        ) : list.visibility === "Private" ? (
-                          <Lock strokeWidth={2.25} className="size-3.5" />
-                        ) : list.visibility === "Shared" ? (
-                          <Network strokeWidth={2.25} className="size-3.5" />
-                        ) : list.visibility === "Paid access" ? (
-                          <CircleDollarSign
-                            strokeWidth={2.25}
-                            className="size-3.5"
-                          />
-                        ) : null}
-                        <p>{list.visibility}</p>
-                      </div>
+                        <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-sm text-muted-foreground">
+                          {list.visibility === "Public" ? (
+                            <Globe strokeWidth={2.25} className="size-3.5" />
+                          ) : list.visibility === "Private" ? (
+                            <Lock strokeWidth={2.25} className="size-3.5" />
+                          ) : list.visibility === "Shared" ? (
+                            <Network strokeWidth={2.25} className="size-3.5" />
+                          ) : list.visibility === "Paid access" ? (
+                            <CircleDollarSign
+                              strokeWidth={2.25}
+                              className="size-3.5"
+                            />
+                          ) : null}
+                          <p>{list.visibility}</p>
+                        </div>
 
-                      <div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="outline" className="h-10 w-10" />
-                            }
-                          >
-                            <Ellipsis className="h-4 w-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-40">
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={() => {
-                                setDeletePopupOpen(true);
-                                setFocusedListID(list.id);
-                              }}
+                        <div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              render={
+                                <Button
+                                  variant="outline"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="h-10 w-10"
+                                />
+                              }
                             >
-                              <Trash2 /> Delete list
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <Ellipsis className="h-4 w-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-40">
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  setDeletePopupOpen(true);
+                                  setFocusedListID(list.id);
+                                }}
+                              >
+                                <Trash2 /> Delete list
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </>
         ) : section === "shared" ? (
           <p>Shared lists content</p>
         ) : null}

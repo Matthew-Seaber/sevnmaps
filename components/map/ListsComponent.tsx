@@ -20,6 +20,7 @@ type ListSidebarEventDetail = {
   listID: string;
   newListName?: string;
   newListColor?: string;
+  newPlaceCountChange?: number;
 };
 
 const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
@@ -46,6 +47,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
       if (customEvent.detail.action === "updated") {
         const updatedName = customEvent.detail.newListName;
         const updatedColor = customEvent.detail.newListColor;
+        const placeCountChange = customEvent.detail.newPlaceCountChange;
 
         setLists((currentLists) => {
           const updatedLists = currentLists.map((list) => {
@@ -54,6 +56,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                 ...list,
                 listName: updatedName || list.listName,
                 listColor: updatedColor || list.listColor,
+                placeCount: list.placeCount + (placeCountChange || 0),
               };
             }
 

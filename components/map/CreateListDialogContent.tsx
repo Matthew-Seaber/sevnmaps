@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useInfoPane } from "./InfoPaneContext";
+
 import { listIcons } from "@/components/map/ListIcons";
 
 import {
@@ -50,6 +52,8 @@ export default function CreateListDialogContent({
   const [listColor, setListColor] = useState<string>("#1273F6");
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
 
+  const { openPane } = useInfoPane();
+
   async function handleCreateList() {
     if (listName.trim() === "") {
       toast.info("Please enter a list name.");
@@ -91,6 +95,8 @@ export default function CreateListDialogContent({
       window.setTimeout(() => {
         notifySidebarListCreated(listID, listName, listColor.slice(1));
       }, 0);
+
+      openPane({ type: "singular_list", listID: listID });
 
       setListName("");
       setListColor("#1273F6");

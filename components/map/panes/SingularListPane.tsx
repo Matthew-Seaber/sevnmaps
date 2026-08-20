@@ -113,6 +113,7 @@ type ListSidebarEventDetail = {
   listID: string;
   newListName?: string;
   newListColor?: string;
+  newPlaceCountChange?: number;
 };
 
 const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
@@ -129,10 +130,17 @@ function notifySidebarListUpdated(
   listID: string,
   newListName?: string,
   newListColor?: string,
+  newPlaceCountChange?: number,
 ) {
   window.dispatchEvent(
     new CustomEvent<ListSidebarEventDetail>(LIST_SIDEBAR_EVENT, {
-      detail: { action: "updated", listID, newListName, newListColor },
+      detail: {
+        action: "updated",
+        listID,
+        newListName,
+        newListColor,
+        newPlaceCountChange,
+      },
     }),
   );
 }
@@ -610,6 +618,7 @@ function SingularListPane({ listID }: { listID: string }) {
           items: updatedItems,
         };
       });
+      notifySidebarListUpdated(listID, undefined, undefined, -1);
 
       setLoading(false);
     } catch (error) {
@@ -1345,7 +1354,7 @@ function SingularListPane({ listID }: { listID: string }) {
       </Dialog>
 
       <Toaster position="top-center" />
-      
+
       <ConfirmationPopup
         open={deletePopupOpen}
         setOpen={setDeletePopupOpen}
