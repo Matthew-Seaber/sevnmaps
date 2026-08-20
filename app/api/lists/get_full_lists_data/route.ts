@@ -28,6 +28,7 @@ export async function GET() {
         listColor: lists.listColor,
         visibility: lists.visibility,
         placeCount: count(list_place_link.placeId),
+        memberCount: count(list_members.userId),
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
@@ -51,6 +52,7 @@ export async function GET() {
         listColor: lists.listColor,
         userRole: list_members.role,
         placeCount: count(list_place_link.placeId),
+        memberCount: count(list_members.userId),
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))

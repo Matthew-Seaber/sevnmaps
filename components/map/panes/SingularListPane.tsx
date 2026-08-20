@@ -648,6 +648,23 @@ function SingularListPane({ listID }: { listID: string }) {
     (icon) => icon.id === listData?.listIcon,
   )?.icon;
 
+  function handleCopyLink() {
+    if (!listData) return;
+
+    const shareLink = `${window.location.origin}/map/list/${listID}`;
+
+    navigator.clipboard
+      .writeText(shareLink)
+      .then(() => {
+        toast.success("Copied list link to clipboard!");
+      })
+      .catch((error) => {
+        console.error("Failed to copy share link:", error);
+
+        toast.error("Failed to copy list link. Please try again later.");
+      });
+  }
+
   return (
     <div className="flex flex-col gap-4 md:gap-6 mt-5">
       <div className="flex flex-row items-center gap-4 mb-2">
@@ -711,8 +728,8 @@ function SingularListPane({ listID }: { listID: string }) {
                     {(listData?.visibility === "Public" ||
                       listData?.visibility === "Shared") &&
                       (userRole === "Creator" || userRole === "Admin") && (
-                        <DropdownMenuItem>
-                          <Link2 /> Copy link
+                        <DropdownMenuItem onClick={handleCopyLink}>
+                          <Link2 /> Copy public link
                         </DropdownMenuItem>
                       )}
 
@@ -1328,6 +1345,7 @@ function SingularListPane({ listID }: { listID: string }) {
       </Dialog>
 
       <Toaster position="top-center" />
+      
       <ConfirmationPopup
         open={deletePopupOpen}
         setOpen={setDeletePopupOpen}

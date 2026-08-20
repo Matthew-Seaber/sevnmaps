@@ -84,7 +84,7 @@ export default function MapPageClient({
   const lastRoute = useRef<string | null>(null);
 
   useEffect(() => {
-    if (type !== "place" || !id) {
+    if ((type !== "place" && type !== "list") || !id) {
       lastRoute.current = null;
       return;
     }
@@ -96,7 +96,12 @@ export default function MapPageClient({
     }
 
     lastRoute.current = newRoute;
-    openPane({ type: "place", placeID: id });
+
+    if (type === "place") {
+      openPane({ type: "place", placeID: id });
+    } else if (type === "list") {
+      openPane({ type: "singular_list", listID: id });
+    }
   }, [type, id, openPane]);
 
   function searchPlaces(query?: string) {
