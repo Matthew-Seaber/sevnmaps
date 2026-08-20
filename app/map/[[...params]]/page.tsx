@@ -65,29 +65,53 @@ async function MapPage({ params }: MapPageProps) {
 
   const userId = session.user.id;
 
-  const placeData = await db
-    .select({
-      id: places.id,
-      placeName: places.placeName,
-      address: sql<string>`CONCAT_WS(', ', NULLIF(${places.mainAddress}, ''), NULLIF(${places.city}, ''), NULLIF(${places.state}, ''), NULLIF(${countries.countryName}, ''), NULLIF(${places.zipCode}, ''))`,
-      longitude: places.longitude,
-      latitude: places.latitude,
-      favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
-      visited: sql<boolean>`COALESCE(${place_user_link.visited}, false)`,
-      inList: sql<boolean>`EXISTS (SELECT 1 FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor'))`,
-      listColor: sql<
-        string | null
-      >`(SELECT ${lists.listColor} FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} INNER JOIN ${lists} ON ${list_place_link.listId} = ${lists.id} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor') ORDER BY ${list_members.joinedAt} ASC LIMIT 1)`,
-    })
-    .from(places)
-    .leftJoin(
-      place_user_link,
-      and(
-        eq(places.id, place_user_link.placeId),
-        eq(place_user_link.userId, userId),
-      ),
-    )
-    .leftJoin(countries, eq(places.countryId, countries.id));
+  const [placeData, userLists, planInfo] = await Promise.all([
+    db
+      .select({
+        id: places.id,
+        placeName: places.placeName,
+        address: sql<string>`CONCAT_WS(', ', NULLIF(${places.mainAddress}, ''), NULLIF(${places.city}, ''), NULLIF(${places.state}, ''), NULLIF(${countries.countryName}, ''), NULLIF(${places.zipCode}, ''))`,
+        longitude: places.longitude,
+        latitude: places.latitude,
+        favorite: sql<boolean>`COALESCE(${place_user_link.favorite}, false)`,
+        visited: sql<boolean>`COALESCE(${place_user_link.visited}, false)`,
+        inList: sql<boolean>`EXISTS (SELECT 1 FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor'))`,
+        listColor: sql<
+          string | null
+        >`(SELECT ${lists.listColor} FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} INNER JOIN ${lists} ON ${list_place_link.listId} = ${lists.id} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor') ORDER BY ${list_members.joinedAt} ASC LIMIT 1)`,
+      })
+      .from(places)
+      .leftJoin(
+        place_user_link,
+        and(
+          eq(places.id, place_user_link.placeId),
+          eq(place_user_link.userId, userId),
+        ),
+      )
+      .leftJoin(countries, eq(places.countryId, countries.id)),
+
+    db
+      .select({
+        id: lists.id,
+        listName: lists.listName,
+        listColor: lists.listColor,
+        placeCount: count(list_place_link.placeId),
+      })
+      .from(lists)
+      .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
+      .leftJoin(list_members, eq(lists.id, list_members.listId))
+      .where(eq(list_members.userId, userId))
+      .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
+      .orderBy(desc(lists.createdAt)),
+
+    db
+      .select({
+        planType: subscriptions.planType,
+      })
+      .from(subscriptions)
+      .where(eq(subscriptions.userId, userId))
+      .limit(1),
+  ]);
 
   const placesGeoJSON = {
     type: "FeatureCollection" as const,
@@ -115,33 +139,11 @@ async function MapPage({ params }: MapPageProps) {
 
   let sidebarLists: SidebarList[] = [];
 
-  const userLists = await db
-    .select({
-      id: lists.id,
-      listName: lists.listName,
-      listColor: lists.listColor,
-      placeCount: count(list_place_link.placeId),
-    })
-    .from(lists)
-    .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
-    .leftJoin(list_members, eq(lists.id, list_members.listId))
-    .where(and(eq(list_members.userId, session.user.id)))
-    .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
-    .orderBy(desc(lists.createdAt));
-
   if (userLists && userLists.length > 0) {
     sidebarLists = userLists;
   }
 
   const sidebarListsKey = sidebarLists.map((list) => list.id).join("|");
-
-  const planInfo = await db
-    .select({
-      planType: subscriptions.planType,
-    })
-    .from(subscriptions)
-    .where(eq(subscriptions.userId, userId))
-    .limit(1);
 
   const planName = planInfo[0]?.planType || "free";
   const advancedMapStyles =

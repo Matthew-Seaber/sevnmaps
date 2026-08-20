@@ -1,0 +1,81 @@
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { lists, list_place_link, list_members, user } from "@/db/schema";
+import { count, desc, and, eq, inArray } from "drizzle-orm";
+
+export async function GET() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return NextResponse.json(
+      { error: "Signed in user not found" },
+      { status: 401 },
+    );
+  }
+
+  const userID = session.user.id;
+
+  await db.transaction(async (tx) => {
+    const [createdLists] = await tx
+      .select({
+        id: lists.id,
+        listName: lists.listName,
+        listColor: lists.listColor,
+        visibility: lists.visibility,
+        placeCount: count(list_place_link.placeId),
+      })
+      .from(lists)
+      .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
+      .leftJoin(list_members, eq(lists.id, list_members.listId))
+      .where(
+        and(eq(list_members.userId, userID), eq(list_members.role, "Creator")),
+      )
+      .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
+      .orderBy(desc(lists.createdAt));
+
+    const [sharedLists] = await tx
+      .select({
+        id: lists.id,
+        listName: lists.listName,
+        listColor: lists.listColor,
+        userRole: list_members.role,
+        placeCount: count(list_place_link.placeId),
+      })
+      .from(lists)
+      .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
+      .leftJoin(list_members, eq(lists.id, list_members.listId))
+      .where(
+        and(
+          eq(list_members.userId, userID),
+          inArray(list_members.role, ["Admin", "Editor", "Viewer"]),
+        ),
+      )
+      .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
+      .orderBy(desc(lists.createdAt));
+
+    const [recommendedLists] = await tx
+      .select({
+        id: lists.id,
+        listName: lists.listName,
+        listColor: lists.listColor,
+        listIcon: lists.listIcon,
+        creatorName: user.name,
+        placeCount: count(list_place_link.placeId),
+      })
+      .from(lists)
+      .innerJoin(user, eq(list_members.userId, user.id))
+      .where(eq(lists.visibility, "Public"))
+      .orderBy(desc(count(list_place_link.placeId))).limit(5);
+
+    return NextResponse.json({
+      createdLists,
+      sharedLists,
+      recommendedLists,
+    });
+  });
+}

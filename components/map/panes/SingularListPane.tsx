@@ -109,7 +109,7 @@ interface ListData {
 }
 
 type ListSidebarEventDetail = {
-  action: "deleted" | "updated";
+  action: "deleted" | "updated" | "added";
   listID: string;
   newListName?: string;
   newListColor?: string;

@@ -4,25 +4,9 @@ import { useEffect, useState } from "react";
 
 import { useInfoPane } from "./InfoPaneContext";
 
-import { listIcons } from "@/components/map/ListIcons";
+import CreateListDialogContent from "./CreateListDialogContent";
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
-import { Ban } from "lucide-react";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 interface SidebarList {
   id: string;
@@ -32,7 +16,7 @@ interface SidebarList {
 }
 
 type ListSidebarEventDetail = {
-  action: "deleted" | "updated";
+  action: "deleted" | "updated" | "added";
   listID: string;
   newListName?: string;
   newListColor?: string;
@@ -42,12 +26,7 @@ const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
 
 function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
   const [lists, setLists] = useState<SidebarList[]>(sidebarLists);
-  const [displayedLists, setDisplayedLists] = useState<SidebarList[]>(
-    sidebarLists.slice(0, 5),
-  );
-  const [listName, setListName] = useState<string>("");
-  const [listColor, setListColor] = useState<string>("#1273F6");
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const displayedLists = lists.slice(0, 5);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const { openPane } = useInfoPane();
@@ -58,7 +37,8 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
 
       if (
         customEvent.detail.action !== "deleted" &&
-        customEvent.detail.action !== "updated"
+        customEvent.detail.action !== "updated" &&
+        customEvent.detail.action !== "added"
       ) {
         return;
       }
@@ -79,32 +59,22 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
 
             return list;
           });
+
           return updatedLists;
         });
-
-        setDisplayedLists((currentDisplayedLists) => {
-          const updatedDisplayedLists = currentDisplayedLists.map((list) => {
-            if (list.id === customEvent.detail.listID) {
-              return {
-                ...list,
-                listName: updatedName || list.listName,
-                listColor: updatedColor || list.listColor,
-              };
-            }
-            return list;
-          });
-          return updatedDisplayedLists;
-        });
       } else if (customEvent.detail.action === "deleted") {
-        setLists((currentLists) => {
-          const newLists = currentLists.filter(
-            (list) => list.id !== customEvent.detail.listID,
-          );
+        setLists((currentLists) =>
+          currentLists.filter((list) => list.id !== customEvent.detail.listID),
+        );
+      } else if (customEvent.detail.action === "added") {
+        const newList = {
+          id: customEvent.detail.listID,
+          listName: customEvent.detail.newListName,
+          listColor: customEvent.detail.newListColor,
+          placeCount: 0,
+        } as SidebarList;
 
-          setDisplayedLists(newLists.slice(0, 5));
-
-          return newLists;
-        });
+        setLists((currentLists) => [newList, ...currentLists]);
       }
     }
 
@@ -113,60 +83,7 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
     return () => {
       window.removeEventListener(LIST_SIDEBAR_EVENT, handleSidebarUpdate);
     };
-  }, []);
-
-  async function handleCreateList() {
-    if (listName.trim() === "") {
-      toast.info("Please enter a list name.");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/lists/create_list", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          listName: listName,
-          listColor: listColor.slice(1) || "1273F6",
-          listIcon: selectedIcon,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Failed to create list:", response.statusText);
-
-        if (response.status === 403) {
-          toast.info(
-            "You have reached the maximum number of lists allowed for your subscription plan.",
-          );
-        } else {
-          toast.error("Failed to create list. Please try again later.");
-        }
-
-        return;
-      }
-
-      const data = await response.json();
-      const newList: SidebarList = {
-        id: data.id,
-        listName: data.listName,
-        listColor: data.listColor,
-        placeCount: 0,
-      };
-      setDialogOpen(false);
-      setLists([newList, ...lists]);
-      setDisplayedLists([newList, ...displayedLists.slice(0, 4)]);
-      setListName("");
-      setListColor("#1273F6");
-      setSelectedIcon(null);
-      toast.success("List created!");
-    } catch (error) {
-      console.error("Failed to create list:", error);
-      toast.error("Failed to create list. Please try again later.");
-    }
-  }
+  });
 
   return (
     <>
@@ -185,73 +102,8 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
                 +
               </p>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create list</DialogTitle>
-                <DialogDescription>
-                  Start a new list to save your favourite spots.
-                </DialogDescription>
-              </DialogHeader>
 
-              <FieldGroup>
-                <Field>
-                  <Label htmlFor="listName">List name</Label>
-                  <Input
-                    id="listName"
-                    type="text"
-                    placeholder="Name"
-                    value={listName}
-                    onChange={(e) => setListName(e.target.value)}
-                  />
-                </Field>
-                <Field>
-                  <Label htmlFor="listColor">List colour</Label>
-                  <Input
-                    id="listColor"
-                    type="color"
-                    defaultValue="#1273F6"
-                    className="w-8! h-8! p-0"
-                    value={listColor}
-                    onChange={(e) => setListColor(e.target.value)}
-                  />
-                </Field>
-                <Field>
-                  <Label>List icon</Label>
-                  <div className="grid grid-cols-8 rounded-lg border border-border p-2">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-md ${selectedIcon === null ? "bg-primary/50 hover:bg-primary/30" : "hover:bg-primary/20"}`}
-                      onClick={() => setSelectedIcon(null)}
-                    >
-                      <Ban className="w-5 h-5" />
-                    </div>
-
-                    {listIcons.map(({ id, icon: Icon }) => (
-                      <div
-                        key={id}
-                        className={`flex h-10 w-10 items-center justify-center rounded-md ${selectedIcon === id ? "bg-primary/50 hover:bg-primary/30" : "hover:bg-primary/20"}`}
-                        onClick={() => setSelectedIcon(id)}
-                      >
-                        <Icon
-                          className="w-5 h-5"
-                          style={{ color: `${listColor}` }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </Field>
-              </FieldGroup>
-
-              <DialogFooter>
-                <DialogClose>Cancel</DialogClose>
-                <Button
-                  type="submit"
-                  className="md:ml-2"
-                  onClick={handleCreateList}
-                >
-                  Create
-                </Button>
-              </DialogFooter>
-            </DialogContent>
+            <CreateListDialogContent setDialogOpen={setDialogOpen} />
           </Dialog>
         </div>
         {lists.length === 0 ? (
@@ -285,15 +137,16 @@ function ListsComponent({ sidebarLists }: { sidebarLists: SidebarList[] }) {
             ))}
 
             {lists.length > 5 && (
-              <p className="mt-2 text-sm text-center text-muted-foreground hover:underline cursor-pointer">
+              <p
+                onClick={() => openPane({ type: "lists" })}
+                className="mt-2 text-sm text-center text-muted-foreground hover:underline cursor-pointer"
+              >
                 See more
               </p>
             )}
           </div>
         )}
       </div>
-
-      <Toaster position="top-center" />
     </>
   );
 }

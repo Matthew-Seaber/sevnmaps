@@ -2,11 +2,17 @@
 
 import { useState } from "react";
 
+import CreateListDialogContent from ".././CreateListDialogContent";
+
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 function ListsPane() {
   const [section, setSection] = useState<"all" | "owned" | "shared">("all");
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   return (
@@ -45,6 +51,18 @@ function ListsPane() {
       ) : (
         <p>content</p>
       )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger
+          render={
+            <Button className="absolute size-14 bottom-8 right-8">
+              <Plus className="size-7" />
+            </Button>
+          }
+        />
+
+        <CreateListDialogContent setDialogOpen={setDialogOpen} />
+      </Dialog>
     </div>
   );
 }
