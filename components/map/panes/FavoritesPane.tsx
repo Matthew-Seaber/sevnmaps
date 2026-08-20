@@ -62,7 +62,6 @@ function FavoritesPane() {
       }
 
       const data = await response.json();
-      console.log(data.favoritePlaces);
       setFavoritePlaces(data.favoritePlaces);
       setLoading(false);
     } catch (error) {

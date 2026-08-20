@@ -20,8 +20,8 @@ export async function GET() {
 
   const userID = session.user.id;
 
-  await db.transaction(async (tx) => {
-    const [createdLists] = await tx
+  return await db.transaction(async (tx) => {
+    const createdLists = await tx
       .select({
         id: lists.id,
         listName: lists.listName,
@@ -31,14 +31,20 @@ export async function GET() {
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
-      .leftJoin(list_members, eq(lists.id, list_members.listId))
+      .innerJoin(list_members, eq(lists.id, list_members.listId))
       .where(
         and(eq(list_members.userId, userID), eq(list_members.role, "Creator")),
       )
-      .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
+      .groupBy(
+        lists.id,
+        lists.listName,
+        lists.listColor,
+        lists.visibility,
+        lists.createdAt,
+      )
       .orderBy(desc(lists.createdAt));
 
-    const [sharedLists] = await tx
+    const sharedLists = await tx
       .select({
         id: lists.id,
         listName: lists.listName,
@@ -48,17 +54,23 @@ export async function GET() {
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
-      .leftJoin(list_members, eq(lists.id, list_members.listId))
+      .innerJoin(list_members, eq(lists.id, list_members.listId))
       .where(
         and(
           eq(list_members.userId, userID),
           inArray(list_members.role, ["Admin", "Editor", "Viewer"]),
         ),
       )
-      .groupBy(lists.id, lists.listName, lists.listColor, lists.createdAt)
+      .groupBy(
+        lists.id,
+        lists.listName,
+        lists.listColor,
+        lists.createdAt,
+        list_members.role,
+      )
       .orderBy(desc(lists.createdAt));
 
-    const [recommendedLists] = await tx
+    const recommendedLists = await tx
       .select({
         id: lists.id,
         listName: lists.listName,
@@ -68,9 +80,21 @@ export async function GET() {
         placeCount: count(list_place_link.placeId),
       })
       .from(lists)
+      .leftJoin(list_place_link, eq(list_place_link.listId, lists.id))
+      .innerJoin(list_members, eq(list_members.listId, lists.id))
       .innerJoin(user, eq(list_members.userId, user.id))
-      .where(eq(lists.visibility, "Public"))
-      .orderBy(desc(count(list_place_link.placeId))).limit(5);
+      .where(
+        and(eq(lists.visibility, "Public"), eq(list_members.role, "Creator")),
+      )
+      .groupBy(
+        lists.id,
+        lists.listName,
+        lists.listColor,
+        lists.listIcon,
+        user.name,
+      )
+      .orderBy(desc(count(list_place_link.placeId)))
+      .limit(5);
 
     return NextResponse.json({
       createdLists,
