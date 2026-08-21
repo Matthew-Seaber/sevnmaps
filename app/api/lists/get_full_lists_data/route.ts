@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { lists, list_place_link, list_members, user } from "@/db/schema";
-import { count, desc, and, eq, inArray } from "drizzle-orm";
+import { count, desc, and, eq, inArray, ne } from "drizzle-orm";
 
 export async function GET() {
   const session = await auth.api.getSession({
@@ -93,7 +93,7 @@ export async function GET() {
       .innerJoin(list_members, eq(list_members.listId, lists.id))
       .innerJoin(user, eq(list_members.userId, user.id))
       .where(
-        and(eq(lists.visibility, "Public"), eq(list_members.role, "Creator")),
+        and(eq(lists.visibility, "Public"), eq(list_members.role, "Creator"), ne(list_members.userId, user.id)),
       )
       .groupBy(
         lists.id,

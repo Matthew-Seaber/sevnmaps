@@ -63,6 +63,18 @@ type ListSidebarEventDetail = {
 
 const LIST_SIDEBAR_EVENT = "sevnmaps:list-sidebar-updated";
 
+function notifySidebarListCreated(
+  listID: string,
+  newListName?: string,
+  newListColor?: string,
+) {
+  window.dispatchEvent(
+    new CustomEvent<ListSidebarEventDetail>(LIST_SIDEBAR_EVENT, {
+      detail: { action: "added", listID, newListName, newListColor },
+    }),
+  );
+}
+
 function notifySidebarListDeleted(listID: string) {
   window.dispatchEvent(
     new CustomEvent<ListSidebarEventDetail>(LIST_SIDEBAR_EVENT, {
@@ -187,6 +199,47 @@ function ListsPane() {
     }
   }
 
+  async function handleJoinList(listID?: string) {
+    if (!listID) {
+      toast.error(
+        "Error joining list. If this error persists, try opening the list and joining it from there.",
+      );
+
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/lists/join_list`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listID: listID }),
+      });
+
+      if (!response.ok) {
+        console.error("Error joining list:", response.statusText);
+        toast.error("Failed to join list. Please try again later.");
+        return;
+      }
+
+      openPane({ type: "singular_list", listID });
+      toast.success("You have successfully joined the list.");
+
+      const listName = recommendedLists.find(
+        (list) => list.id === listID,
+      )?.name;
+      const listColor = recommendedLists.find(
+        (list) => list.id === listID,
+      )?.color;
+
+      notifySidebarListCreated(listID, listName, listColor);
+    } catch (error) {
+      console.error("Error joining list:", error);
+      toast.error("Failed to join list. Please try again later.");
+    }
+  }
+
   const trimmedCombinedUserLists = [...createdLists, ...sharedLists]
     .slice(0, 5)
     .sort(
@@ -251,7 +304,73 @@ function ListsPane() {
               </p>
             ) : (
               <div className="grid grid-cols gap-3">
-                {filteredOwnedLists.map((list) => {
+                {filteredOwnedLists.map((list) => (
+                  <div
+                    key={list.id}
+                    className="flex flex-row items-center justify-between py-4 px-6 border border-border rounded-md shadow-sm md:hover:scale-103 transition-transform duration-200 cursor-pointer"
+                    onClick={() =>
+                      openPane({ type: "singular_list", listID: list.id })
+                    }
+                  >
+                    <div className="flex flex-row items-center gap-4">
+                      <span
+                        className="inline-block size-4 md:size-6 rounded-full"
+                        style={{ backgroundColor: `#${list.color}` }}
+                      />
+
+                      <div className="flex flex-col gap-1">
+                        <h2 className="font-bold text-md">{list.name}</h2>
+
+                        <div className="font-semibold text-xs md:text-sm text-muted-foreground">
+                          <p>
+                            {list.placeCount} place
+                            {list.placeCount !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="font-semibold text-xs md:text-sm text-muted-foreground">
+                      {list.visibility === "Public" ? (
+                        <Globe
+                          strokeWidth={2.25}
+                          className="size-5 md:size-5.5"
+                        />
+                      ) : list.visibility === "Private" ? (
+                        <Lock
+                          strokeWidth={2.25}
+                          className="size-5 md:size-5.5"
+                        />
+                      ) : list.visibility === "Shared" ? (
+                        <Network
+                          strokeWidth={2.25}
+                          className="size-5 md:size-5.5"
+                        />
+                      ) : list.visibility === "Paid access" ? (
+                        <CircleDollarSign
+                          strokeWidth={2.25}
+                          className="size-5 md:size-5.5"
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h3 className="font-bold text-sm">Featured public lists</h3>
+
+            {recommendedLists.length === 0 ? (
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                Error fetching recommended lists. Please try again later.
+              </p>
+            ) : (
+              <div className="grid grid-cols gap-3">
+                {recommendedLists.map((list) => {
+                  const ListIconComponent = listIcons.find(
+                    (icon) => icon.id === list.icon,
+                  )?.icon;
+
                   return (
                     <div
                       key={list.id}
@@ -261,16 +380,30 @@ function ListsPane() {
                       }
                     >
                       <div className="flex flex-row items-center gap-4">
-                        <span
-                          className="inline-block size-4 md:size-6 rounded-full"
-                          style={{ backgroundColor: `#${list.color}` }}
-                        />
+                        {ListIconComponent ? (
+                          <ListIconComponent
+                            className="size-12 md:size-16 text-accent rounded-md p-3 md:p-4"
+                            strokeWidth={1.5}
+                            style={{ backgroundColor: `#${list.color}` }}
+                          />
+                        ) : (
+                          <span
+                            className="inline-block size-12 md:size-16 rounded-md"
+                            style={{ backgroundColor: `#${list.color}` }}
+                          />
+                        )}
 
                         <div className="flex flex-col gap-1">
                           <h2 className="font-bold text-md">{list.name}</h2>
 
-                          <div className="font-semibold text-xs md:text-sm text-muted-foreground">
-                            <p>
+                          <div className="flex flex-col text-xs md:text-sm text-muted-foreground">
+                            <p
+                              className={`${!list.creatorName ? "italic" : ""} font-semibold`}
+                            >
+                              By {list.creatorName || "Unknown"}
+                            </p>
+
+                            <p className="font-medium">
                               {list.placeCount} place
                               {list.placeCount !== 1 ? "s" : ""}
                             </p>
@@ -278,36 +411,21 @@ function ListsPane() {
                         </div>
                       </div>
 
-                      <div className="md:px-4 font-semibold text-xs md:text-sm text-muted-foreground">
-                        {list.visibility === "Public" ? (
-                          <Globe
-                            strokeWidth={2.25}
-                            className="size-5 md:size-5.5"
-                          />
-                        ) : list.visibility === "Private" ? (
-                          <Lock
-                            strokeWidth={2.25}
-                            className="size-5 md:size-5.5"
-                          />
-                        ) : list.visibility === "Shared" ? (
-                          <Network
-                            strokeWidth={2.25}
-                            className="size-5 md:size-5.5"
-                          />
-                        ) : list.visibility === "Paid access" ? (
-                          <CircleDollarSign
-                            strokeWidth={2.25}
-                            className="size-5 md:size-5.5"
-                          />
-                        ) : null}
-                      </div>
+                      <Button
+                        className="py-5 px-4"
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          handleJoinList(list.id);
+                        }}
+                      >
+                        Join
+                      </Button>
                     </div>
                   );
                 })}
               </div>
             )}
-
-            <h3 className="font-bold text-sm">Featured public lists</h3>
           </>
         ) : section === "owned" ? (
           <>
@@ -376,6 +494,7 @@ function ListsPane() {
                               style={{ backgroundColor: `#${list.color}` }}
                             />
                           )}
+
                           <div className="flex flex-col gap-1">
                             <h2 className="font-bold text-md md:text-lg">
                               {list.name}
@@ -535,6 +654,7 @@ function ListsPane() {
                               style={{ backgroundColor: `#${list.color}` }}
                             />
                           )}
+
                           <div className="flex flex-col gap-1">
                             <h2 className="font-bold text-md md:text-lg">
                               {list.name}
