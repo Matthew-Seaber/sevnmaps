@@ -13,6 +13,19 @@ import ListsComponent from "@/components/map/ListsComponent";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Separator } from "../ui/separator";
 
+interface Place {
+  id: string;
+  placeName: string;
+  address: string;
+  longitude: number;
+  latitude: number;
+  favorite: boolean;
+  visited: boolean;
+  inList: boolean;
+  listColor?: string | null;
+  createdAt: Date;
+}
+
 interface SidebarList {
   id: string;
   listName: string;
@@ -21,10 +34,12 @@ interface SidebarList {
 }
 
 function SidebarMobileClient({
+  placeData,
   listsKey,
   sidebarLists,
   profileSection,
 }: {
+  placeData: Place[];
   listsKey: string;
   sidebarLists: SidebarList[];
   profileSection: ReactNode;
@@ -60,7 +75,7 @@ function SidebarMobileClient({
           <div>
             <TextLogo link="/map" />
 
-            <SidebarButtons discoverButtons={false} />
+            <SidebarButtons discoverButtons={false} placeData={placeData} />
 
             <ListsComponent key={listsKey} sidebarLists={sidebarLists} />
           </div>

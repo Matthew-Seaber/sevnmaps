@@ -24,6 +24,7 @@ interface Place {
   visited: boolean;
   inList: boolean;
   listColor?: string | null;
+  createdAt: Date;
 }
 
 function SidebarButtons({
@@ -33,6 +34,12 @@ function SidebarButtons({
   discoverButtons: boolean;
   placeData: Place[];
 }) {
+  const [sortedPlacesRemaining, setSortedPlacesRemaining] = useState<Place[]>(
+    [...placeData].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    ),
+  );
   const [randomPlacesRemaining, setRandomPlacesRemaining] = useState<Place[]>([
     ...placeData,
   ]);
@@ -62,23 +69,39 @@ function SidebarButtons({
     }
   }
 
-  const sortedPlaces = [...placeData].sort();
+  function handleRecentlyAdded() {
+    if (placeData.length === 0) return;
 
-  function handleRecentlyAdded() {}
+    let sortedPlaces = sortedPlacesRemaining;
 
-  function handleRandomPlace() {
-    if (randomPlacesRemaining.length === 0) {
-      setRandomPlacesRemaining([...placeData]);
+    if (sortedPlaces.length === 0) {
+      sortedPlaces = [...placeData].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
     }
 
-    const randomIndex = Math.floor(
-      Math.random() * randomPlacesRemaining.length,
-    );
-    const randomPlaceID = randomPlacesRemaining[randomIndex].id;
+    const nextPlaceID = sortedPlaces[0].id;
+
+    openPane({ type: "place", placeID: nextPlaceID });
+    setSortedPlacesRemaining(sortedPlaces.slice(1));
+  }
+
+  function handleRandomPlace() {
+    if (placeData.length === 0) return;
+
+    let randomPlaces = randomPlacesRemaining;
+
+    if (randomPlaces.length === 0) {
+      randomPlaces = [...placeData];
+    }
+
+    const randomIndex = Math.floor(Math.random() * randomPlaces.length);
+    const randomPlaceID = randomPlaces[randomIndex].id;
 
     openPane({ type: "place", placeID: randomPlaceID });
-    setRandomPlacesRemaining((prevPlaces) =>
-      prevPlaces.filter((place) => place.id !== randomPlaceID),
+    setRandomPlacesRemaining(
+      randomPlaces.filter((place) => place.id !== randomPlaceID),
     );
   }
 

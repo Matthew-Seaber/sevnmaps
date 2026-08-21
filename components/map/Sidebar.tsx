@@ -13,6 +13,7 @@ interface Place {
   visited: boolean;
   inList: boolean;
   listColor?: string | null;
+  createdAt: Date;
 }
 
 interface SidebarList {

@@ -40,6 +40,7 @@ interface Place {
   visited: boolean;
   inList: boolean;
   listColor?: string | null;
+  createdAt: Date;
 }
 
 interface SidebarList {
@@ -79,6 +80,7 @@ async function MapPage({ params }: MapPageProps) {
         listColor: sql<
           string | null
         >`(SELECT ${lists.listColor} FROM ${list_place_link} INNER JOIN ${list_members} ON ${list_place_link.listId} = ${list_members.listId} INNER JOIN ${lists} ON ${list_place_link.listId} = ${lists.id} WHERE ${list_place_link.placeId} = ${places.id} AND ${list_members.userId} = ${userId} AND ${list_members.role} IN ('Creator', 'Admin', 'Editor') ORDER BY ${list_members.joinedAt} ASC LIMIT 1)`,
+        createdAt: places.createdAt,
       })
       .from(places)
       .leftJoin(
@@ -163,6 +165,7 @@ async function MapPage({ params }: MapPageProps) {
 
           <div className="flex md:hidden">
             <MapPageSheet
+              placeData={placeData}
               listsKey={sidebarListsKey}
               sidebarLists={sidebarLists}
             />
