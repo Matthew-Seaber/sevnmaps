@@ -966,7 +966,6 @@ function SingularListPane({ listID }: { listID: string }) {
                       id="listDescription"
                       type="text"
                       placeholder={listData?.description || "Empty"}
-                      className={newListDescription === null ? "" : "italic"}
                       value={newListDescription ?? ""}
                       onChange={(e) =>
                         setNewListDescription(

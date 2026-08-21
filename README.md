@@ -14,5 +14,7 @@ Use the live demo at the bottom of the README
 - Track visited places and countries
 - Save places to lists and collaborate with friends
 
+*Note: UX on mobile devices may be downgraded since this website was primarily designed for PC use.*
+
 ## Live Demo
 👉 [sevnmaps.com](https://sevnmaps.com)

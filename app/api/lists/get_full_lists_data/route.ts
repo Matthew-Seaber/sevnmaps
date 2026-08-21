@@ -4,7 +4,16 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { lists, list_place_link, list_members, user } from "@/db/schema";
-import { count, desc, and, eq, inArray, notExists } from "drizzle-orm";
+import {
+  count,
+  desc,
+  and,
+  eq,
+  inArray,
+  exists,
+  notExists,
+  sql,
+} from "drizzle-orm";
 
 export async function GET() {
   const session = await auth.api.getSession({
@@ -34,9 +43,20 @@ export async function GET() {
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))
-      .innerJoin(list_members, eq(lists.id, list_members.listId))
+      .leftJoin(list_members, eq(lists.id, list_members.listId))
       .where(
-        and(eq(list_members.userId, userID), eq(list_members.role, "Creator")),
+        exists(
+          tx
+            .select()
+            .from(list_members)
+            .where(
+              and(
+                eq(list_members.userId, userID),
+                eq(list_members.listId, lists.id),
+                eq(list_members.role, "Creator"),
+              ),
+            ),
+        ),
       )
       .groupBy(
         lists.id,
@@ -57,7 +77,7 @@ export async function GET() {
         visibility: lists.visibility,
         role: list_members.role,
         placeCount: count(list_place_link.placeId),
-        memberCount: count(list_members.userId),
+        memberCount: sql<number>`(${count(list_members.userId)} + 1)`,
       })
       .from(lists)
       .leftJoin(list_place_link, eq(lists.id, list_place_link.listId))

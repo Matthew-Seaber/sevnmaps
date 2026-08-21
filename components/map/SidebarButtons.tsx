@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useInfoPane } from "./InfoPaneContext";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,29 @@ import {
   Shuffle,
 } from "lucide-react";
 
-function SidebarButtons({ discoverButtons }: { discoverButtons: boolean }) {
+interface Place {
+  id: string;
+  placeName: string;
+  address: string;
+  longitude: number;
+  latitude: number;
+  favorite: boolean;
+  visited: boolean;
+  inList: boolean;
+  listColor?: string | null;
+}
+
+function SidebarButtons({
+  discoverButtons,
+  placeData,
+}: {
+  discoverButtons: boolean;
+  placeData: Place[];
+}) {
+  const [randomPlacesRemaining, setRandomPlacesRemaining] = useState<Place[]>([
+    ...placeData,
+  ]);
+
   const { infoPaneState, openPane, closePane } = useInfoPane();
 
   const currentTab =
@@ -36,6 +60,26 @@ function SidebarButtons({ discoverButtons }: { discoverButtons: boolean }) {
         openPane({ type: "lists" });
         break;
     }
+  }
+
+  const sortedPlaces = [...placeData].sort();
+
+  function handleRecentlyAdded() {}
+
+  function handleRandomPlace() {
+    if (randomPlacesRemaining.length === 0) {
+      setRandomPlacesRemaining([...placeData]);
+    }
+
+    const randomIndex = Math.floor(
+      Math.random() * randomPlacesRemaining.length,
+    );
+    const randomPlaceID = randomPlacesRemaining[randomIndex].id;
+
+    openPane({ type: "place", placeID: randomPlaceID });
+    setRandomPlacesRemaining((prevPlaces) =>
+      prevPlaces.filter((place) => place.id !== randomPlaceID),
+    );
   }
 
   return (
@@ -94,6 +138,7 @@ function SidebarButtons({ discoverButtons }: { discoverButtons: boolean }) {
           <Button
             variant="ghost"
             className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
+            onClick={handleRecentlyAdded}
           >
             <Clock />
             Recently Added
@@ -101,6 +146,7 @@ function SidebarButtons({ discoverButtons }: { discoverButtons: boolean }) {
           <Button
             variant="ghost"
             className={`justify-start gap-3 p-3 h-10 transition-all duration-200 hover:bg-primary/30 text-muted-foreground hover:shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]`}
+            onClick={handleRandomPlace}
           >
             <Shuffle />
             Random Place

@@ -361,11 +361,11 @@ function ListsPane() {
             <h3 className="font-bold text-sm">Featured public lists</h3>
 
             {recommendedLists.length === 0 ? (
-              <p className="mt-2 text-center text-sm text-muted-foreground">
+              <p className="mt-2 mb-12 text-center text-sm text-muted-foreground">
                 Error fetching recommended lists. Please try again later.
               </p>
             ) : (
-              <div className="grid grid-cols gap-3">
+              <div className="grid grid-cols gap-3 mb-12">
                 {recommendedLists.map((list) => {
                   const ListIconComponent = listIcons.find(
                     (icon) => icon.id === list.icon,
@@ -503,7 +503,7 @@ function ListsPane() {
                                 {list.placeCount !== 1 ? "s" : ""}
                               </p>
 
-                              {list.memberCount === 1 && (
+                              {list.memberCount !== 1 && (
                                 <>
                                   <span>•</span>
                                   <p>

@@ -155,6 +155,7 @@ async function MapPage({ params }: MapPageProps) {
         <div className="flex h-screen">
           <div className="hidden md:flex">
             <MapPageSidebar
+              placeData={placeData}
               listsKey={sidebarListsKey}
               sidebarLists={sidebarLists}
             />

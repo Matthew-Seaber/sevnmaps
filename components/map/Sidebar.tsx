@@ -3,6 +3,18 @@ import MapPageProfileSection from "@/components/navbar/ProfileSectionServer";
 import SidebarButtons from "@/components/map/SidebarButtons";
 import ListsComponent from "@/components/map/ListsComponent";
 
+interface Place {
+  id: string;
+  placeName: string;
+  address: string;
+  longitude: number;
+  latitude: number;
+  favorite: boolean;
+  visited: boolean;
+  inList: boolean;
+  listColor?: string | null;
+}
+
 interface SidebarList {
   id: string;
   listName: string;
@@ -11,9 +23,11 @@ interface SidebarList {
 }
 
 async function MapPageSidebar({
+  placeData,
   listsKey,
   sidebarLists,
 }: {
+  placeData: Place[];
   listsKey: string;
   sidebarLists: SidebarList[];
 }) {
@@ -22,7 +36,7 @@ async function MapPageSidebar({
       <div>
         <TextLogo link="/map" />
 
-        <SidebarButtons discoverButtons={true} />
+        <SidebarButtons discoverButtons={true} placeData={placeData} />
 
         <ListsComponent key={listsKey} sidebarLists={sidebarLists} />
       </div>
