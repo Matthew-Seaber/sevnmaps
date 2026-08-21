@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { lists, list_place_link, list_members, user } from "@/db/schema";
-import { count, desc, and, eq, inArray, ne } from "drizzle-orm";
+import { count, desc, and, eq, inArray, notExists } from "drizzle-orm";
 
 export async function GET() {
   const session = await auth.api.getSession({
@@ -90,18 +90,32 @@ export async function GET() {
       })
       .from(lists)
       .leftJoin(list_place_link, eq(list_place_link.listId, lists.id))
-      .innerJoin(list_members, eq(list_members.listId, lists.id))
+      .innerJoin(
+        list_members,
+        and(
+          eq(list_members.listId, lists.id),
+          eq(list_members.role, "Creator"),
+        ),
+      )
       .innerJoin(user, eq(list_members.userId, user.id))
       .where(
-        and(eq(lists.visibility, "Public"), eq(list_members.role, "Creator"), ne(list_members.userId, user.id)),
+        and(
+          eq(lists.visibility, "Public"),
+
+          notExists(
+            tx
+              .select()
+              .from(list_members)
+              .where(
+                and(
+                  eq(list_members.listId, lists.id),
+                  eq(list_members.userId, userID),
+                ),
+              ),
+          ),
+        ),
       )
-      .groupBy(
-        lists.id,
-        lists.listName,
-        lists.listColor,
-        lists.listIcon,
-        user.name,
-      )
+      .groupBy(lists.id, user.name)
       .orderBy(desc(count(list_place_link.placeId)))
       .limit(5);
 

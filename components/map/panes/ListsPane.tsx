@@ -374,10 +374,7 @@ function ListsPane() {
                   return (
                     <div
                       key={list.id}
-                      className="flex flex-row items-center justify-between py-4 px-6 border border-border rounded-md shadow-sm md:hover:scale-103 transition-transform duration-200 cursor-pointer"
-                      onClick={() =>
-                        openPane({ type: "singular_list", listID: list.id })
-                      }
+                      className="flex flex-row items-center justify-between py-4 px-6 border border-border rounded-md shadow-sm cursor-default"
                     >
                       <div className="flex flex-row items-center gap-4">
                         {ListIconComponent ? (
