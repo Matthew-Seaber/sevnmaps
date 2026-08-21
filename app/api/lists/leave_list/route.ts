@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         .from(list_members)
         .innerJoin(lists, eq(list_members.listId, lists.id))
         .where(
-          and(eq(list_members.listId, listID), eq(list_members.role, "Owner")),
+          and(eq(list_members.listId, listID), eq(list_members.role, "Creator")),
         );
 
       await tx.insert(notifications).values({

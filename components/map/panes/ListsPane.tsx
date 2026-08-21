@@ -34,6 +34,10 @@ import {
   Globe,
   Lock,
   Search,
+  LogOut,
+  UserRoundCog,
+  Pencil,
+  Eye,
 } from "lucide-react";
 
 interface List {
@@ -41,6 +45,7 @@ interface List {
   name: string;
   color: string;
   icon?: string;
+  createdAt: string;
   visibility?: "Public" | "Private" | "Shared" | "Paid access";
   role?: "Creator" | "Admin" | "Editor" | "Viewer";
   creatorName?: string;
@@ -112,6 +117,7 @@ function ListsPane() {
       toast.error(
         "Error deleting list. If this error persists, try opening the list and deleting it from under the ellipsis menu.",
       );
+
       return;
     }
 
@@ -145,8 +151,57 @@ function ListsPane() {
     }
   }
 
+  async function handleLeaveList(listID?: string) {
+    if (!listID) {
+      toast.error(
+        "Error leaving list. If this error persists, try opening the list and leaving it from under the ellipsis menu.",
+      );
+
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/lists/leave_list`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ listID: listID }),
+      });
+
+      if (!response.ok) {
+        console.error("Error leaving list:", response.statusText);
+        toast.error("Failed to leave list. Please try again later.");
+        return;
+      }
+
+      setSharedLists((prevLists) =>
+        prevLists.filter((list) => list.id !== listID),
+      );
+      toast.success("You have successfully left the list.");
+
+      notifySidebarListDeleted(listID);
+    } catch (error) {
+      console.error("Error leaving list:", error);
+      toast.error("Failed to leave list. Please try again later.");
+    }
+  }
+
+  const trimmedCombinedUserLists = [...createdLists, ...sharedLists]
+    .slice(0, 5)
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
   const filteredOwnedLists = createdLists.filter((list) => {
     const query = ownedSearchQuery.toLowerCase();
+
+    return list.name.toLowerCase().includes(query);
+  });
+
+  const filteredSharedLists = sharedLists.filter((list) => {
+    const query = sharedSearchQuery.toLowerCase();
 
     return list.name.toLowerCase().includes(query);
   });
@@ -186,7 +241,74 @@ function ListsPane() {
             <p className="text-sm">Loading...</p>
           </div>
         ) : section === "all" ? (
-          <p>All lists content</p>
+          <>
+            <h3 className="font-bold text-sm">Your lists</h3>
+
+            {trimmedCombinedUserLists.length === 0 ? (
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                You aren&apos;t a member of any lists yet. Create your first
+                list to see it here!
+              </p>
+            ) : (
+              <div className="grid grid-cols gap-3">
+                {filteredOwnedLists.map((list) => {
+                  return (
+                    <div
+                      key={list.id}
+                      className="flex flex-row items-center justify-between py-4 px-6 border border-border rounded-md shadow-sm md:hover:scale-103 transition-transform duration-200 cursor-pointer"
+                      onClick={() =>
+                        openPane({ type: "singular_list", listID: list.id })
+                      }
+                    >
+                      <div className="flex flex-row items-center gap-4">
+                        <span
+                          className="inline-block size-4 md:size-6 rounded-full"
+                          style={{ backgroundColor: `#${list.color}` }}
+                        />
+
+                        <div className="flex flex-col gap-1">
+                          <h2 className="font-bold text-md">{list.name}</h2>
+
+                          <div className="font-semibold text-xs md:text-sm text-muted-foreground">
+                            <p>
+                              {list.placeCount} place
+                              {list.placeCount !== 1 ? "s" : ""}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="md:px-4 font-semibold text-xs md:text-sm text-muted-foreground">
+                        {list.visibility === "Public" ? (
+                          <Globe
+                            strokeWidth={2.25}
+                            className="size-5 md:size-5.5"
+                          />
+                        ) : list.visibility === "Private" ? (
+                          <Lock
+                            strokeWidth={2.25}
+                            className="size-5 md:size-5.5"
+                          />
+                        ) : list.visibility === "Shared" ? (
+                          <Network
+                            strokeWidth={2.25}
+                            className="size-5 md:size-5.5"
+                          />
+                        ) : list.visibility === "Paid access" ? (
+                          <CircleDollarSign
+                            strokeWidth={2.25}
+                            className="size-5 md:size-5.5"
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <h3 className="font-bold text-sm">Featured public lists</h3>
+          </>
         ) : section === "owned" ? (
           <>
             <div className="flex flex-row justify-between items-center">
@@ -206,13 +328,14 @@ function ListsPane() {
                 </InputGroupAddon>
               </InputGroup>
             </div>
+
             {createdLists.length === 0 ? (
-              <p className="mt-2 text-center text-sm text-muted-foreground">
+              <p className="mt-2 mb-12 text-center text-sm text-muted-foreground">
                 You haven&apos;t created any lists yet. Create your first list
                 to see it here!
               </p>
             ) : (
-              <div className="grid grid-cols gap-4">
+              <div className="grid grid-cols gap-3 mb-12">
                 {filteredOwnedLists.length === 0 ? (
                   <div className="flex flex-col items-center justify-center gap-2 mt-2">
                     <p className="text-sm">
@@ -235,7 +358,7 @@ function ListsPane() {
                     return (
                       <div
                         key={list.id}
-                        className="flex flex-row items-center justify-between p-4 border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
+                        className="flex flex-row items-center justify-between p-3 md:p-4 border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
                         onClick={() =>
                           openPane({ type: "singular_list", listID: list.id })
                         }
@@ -243,77 +366,94 @@ function ListsPane() {
                         <div className="flex flex-row items-center gap-4">
                           {ListIconComponent ? (
                             <ListIconComponent
-                              className="h-20 w-20 text-accent rounded-md p-4"
+                              className="size-12 md:size-16 text-accent rounded-md p-3 md:p-4"
                               strokeWidth={1.5}
                               style={{ backgroundColor: `#${list.color}` }}
                             />
                           ) : (
                             <span
-                              className={`inline-block w-20 h-20 rounded-md`}
+                              className="inline-block size-12 md:size-16 rounded-md"
                               style={{ backgroundColor: `#${list.color}` }}
                             />
                           )}
                           <div className="flex flex-col gap-1">
-                            <h2 className="font-bold text-lg">{list.name}</h2>
+                            <h2 className="font-bold text-md md:text-lg">
+                              {list.name}
+                            </h2>
 
-                            <div className="flex flex-row items-center gap-2 font-semibold text-sm text-muted-foreground">
+                            <div className="flex flex-row items-center gap-1 font-semibold text-xs md:text-sm text-muted-foreground">
                               <p>
                                 {list.placeCount} place
                                 {list.placeCount !== 1 ? "s" : ""}
                               </p>
-                              {list.memberCount > 0 && (
-                                <p>
-                                  {list.memberCount} member
-                                  {list.memberCount !== 1 ? "s" : ""}
-                                </p>
+
+                              {list.memberCount === 1 && (
+                                <>
+                                  <span>•</span>
+                                  <p>
+                                    {list.memberCount} member
+                                    {list.memberCount !== 1 ? "s" : ""}
+                                  </p>
+                                </>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex flex-row items-center gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-sm text-muted-foreground">
-                          {list.visibility === "Public" ? (
-                            <Globe strokeWidth={2.25} className="size-3.5" />
-                          ) : list.visibility === "Private" ? (
-                            <Lock strokeWidth={2.25} className="size-3.5" />
-                          ) : list.visibility === "Shared" ? (
-                            <Network strokeWidth={2.25} className="size-3.5" />
-                          ) : list.visibility === "Paid access" ? (
-                            <CircleDollarSign
-                              strokeWidth={2.25}
-                              className="size-3.5"
-                            />
-                          ) : null}
-                          <p>{list.visibility}</p>
-                        </div>
+                        <div className="flex flex-row items-center gap-2">
+                          <div className="flex flex-row items-center gap-1 md:gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-xs md:text-sm text-muted-foreground">
+                            {list.visibility === "Public" ? (
+                              <Globe
+                                strokeWidth={2.25}
+                                className="size-3 md:size-3.5"
+                              />
+                            ) : list.visibility === "Private" ? (
+                              <Lock
+                                strokeWidth={2.25}
+                                className="size-3 md:size-3.5"
+                              />
+                            ) : list.visibility === "Shared" ? (
+                              <Network
+                                strokeWidth={2.25}
+                                className="size-3 md:size-3.5"
+                              />
+                            ) : list.visibility === "Paid access" ? (
+                              <CircleDollarSign
+                                strokeWidth={2.25}
+                                className="size-3 md:size-3.5"
+                              />
+                            ) : null}
+                            <p>{list.visibility}</p>
+                          </div>
 
-                        <div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button
-                                  variant="outline"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="h-10 w-10"
-                                />
-                              }
-                            >
-                              <Ellipsis className="h-4 w-4" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-40">
-                              <DropdownMenuItem
-                                variant="destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-
-                                  setDeletePopupOpen(true);
-                                  setFocusedListID(list.id);
-                                }}
+                          <div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <Button
+                                    variant="outline"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="size-9 md:size-10"
+                                  />
+                                }
                               >
-                                <Trash2 /> Delete list
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                <Ellipsis className="h-4 w-4" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="w-40">
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+
+                                    setFocusedListID(list.id);
+                                    setDeletePopupOpen(true);
+                                  }}
+                                >
+                                  <Trash2 /> Delete list
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </div>
                       </div>
                     );
@@ -323,7 +463,145 @@ function ListsPane() {
             )}
           </>
         ) : section === "shared" ? (
-          <p>Shared lists content</p>
+          <>
+            <div className="flex flex-row justify-between items-center">
+              <p className="font-bold text-sm">
+                {sharedLists.length} list{sharedLists.length !== 1 ? "s" : ""}
+              </p>
+
+              <InputGroup className="p-1 py-4 max-w-48">
+                <InputGroupInput
+                  id="search-input"
+                  placeholder="Search shared lists..."
+                  value={sharedSearchQuery}
+                  onChange={(e) => setSharedSearchQuery(e.target.value)}
+                />
+                <InputGroupAddon>
+                  <Search className="h-4 w-4" />
+                </InputGroupAddon>
+              </InputGroup>
+            </div>
+
+            {sharedLists.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 mt-2 mb-12">
+                <p className="text-center text-sm text-muted-foreground">
+                  You haven&apos;t joined any lists yet. Click the button below
+                  to find some public lists!
+                </p>
+
+                <Button onClick={() => setSection("all")} className="p-4">
+                  Discover public lists
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols gap-3 mb-12">
+                {filteredSharedLists.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 mt-2">
+                    <p className="text-sm">
+                      No lists found that match your search query.
+                    </p>
+                    <Button
+                      size="lg"
+                      className="p-4"
+                      onClick={() => setSharedSearchQuery("")}
+                    >
+                      Clear search
+                    </Button>
+                  </div>
+                ) : (
+                  filteredSharedLists.map((list) => {
+                    const ListIconComponent = listIcons.find(
+                      (icon) => icon.id === list.icon,
+                    )?.icon;
+
+                    return (
+                      <div
+                        key={list.id}
+                        className="flex flex-row items-center justify-between p-3 md:p-4 border border-border rounded-md shadow-sm hover:scale-103 transition-transform duration-200 cursor-pointer"
+                        onClick={() =>
+                          openPane({ type: "singular_list", listID: list.id })
+                        }
+                      >
+                        <div className="flex flex-row items-center gap-4">
+                          {ListIconComponent ? (
+                            <ListIconComponent
+                              className="size-12 md:size-16 text-accent rounded-md p-3 md:p-4"
+                              strokeWidth={1.5}
+                              style={{ backgroundColor: `#${list.color}` }}
+                            />
+                          ) : (
+                            <span
+                              className="inline-block size-12 md:size-16 rounded-md"
+                              style={{ backgroundColor: `#${list.color}` }}
+                            />
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <h2 className="font-bold text-md md:text-lg">
+                              {list.name}
+                            </h2>
+
+                            <div className="flex flex-row items-center gap-1 font-semibold text-xs md:text-sm text-muted-foreground">
+                              <p>
+                                {list.placeCount} place
+                                {list.placeCount !== 1 ? "s" : ""}
+                              </p>
+
+                              <span>•</span>
+                              <p>{list.memberCount} members</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-row items-center gap-2">
+                          <div className="flex flex-row items-center gap-1 md:gap-2 bg-accent rounded-md py-2 px-2 md:px-4 font-semibold text-xs md:text-sm text-muted-foreground">
+                            {list.role === "Admin" ? (
+                              <UserRoundCog
+                                strokeWidth={2.5}
+                                className="size-3.5"
+                              />
+                            ) : list.role === "Editor" ? (
+                              <Pencil strokeWidth={2.5} className="size-3.5" />
+                            ) : list.role === "Viewer" ? (
+                              <Eye strokeWidth={2.5} className="size-3.5" />
+                            ) : null}
+                            <p>{list.role}</p>
+                          </div>
+
+                          <div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <Button
+                                    variant="outline"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="size-9 md:size-10"
+                                  />
+                                }
+                              >
+                                <Ellipsis className="h-4 w-4" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="w-40">
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+
+                                    handleLeaveList(list.id);
+                                  }}
+                                >
+                                  <LogOut /> Leave list
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </>
         ) : null}
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

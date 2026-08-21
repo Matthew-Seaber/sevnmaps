@@ -296,6 +296,8 @@ function SingularListPane({ listID }: { listID: string }) {
 
       openPane({ type: "lists" });
       toast.success("You have successfully left the list.");
+
+      notifySidebarListDeleted(listID);
     } catch (error) {
       console.error("Error leaving list:", error);
       toast.error("Failed to leave list. Please try again later.");
